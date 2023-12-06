@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext.jsx';
 import Login from './components/Login';
 import ForgotPassword from './components/ForgotPassword';
 import NotFound from './components/NotFound.jsx';
@@ -23,11 +24,32 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 function App() {
+
+  const { currentUser } = useAuth();
+
+  const getRedirectPath = () => {
+    if (currentUser) {
+      // Si el usuario está autenticado, redirige según su rol
+      switch (currentUser.role) {
+        case 'admin':
+          return '/admin';
+        case 'tecnico':
+          return '/tecnico';
+        case 'auditor':
+          return '/auditor';
+        default:
+          return '/login';
+      }
+    }
+    // Si no hay usuario autenticado, redirige a la página de inicio de sesión
+    return '/login';
+  };
+
   return (
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<Navigate to={getRedirectPath()} />} />
           <Route path="/login" element={<Login />} />
           <Route path='/admin' element={<Administrador />} />
           <Route path='/tecnico' element={<Tecnico />} />
