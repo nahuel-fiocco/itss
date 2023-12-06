@@ -1,43 +1,43 @@
-/* Login.css */
 .login-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    /* Agregado para centrar verticalmente */
-    height: 100vh;
-    /* Agregado para ocupar toda la altura de la pantalla */
-}
-
-form {
+  }
+  
+  .form-container {
     display: flex;
     flex-direction: column;
-    width: 300px;
-    margin-bottom: 20px;
-}
-
-label {
-    margin-bottom: 8px;
-}
-
-.input-container {
+    justify-content: center;
+  }
+  
+  .email-container,
+  .password-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .password-container {
     position: relative;
-}
-
-input {
-    padding: 8px;
-    margin-bottom: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 100%; /* Ancho del campo de entrada igual al del contenedor */
-}
-
-button.toggle-password-button {
+  }
+  
+  .password-input {
+    padding-right: 30px; /* Ajusta el espacio para el botón del ojo */
+  }
+  
+  .toggle-password-button {
     position: absolute;
-    top: 50%;
-    right: -20px;
+    top: 58%;
+    right: 1px; /* ajusta el margen derecho según tus preferencias */
     transform: translateY(-50%);
-    background: none;
+    background-color: transparent;
     border: none;
+    outline: none;
     cursor: pointer;
-}
+    color: black; /* Cambia el color del icono a negro */
+  }
+  
+  .toggle-password-button:hover {
+    background-color: transparent; /* Evita cualquier cambio de color en el hover */
+  }
+  

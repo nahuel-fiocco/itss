@@ -1,17 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    getAuth,
-    signInWithEmailAndPassword,
-} from 'firebase/auth';
-import {
-    getFirestore,
-    collection,
-    doc,
-    getDoc,
-} from 'firebase/firestore';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, collection, doc, getDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import './Login.css';
 
 function Login() {
@@ -87,47 +79,30 @@ function Login() {
         <div className="login-container">
             <h1>Login</h1>
             {error && <p className="error-message">{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <label htmlFor="email">Email:</label>
-                <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <label htmlFor="password">Contraseña:</label>
-                <div className="password-input-container">
-                    <input
-                        type={showPassword ? 'text' : 'password'}
-                        name="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                    <button
-                        type="button"
-                        className="toggle-password-button"
-                        onClick={() => setShowPassword(!showPassword)}
-                    >
-                        {showPassword ? '🙈' : '👁️'}
-                    </button>
-                </div>
-                <div className="botones">
-                    <button
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} /> : null}
-                        Login
-                    </button>
-                    <button type="button" onClick={handleForgotPassword}>
-                        Olvidé mi contraseña
-                    </button>
-                </div>
-            </form>
+            <div className="form-container">
+                <form onSubmit={handleSubmit}>
+                    <div className="email-container">
+                        <label htmlFor="email">Email:</label>
+                        <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    </div>
+                    <div className="password-container">
+                        <label htmlFor="password">Contraseña:</label>
+                        <input className='password-input' type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                        <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
+                            {showPassword ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} />}
+                        </button>
+                    </div>
+                    <div className="botones">
+                        <button type="submit" disabled={loading}>
+                            {loading ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} /> : null}
+                            Login
+                        </button>
+                        <button type="button" onClick={handleForgotPassword}>
+                            Olvidé mi contraseña
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
