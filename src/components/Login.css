@@ -1,0 +1,43 @@
+/* Login.css */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Agregado para centrar verticalmente */
+    height: 100vh;
+    /* Agregado para ocupar toda la altura de la pantalla */
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    margin-bottom: 20px;
+}
+
+label {
+    margin-bottom: 8px;
+}
+
+.input-container {
+    position: relative;
+}
+
+input {
+    padding: 8px;
+    margin-bottom: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%; /* Ancho del campo de entrada igual al del contenedor */
+}
+
+button.toggle-password-button {
+    position: absolute;
+    top: 50%;
+    right: -20px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
