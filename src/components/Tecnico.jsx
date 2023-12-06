@@ -84,7 +84,7 @@ function Tecnico() {
             fechaCarga: new Date(),
             fechaTrabajo: isSameDay ? currentDate : null,
             tecnico: nombreTecnico,
-            nroConforme: conformeNumero,
+            nroConforme: nextId, // Usar el próximo número de conformidad
             horaIngreso,
             horaEgreso,
             totalHoras,
