@@ -9,7 +9,7 @@ import Administrador from './components/Administrador.jsx';
 import Tecnico from './components/Tecnico.jsx';
 import Auditor from './components/Auditor.jsx';
 import { initializeApp } from "firebase/app";
-  
+
 const firebaseConfig = {
   apiKey: "AIzaSyCqM_HBfuxkvh43xgi65cuuRpeq-BaGGao",
   authDomain: "itss-ab511.firebaseapp.com",
