@@ -1,0 +1,41 @@
+.tecnico-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10vh;
+}
+
+.camposycontenido {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.campos {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.contenido{
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+}
+
+.campos label,
+.contenido label {
+    margin-bottom: 0.5rem;
+}
+
+.campos select,
+.contenido input,
+.contenido textarea {
+    width: 100%;
+    padding: 0.5rem;
+}
+
+textarea{
+    resize: none;
+}

@@ -1,12 +1,12 @@
-// AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [userTimeOut, setUserTimeOut] = useState(15);
 
     useEffect(() => {
         const auth = getAuth();
@@ -15,12 +15,9 @@ export function AuthProvider({ children }) {
             setLoading(false);
         });
 
-        // Configurar el temporizador para cerrar la sesión después de 15 minutos de inactividad
         let timeoutId;
-        // Función para convertir minutos a milisegundos
         const minutesToMilliseconds = (minutes) => minutes * 60 * 1000;
-        // Uso de la función para establecer el tiempo de inactividad en 15 minutos
-        const inactivityTimeout = minutesToMilliseconds(1);
+        const inactivityTimeout = minutesToMilliseconds(userTimeOut);
 
         const resetTimeout = () => {
             if (timeoutId) {
@@ -36,7 +33,6 @@ export function AuthProvider({ children }) {
             resetTimeout();
         };
 
-        // Configurar el listener de actividad
         window.addEventListener('mousemove', handleActivity);
         window.addEventListener('keydown', handleActivity);
 
@@ -44,12 +40,28 @@ export function AuthProvider({ children }) {
             unsubscribe();
             window.removeEventListener('mousemove', handleActivity);
             window.removeEventListener('keydown', handleActivity);
-            resetTimeout(); // Limpiar el temporizador al desmontar el componente
+            resetTimeout();
         };
-    }, []);
+    }, [userTimeOut]);
+
+    const logout = async () => {
+        try {
+            const auth = getAuth();
+            await signOut(auth);
+        } catch (error) {
+            console.error('Error durante el cierre de sesión:', error);
+        }
+    };
+
+    const setAuthTimeout = (timeout) => {
+        setUserTimeOut(timeout);
+    };
 
     const value = {
         currentUser,
+        logout,
+        userTimeOut,
+        setAuthTimeout,
     };
 
     return (

@@ -38,14 +38,14 @@ function Tecnico() {
       const horasSnapshot = await getDoc(horasDoc);
 
       if (horasSnapshot.exists()) {
-        const ultimoNroConforme = horasSnapshot.data().ultimoNroConforme;
+        const ultimoNroConforme = horasSnapshot.data().ultimoNroConforme || 0;
         setNroConforme(ultimoNroConforme + 1);
       }
     };
 
     obtenerNombreTecnico();
     obtenerUltimoNroConforme();
-  }, [currentUser]);
+  }, []);
 
   const handleHoraComienzoChange = (event) => {
     setHoraComienzo(event.target.value);
@@ -96,19 +96,30 @@ function Tecnico() {
   return (
     <div className='tecnico-container'>
       <h2>Bienvenido, {tecnico.split(', ')[1]}</h2>
-      <div className="campos">
-        <label>{nroConforme}</label>
-        <label>{tecnico}</label>
-        <input type="time" value={horaComienzo} onChange={handleHoraComienzoChange} required />
-        <input type="time" value={horaFinalizacion} onChange={handleHoraFinalizacionChange} required />
-        <label>{cantidadHoras}</label>
-        <select value={tipoTarea} onChange={(e) => setTipoTarea(e.target.value)} required>
-          <option value="">Selecciona...</option>
-          <option value="correctivo">Correctivo</option>
-          <option value="preventivo">Preventivo</option>
-          <option value="ambas">Ambas</option>
-        </select>
-        <textarea value={detalleTareas} onChange={(e) => setDetalleTareas(e.target.value)} required />
+      <div className="camposycontenido">
+        <div className="campos">
+          <label className='label'>Nro. Conforme</label>
+          <label className='label'>Técnico</label>
+          <label className='label'>Hora Comienzo</label>
+          <label className='label'>Hora Finalización</label>
+          <label className='label'>Cantidad de Horas</label>
+          <label className='label'>Tipo de Tarea</label>
+          <label className='label'>Detalle de Tareas</label>
+        </div>
+        <div className="contenido">
+          <label className='label'>{nroConforme}</label>
+          <label className='label'>{tecnico}</label>
+          <input type="time" value={horaComienzo} onChange={handleHoraComienzoChange} required />
+          <input type="time" value={horaFinalizacion} onChange={handleHoraFinalizacionChange} required />
+          <label className='label'>{cantidadHoras}</label>
+          <select value={tipoTarea} onChange={(e) => setTipoTarea(e.target.value)} required>
+            <option value="">Selecciona...</option>
+            <option value="correctivo">Correctivo</option>
+            <option value="preventivo">Preventivo</option>
+            <option value="ambas">Ambas</option>
+          </select>
+          <textarea value={detalleTareas} onChange={(e) => setDetalleTareas(e.target.value)} required />
+        </div>
       </div>
       <form onSubmit={handleSubmit}>
         <button type="submit">Guardar Horas</button>

@@ -83,7 +83,7 @@ function Login() {
                 <form onSubmit={handleSubmit}>
                     <div className="email-container">
                         <label htmlFor="email">Email:</label>
-                        <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                        <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete='on' />
                     </div>
                     <div className="password-container">
                         <label htmlFor="password">Contraseña:</label>
