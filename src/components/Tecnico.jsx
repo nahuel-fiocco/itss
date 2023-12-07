@@ -1,168 +1,120 @@
-import React, { useState, useEffect } from "react";
-import DatePicker from 'react-date-picker';
-import "react-date-picker/dist/DatePicker.css";
+import React, { useState, useEffect } from 'react';
+import { getFirestore, collection, doc, getDoc, addDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
-import { getFirestore, collection, doc, getDoc, setDoc, getDocs } from 'firebase/firestore';
+import '../estilos/Tecnico.css';
 
 function Tecnico() {
-    const { currentUser } = useAuth();
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [isSameDay, setIsSameDay] = useState(true);
-    const [conformeNumero, setConformeNumero] = useState("");
-    const [horaIngreso, setHoraIngreso] = useState("");
-    const [horaEgreso, setHoraEgreso] = useState("");
-    const [detalleTareas, setDetalleTareas] = useState("");
-    const [totalHoras, setTotalHoras] = useState("");
-    const [nombreTecnico, setNombreTecnico] = useState("");
+  const [nroConforme, setNroConforme] = useState(null);
+  const [tecnico, setTecnico] = useState('');
+  const [horaComienzo, setHoraComienzo] = useState('');
+  const [horaFinalizacion, setHoraFinalizacion] = useState('');
+  const [tipoTarea, setTipoTarea] = useState('');
+  const [detalleTareas, setDetalleTareas] = useState('');
+  const [cantidadHoras, setCantidadHoras] = useState('');
+  const [expanded, setExpanded] = useState('collapseOne');
+  const { currentUser } = useAuth();
 
-    useEffect(() => {
-        const fetchUserData = async () => {
-            const db = getFirestore();
-            const userRef = doc(collection(db, 'users'), currentUser.uid);
-            const userSnapshot = await getDoc(userRef);
+  useEffect(() => {
+    const obtenerNombreTecnico = async () => {
+      const db = getFirestore();
 
-            if (userSnapshot.exists()) {
-                const userData = userSnapshot.data();
-                setTecnico(`${userData.apellido}, ${userData.nombre}`);
-            }
-        };
+      if (currentUser) {
+        const userDoc = doc(collection(db, 'users'), currentUser.uid);
+        const userSnapshot = await getDoc(userDoc);
 
-        fetchUserData();
-    }, [currentUser.uid]);
-
-    const setTecnico = (tecnico) => {
-        setNombreTecnico(tecnico);
-    };
-
-    const handleDateChange = (date) => {
-        setCurrentDate(date);
-        setIsSameDay(false);
-    };
-
-    const handleCheckboxChange = () => {
-        setIsSameDay(!isSameDay);
-    };
-
-    const handleTimeChange = (e, setTime) => {
-        const { value } = e.target;
-        const [hours, minutes] = value.split(":");
-        const date = new Date();
-        date.setHours(hours);
-        date.setMinutes(minutes);
-        setTime(date);
-    };
-
-    const calcularTotalHoras = () => {
-        if (horaIngreso && horaEgreso) {
-            const ingreso = new Date(horaIngreso);
-            const egreso = new Date(horaEgreso);
-            const diffMilliseconds = egreso - ingreso;
-            const diffHours = diffMilliseconds / (1000 * 60 * 60);
-            setTotalHoras(diffHours.toFixed(2));
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          const nombreTecnico = `${userData.name}`;
+          const apellidoTecnico = `${userData.surname}`;
+          const Tecnico = `${apellidoTecnico}, ${nombreTecnico}`;
+          setTecnico(Tecnico);
         }
+      }
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const obtenerUltimoNroConforme = async () => {
+      const db = getFirestore();
+      const horasDoc = doc(collection(db, 'horas'), '000000');
+      const horasSnapshot = await getDoc(horasDoc);
 
-        calcularTotalHoras();
-
-        const db = getFirestore();
-        const horasRef = collection(db, 'horas');
-
-        const querySnapshot = await getDocs(horasRef);
-        const lastConforme = querySnapshot.docs[querySnapshot.docs.length - 1];
-        let nextId = "000000";
-
-        if (lastConforme) {
-            const lastId = lastConforme.id;
-            const numericId = parseInt(lastId, 10);
-            nextId = (numericId + 1).toString().padStart(6, '0');
-        }
-
-        await setDoc(doc(horasRef, nextId), {
-            fechaCarga: new Date(),
-            fechaTrabajo: isSameDay ? currentDate : null,
-            tecnico: nombreTecnico,
-            nroConforme: nextId, // Usar el próximo número de conformidad
-            horaIngreso,
-            horaEgreso,
-            totalHoras,
-            detalleTareas,
-        });
-
-        setCurrentDate(new Date());
-        setIsSameDay(true);
-        setConformeNumero("");
-        setHoraIngreso("");
-        setHoraEgreso("");
-        setDetalleTareas("");
-        setTotalHoras("");
+      if (horasSnapshot.exists()) {
+        const ultimoNroConforme = horasSnapshot.data().ultimoNroConforme;
+        setNroConforme(ultimoNroConforme + 1);
+      }
     };
 
-    return (
-        <div>
-            <h1>Técnico</h1>
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Fecha de trabajo:
-                    <DatePicker
-                        selected={currentDate}
-                        onChange={handleDateChange}
-                        disabled={isSameDay}
-                    />
-                </label>
-                <label>
-                    El conforme es de hoy
-                    <input
-                        type="checkbox"
-                        checked={isSameDay}
-                        onChange={handleCheckboxChange}
-                    />
-                </label>
-                <label>
-                    Nro. de Conforme de Servicio
-                    <input
-                        type="text"
-                        value={conformeNumero}
-                        onChange={(e) => setConformeNumero(e.target.value)}
-                    />
-                </label>
-                <label>
-                    Hora de Ingreso
-                    <input
-                        type="time"
-                        value={horaIngreso}
-                        onChange={(e) => handleTimeChange(e, setHoraIngreso)}
-                    />
-                </label>
-                <label>
-                    Hora de Egreso
-                    <input
-                        type="time"
-                        value={horaEgreso}
-                        onChange={(e) => handleTimeChange(e, setHoraEgreso)}
-                    />
-                </label>
-                <label>
-                    Total de Horas
-                    <input
-                        type="text"
-                        value={totalHoras}
-                        readOnly
-                    />
-                </label>
-                <label>
-                    Detalle de Tareas Realizadas
-                    <textarea
-                        value={detalleTareas}
-                        onChange={(e) => setDetalleTareas(e.target.value)}
-                    />
-                </label>
-                <button type="submit">Enviar</button>
-            </form>
-        </div>
-    );
+    obtenerNombreTecnico();
+    obtenerUltimoNroConforme();
+  }, [currentUser]);
+
+  const handleHoraComienzoChange = (event) => {
+    setHoraComienzo(event.target.value);
+    calcularCantidadHoras(event.target.value, horaFinalizacion);
+  };
+
+  const handleHoraFinalizacionChange = (event) => {
+    setHoraFinalizacion(event.target.value);
+    calcularCantidadHoras(horaComienzo, event.target.value);
+  };
+
+  const calcularCantidadHoras = (horaInicio, horaFin) => {
+    const horaInicioArray = horaInicio.split(':');
+    const horaFinArray = horaFin.split(':');
+
+    const inicio = new Date(0, 0, 0, horaInicioArray[0], horaInicioArray[1]);
+    const fin = new Date(0, 0, 0, horaFinArray[0], horaFinArray[1]);
+
+    const diferencia = fin.getTime() - inicio.getTime();
+    const horas = Math.floor(diferencia / (1000 * 60 * 60));
+
+    setCantidadHoras(horas);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const db = getFirestore();
+
+    await addDoc(collection(db, 'horas'), {
+      nroConforme,
+      tecnico,
+      horaComienzo,
+      horaFinalizacion,
+      cantidadHoras,
+      tipoTarea,
+      detalleTareas,
+    });
+
+    setNroConforme(null);
+    setHoraComienzo('');
+    setHoraFinalizacion('');
+    setTipoTarea('');
+    setDetalleTareas('');
+    setCantidadHoras('');
+  };
+
+  return (
+    <div className='tecnico-container'>
+      <h2>Bienvenido, {tecnico.split(', ')[1]}</h2>
+      <div className="campos">
+        <label>{nroConforme}</label>
+        <label>{tecnico}</label>
+        <input type="time" value={horaComienzo} onChange={handleHoraComienzoChange} required />
+        <input type="time" value={horaFinalizacion} onChange={handleHoraFinalizacionChange} required />
+        <label>{cantidadHoras}</label>
+        <select value={tipoTarea} onChange={(e) => setTipoTarea(e.target.value)} required>
+          <option value="">Selecciona...</option>
+          <option value="correctivo">Correctivo</option>
+          <option value="preventivo">Preventivo</option>
+          <option value="ambas">Ambas</option>
+        </select>
+        <textarea value={detalleTareas} onChange={(e) => setDetalleTareas(e.target.value)} required />
+      </div>
+      <form onSubmit={handleSubmit}>
+        <button type="submit">Guardar Horas</button>
+      </form>
+    </div >
+  );
 }
 
 export default Tecnico;

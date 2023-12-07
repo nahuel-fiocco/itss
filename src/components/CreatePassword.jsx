@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Importa los estilos de react-toastify
-import './CreatePassword.css';
+import '../estilos/CreatePassword.css';
 
 function CreatePassword() {
   const navigate = useNavigate();

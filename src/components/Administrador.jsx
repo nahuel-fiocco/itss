@@ -1,4 +1,5 @@
 import React from "react";
+import '../estilos/Administrador.css';
 
 function Administrador() {
     return (

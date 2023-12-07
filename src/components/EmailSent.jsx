@@ -1,7 +1,7 @@
 // EmailSent.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './EmailSent.css';
+import '../estilos/EmailSent.css';
 
 function EmailSent() {
   const navigate = useNavigate();

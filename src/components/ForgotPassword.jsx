@@ -1,5 +1,5 @@
 import React from 'react';
-import './ForgotPassword.css';
+import '../estilos/ForgotPassword.css';
 
 function ForgotPassword() {
   return (

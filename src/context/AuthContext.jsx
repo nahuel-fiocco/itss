@@ -1,7 +1,6 @@
 // AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { Navigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 

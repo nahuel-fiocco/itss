@@ -1,0 +1,21 @@
+/* NotFound.css */
+
+.container {
+  text-align: center;
+}
+
+h1 {
+  font-size: 4rem;
+  color: #333;
+}
+
+p {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 20px;
+}
