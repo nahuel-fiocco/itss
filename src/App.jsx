@@ -46,7 +46,7 @@ function App() {
   return (
     <DarkModeProvider>
       <Router>
-        <div className="App">
+        <div>
           <Navbar />
           <Routes>
             <Route path="/" element={<Navigate to={getRedirectPath()} />} />
