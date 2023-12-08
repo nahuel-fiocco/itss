@@ -39,7 +39,11 @@ function Tecnico() {
 
       if (horasSnapshot.exists()) {
         const ultimoNroConforme = horasSnapshot.data().ultimoNroConforme || 0;
-        setNroConforme(ultimoNroConforme + 1);
+
+        // Formatear el número con ceros a la izquierda
+        const nuevoNroConforme = String(ultimoNroConforme + 1).padStart(6, '0');
+
+        setNroConforme(nuevoNroConforme);
       }
     };
 
@@ -67,8 +71,13 @@ function Tecnico() {
     const diferencia = fin.getTime() - inicio.getTime();
     const horas = Math.floor(diferencia / (1000 * 60 * 60));
 
-    setCantidadHoras(horas);
+    const formato24Horas = (date) => {
+      return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+    };
+
+    setCantidadHoras(formato24Horas(inicio));
   };
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();

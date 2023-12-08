@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDarkMode } from '../context/DarkModeContext';
 import { useAuth } from '../context/AuthContext';
-import '../estilos/NavBar.css';
+import '../estilos/Main.css';
 
 function Navbar() {
     const { setAuthTimeout } = useAuth();
