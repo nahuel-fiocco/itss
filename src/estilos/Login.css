@@ -1,56 +1,95 @@
-.login-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+.login-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
 }
 
-.form-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.form-container{
+    width: min-content;
+}
+
+form{
+    width: max-content;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.error-message {
+    color: #ff4d4f;
+    margin-bottom: 10px;
 }
 
 .email-container,
 .password-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+    margin-bottom: 15px;
 }
 
-.password-container {
-  position: relative;
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 .password-input {
-  padding-right: 30px;
-  /* Ajusta el espacio para el botón del ojo */
+    width: calc(100% - 30px);
+    border-radius: 4px 0 0 4px;
+}
+
+.password-input-container {
+    position: relative;
+    width: 111%;
 }
 
 .toggle-password-button {
-  position: absolute;
-  top: 58%;
-  right: 1px;
-  /* ajusta el margen derecho según tus preferencias */
-  transform: translateY(-50%);
-  background-color: transparent;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  color: black;
-  /* Cambia el color del icono a negro */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 10px;
+    color: #666;
 }
 
-.toggle-password-button:hover {
-  background-color: transparent;
-  /* Evita cualquier cambio de color en el hover */
+.botones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 50px;
 }
 
-form{
-  display: flex;
-  gap: 5vh
+button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-button{
-  border-radius: 50%;
+button:disabled {
+    background-color: #b0c3d9;
+    cursor: not-allowed;
 }
+
+.botones>button:hover {
+    background-color: #0056b3;
+}
+

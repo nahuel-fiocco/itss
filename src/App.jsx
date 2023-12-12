@@ -5,8 +5,6 @@ import { DarkModeProvider } from './context/DarkModeContext.jsx';
 import Login from './components/Login';
 import ForgotPassword from './components/ForgotPassword';
 import NotFound from './components/NotFound.jsx';
-import EmailSent from './components/EmailSent.jsx';
-import CreatePassword from './components/CreatePassword.jsx';
 import Administrador from './components/Administrador.jsx';
 import Tecnico from './components/Tecnico.jsx';
 import Auditor from './components/Auditor.jsx';
@@ -55,8 +53,6 @@ function App() {
             <Route path='/tecnico' element={<Tecnico />} />
             <Route path='/auditor' element={<Auditor />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
-            <Route path='/emailsent' element={<EmailSent />} />
-            <Route path='/createpassword' element={<CreatePassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

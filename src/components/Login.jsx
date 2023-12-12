@@ -1,3 +1,5 @@
+// Login.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
@@ -32,7 +34,6 @@ function Login() {
 
     const checkUserRole = async (uid) => {
         try {
-
             const db = getFirestore();
             const userRef = doc(collection(db, 'users'), uid);
             const userSnapshot = await getDoc(userRef);
@@ -83,14 +84,16 @@ function Login() {
                 <form onSubmit={handleSubmit}>
                     <div className="email-container">
                         <label htmlFor="email">Email:</label>
-                        <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete='on' />
+                        <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="on" />
                     </div>
                     <div className="password-container">
                         <label htmlFor="password">Contraseña:</label>
-                        <input className='password-input' type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                        <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
-                            {showPassword ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} />}
-                        </button>
+                        <div className="password-input-container">
+                            <input className="password-input" type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                            <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} />}
+                            </button>
+                        </div>
                     </div>
                     <div className="botones">
                         <button type="submit" disabled={loading}>

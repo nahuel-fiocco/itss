@@ -3,7 +3,7 @@ import '../estilos/Auditor.css';
 
 function Auditor() {
     return (
-        <div>
+        <div className="auditor-container">
             <h1>Auditor</h1>
         </div>
     );

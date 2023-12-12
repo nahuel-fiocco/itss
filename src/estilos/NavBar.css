@@ -1,0 +1,16 @@
+/* NavBar.css */
+
+.navbar-container {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Alinea el contenido al centro horizontalmente */
+    background-color: #333;
+    padding: 10px;
+    color: white;
+}
+
+h3 {
+    margin: 0;
+}

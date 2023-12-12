@@ -1,41 +1,63 @@
+/* Tecnico.css */
+
 .tecnico-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10vh;
+    padding: 20px;
+}
+
+h2 {
+    margin-bottom: 20px;
 }
 
 .camposycontenido {
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap;
+    /* Permite que los elementos se muevan a la siguiente línea en dispositivos más pequeños */
     justify-content: space-between;
-    margin-bottom: 1rem;
+    width: 25%;
 }
 
-.campos {
+.campos,
+.contenido {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    margin-bottom: 20px;
+    /* Agregado para espacio entre campos y contenido */
 }
 
-.contenido{
-    display: flex;
-    flex-direction: column;
-    gap: 1.4rem;
+.label {
+    margin-bottom: 10px;
 }
 
-.campos label,
-.contenido label {
-    margin-bottom: 0.5rem;
-}
-
-.campos select,
-.contenido input,
-.contenido textarea {
+/* Alinear campos y etiquetas horizontalmente */
+input[type="time"],
+select,
+textarea {
+    margin-bottom: 10px;
+    padding: 5px;
     width: 100%;
-    padding: 0.5rem;
+    /* Ancho del 100% para llenar el contenedor padre */
 }
 
 textarea{
     resize: none;
+}
+
+button {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+#form-tecnico{
+    display: flex;
+    gap: 1vh;
 }
