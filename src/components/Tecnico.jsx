@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, doc, getDoc, setDoc, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
 import '../estilos/Tecnico.css';
@@ -20,6 +21,11 @@ function Tecnico() {
   const { currentUser } = useAuth();
   const [fechaConforme, setFechaConforme] = useState('');
   const [confirmacionVisible, setConfirmacionVisible] = useState(false);
+
+  if (!currentUser) {
+    Navigate('/login');
+    return null;
+  }
 
   const handleFechaConformeChange = (event) => {
     setFechaConforme(event.target.value);
