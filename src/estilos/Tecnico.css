@@ -1,22 +1,31 @@
-/* Tecnico.css */
-
 .tecnico-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    justify-content: center;
 }
 
 h2 {
     margin-bottom: 20px;
 }
 
+.botones {
+    display: flex;
+    gap: 1rem;
+}
+
+.botones-vistas {
+    width: 40px;
+    height: 40px;
+}
+
 .camposycontenido {
     display: flex;
     flex-wrap: wrap;
-    /* Permite que los elementos se muevan a la siguiente línea en dispositivos más pequeños */
     justify-content: space-between;
-    width: 25%;
+    width: 40%;
+    padding-top: 5vh;
+
 }
 
 .campos,
@@ -24,25 +33,29 @@ h2 {
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
-    /* Agregado para espacio entre campos y contenido */
+    width: 48%;
 }
 
 .label {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+    width: 100%;
 }
 
-/* Alinear campos y etiquetas horizontalmente */
 input[type="time"],
 select,
 textarea {
     margin-bottom: 10px;
     padding: 5px;
     width: 100%;
-    /* Ancho del 100% para llenar el contenedor padre */
 }
 
-textarea{
+textarea {
     resize: none;
+}
+
+.empty-space {
+    height: 0vh;
+    transform: translateY(3.5vh);
 }
 
 button {
@@ -57,7 +70,45 @@ button:hover {
     background-color: #555;
 }
 
-#form-tecnico{
+#form-tecnico {
     display: flex;
-    gap: 1vh;
+    gap: 1rem;
+    margin-top: 20px;
+}
+
+.historial-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background-color: #333;
+    color: white;
+}
+
+.mensaje-confirmacion {
+    background-color: #4caf50;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.campos{
+    gap: 1rem;
+}
+
+.contenido{
+    gap: 0.25rem;
 }

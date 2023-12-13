@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { redirect } from 'react-router-dom';
+import '../estilos/AuthContext.css';
 
 const AuthContext = createContext();
 
@@ -71,7 +72,7 @@ export function AuthProvider({ children }) {
             {!loading ? (
                 children
             ) : (
-                <div>Loading...</div>
+                <div className='loading'>Loading...</div>
             )}
         </AuthContext.Provider>
     );
