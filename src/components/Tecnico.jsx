@@ -186,45 +186,88 @@ function Tecnico() {
   const renderHistorial = () => (
     <div className="historial-container">
       <h3>Historial de Horas</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Nro. Conforme</th>
-            <th>Técnico</th>
-            <th>Hora Comienzo</th>
-            <th>Hora Finalización</th>
-            <th>Cantidad de Horas</th>
-            <th>Tipo de Tarea</th>
-            <th>Detalle de Tareas</th>
-            <th>Fecha de Creación</th>
-            <th>Hora de Creación</th>
-          </tr>
-        </thead>
-        <tbody>
-          {historialHoras.map((hora) => (
-            <tr key={hora.nroConforme}>
-              <td>{hora.nroConforme}</td>
-              <td>{hora.tecnico}</td>
-              <td>{hora.horaComienzo}</td>
-              <td>{hora.horaFinalizacion}</td>
-              <td>{hora.cantidadHoras}</td>
-              <td>{hora.tipoTarea}</td>
-              <td>{hora.detalleTareas}</td>
-              <td>{hora.fechaCreacion}</td>
-              <td>{hora.horaCreacion}</td>
+      <div className="historial-desktop">
+        <table>
+          <thead>
+            <tr>
+              <th>Nro. Conforme</th>
+              <th>Técnico</th>
+              <th>Hora Comienzo</th>
+              <th>Hora Finalización</th>
+              <th>Cantidad de Horas</th>
+              <th>Tipo de Tarea</th>
+              <th>Detalle de Tareas</th>
+              <th>Fecha de Creación</th>
+              <th>Hora de Creación</th>
             </tr>
+          </thead>
+          <tbody>
+            {historialHoras.map((hora) => (
+              <tr key={hora.nroConforme}>
+                <td>{hora.nroConforme}</td>
+                <td>{hora.tecnico}</td>
+                <td>{hora.horaComienzo}</td>
+                <td>{hora.horaFinalizacion}</td>
+                <td>{hora.cantidadHoras}</td>
+                <td>{hora.tipoTarea}</td>
+                <td>{hora.detalleTareas}</td>
+                <td>{hora.fechaCreacion}</td>
+                <td>{hora.horaCreacion}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="historial-mobile">
+        <div className="accordion" id="historialAcordeon">
+          {historialHoras.map((hora) => (
+            <div className="accordion-item" key={hora.nroConforme}>
+              <h2 className="accordion-header" id={`heading${hora.nroConforme}`}>
+                <button
+                  className="accordion-button"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target={`#collapse${hora.nroConforme}`}
+                  aria-expanded="false"
+                  aria-controls={`collapse${hora.nroConforme}`}
+                >
+                  {hora.nroConforme}
+                </button>
+              </h2>
+              <div
+                id={`collapse${hora.nroConforme}`}
+                className="accordion-collapse collapse"
+                aria-labelledby={`heading${hora.nroConforme}`}
+                data-bs-parent="#historialAcordeon"
+              >
+                <div className="accordion-body">
+                  <p><strong>Técnico:</strong> {hora.tecnico}</p>
+                  <p><strong>Hora Comienzo:</strong> {hora.horaComienzo}</p>
+                  <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion}</p>
+                  <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras}</p>
+                  <p><strong>Tipo de Tarea:</strong> {hora.tipoTarea}</p>
+                  <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
+                  <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
+                  <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
+                </div>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
   );
+
+  const toggleAcordeon = (nroConforme) => {
+    setExpanded((prevExpanded) => (prevExpanded === nroConforme ? null : nroConforme));
+  };
 
   return (
     <div className='tecnico-container'>
       <h2>Bienvenido, {tecnico.split(', ')[1]}</h2>
       <div className="botones">
-        <button className='botones-vistas' onClick={() => cambiarVista('form')}>➕</button>
-        <button className='botones-vistas' onClick={() => cambiarVista('history')}>📝</button>
+        <button className='botones-vistas' onClick={() => cambiarVista('form')}>➕ Agregar horas</button>
+        <button className='botones-vistas' onClick={() => cambiarVista('history')}>📝 Ver historial</button>
       </div>
       {loading ? (
         <Spinner />
@@ -243,11 +286,7 @@ function Tecnico() {
             </button>
           </form>
         </>
-      ) : view === 'history' ? (
-        renderHistorial()
-      ) : (
-        <p>Seleccione una opción</p>
-      )}
+      ) : view === 'history' ? (renderHistorial()) : (<p style={{ color: 'white' }}>Seleccione una opción</p>)}
     </div>
   );
 }

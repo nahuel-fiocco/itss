@@ -1,4 +1,4 @@
-.login-container{
+.login-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -6,18 +6,17 @@
     height: 90vh;
 }
 
-.form-container{
+.form-container {
     width: min-content;
 }
 
-form{
+form {
     width: max-content;
 }
 
 h1 {
     font-size: 24px;
     margin-bottom: 20px;
-    color: white;
 }
 
 .error-message {
@@ -43,12 +42,6 @@ input {
     font-size: 16px;
     border: 1px solid white;
     border-radius: 4px;
-    color: white;
-    background-color: #333;
-}
-
-input:-webkit-autofill {
-    background-color: red;
 }
 
 .password-input {
@@ -80,8 +73,6 @@ input:-webkit-autofill {
 }
 
 button {
-    background-color: #007bff;
-    color: #fff;
     padding: 10px;
     font-size: 16px;
     border: none;

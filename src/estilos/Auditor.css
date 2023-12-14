@@ -19,14 +19,8 @@ table {
 
 th,
 td {
-    border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
-}
-
-th {
-    background-color: #333;
-    color: white;
 }
 
 .botones-firmar {
@@ -37,20 +31,13 @@ th {
 }
 
 button {
-    background-color: #333;
-    color: white;
     padding: 10px;
     cursor: pointer;
     border: none;
 }
 
-.boton-firmar:hover {
-    background-color: #555;
-}
-
 p {
     margin-top: 10px;
-    color: green;
 }
 
 td.conformidad,

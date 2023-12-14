@@ -5,6 +5,7 @@ import { getFirestore, collection, doc, getDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import '../estilos/Login.css';
+import {useDarkMode} from '../context/DarkModeContext';
 
 function Login() {
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ function Login() {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const {toggleDarkMode} = useDarkMode();
 
     const handleAuthentication = (role) => {
         switch (role) {
