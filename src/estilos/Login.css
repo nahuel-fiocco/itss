@@ -17,7 +17,7 @@ form{
 h1 {
     font-size: 24px;
     margin-bottom: 20px;
-    color: #333;
+    color: white;
 }
 
 .error-message {
@@ -34,20 +34,26 @@ h1 {
 label {
     display: block;
     margin-bottom: 5px;
-    color: #333;
+    color: white;
 }
 
 input {
     width: 100%;
     padding: 10px;
     font-size: 16px;
-    border: 1px solid #ccc;
+    border: 1px solid white;
     border-radius: 4px;
+    color: white;
+    background-color: #333;
+}
+
+input:-webkit-autofill {
+    background-color: red;
 }
 
 .password-input {
     width: calc(100% - 30px);
-    border-radius: 4px 0 0 4px;
+    border-radius: 4px;
 }
 
 .password-input-container {
@@ -64,7 +70,6 @@ input {
     top: 50%;
     transform: translateY(-50%);
     right: 10px;
-    color: #666;
 }
 
 .botones {
@@ -84,13 +89,3 @@ button {
     cursor: pointer;
     transition: background-color 0.3s;
 }
-
-button:disabled {
-    background-color: #b0c3d9;
-    cursor: not-allowed;
-}
-
-.botones>button:hover {
-    background-color: #0056b3;
-}
-

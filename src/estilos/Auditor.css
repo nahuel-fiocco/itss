@@ -1,6 +1,64 @@
-.auditor-container{
+/* Auditor.css */
+
+.auditor-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.historial-container {
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #333;
+    color: white;
+}
+
+.botones-firmar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+    gap: 2vh;
+}
+
+button {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+}
+
+.boton-firmar:hover {
+    background-color: #555;
+}
+
+p {
+    margin-top: 10px;
+    color: green;
+}
+
+td.conformidad,
+td.disconformidad {
+    text-align: center;
+}
+
+td.conformidad input,
+td.disconformidad input {
+    margin: 0; /* Ajusta el margen para centrar la casilla de verificación */
 }

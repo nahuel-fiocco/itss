@@ -232,7 +232,7 @@ function Tecnico() {
         <>
           {confirmacionVisible && (
             <div className="mensaje-confirmacion">
-              {`Conforme nro ${nroConforme} cargado`}
+              {`Conforme nro ${nroConforme - 1} cargado`}
             </div>
           )}
           {renderFormulario()}

@@ -89,7 +89,7 @@ function Login() {
                         <div className="password-input-container">
                             <input className="password-input" type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                             <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} />}
+                                {showPassword ? <FontAwesomeIcon className='ojito' icon={faEye} /> : <FontAwesomeIcon className='ojito' icon={faEyeSlash} />}
                             </button>
                         </div>
                     </div>

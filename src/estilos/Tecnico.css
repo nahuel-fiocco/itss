@@ -66,8 +66,8 @@ button {
     border: none;
 }
 
-button:hover {
-    background-color: #555;
+select, textarea{
+    background-color: #333;
 }
 
 #form-tecnico {
