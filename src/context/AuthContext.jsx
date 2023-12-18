@@ -1,12 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { redirect } from 'react-router-dom';
-import '../estilos/AuthContext.css';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-    const [currentUser, setCurrentUser] = useState(null);
+    const [currentUser, setCurrentUser] = useState(undefined);
     const [userTimeOut, setUserTimeOut] = useState(15);
 
     useEffect(() => {
@@ -67,7 +66,7 @@ export function AuthProvider({ children }) {
 
     return (
         <AuthContext.Provider value={value}>
-            {children}
+            {currentUser !== undefined && children}
         </AuthContext.Provider>
     );
 }

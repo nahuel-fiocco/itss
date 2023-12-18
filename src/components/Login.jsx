@@ -52,7 +52,6 @@ function Login() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
         try {
             setLoading(true);
             const auth = getAuth();
