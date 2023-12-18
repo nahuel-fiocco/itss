@@ -21,6 +21,8 @@ function Tecnico() {
   const { currentUser } = useAuth();
   const [fechaConforme, setFechaConforme] = useState('');
   const [confirmacionVisible, setConfirmacionVisible] = useState(false);
+  const [errorMensaje, setErrorMensaje] = useState('');
+  const [contentLoaded, setContentLoaded] = useState(false);
 
   if (!currentUser) {
     Navigate('/login');
@@ -32,6 +34,8 @@ function Tecnico() {
   };
 
   useEffect(() => {
+    // ... (otras importaciones y configuraciones)
+
     const obtenerDatosIniciales = async () => {
       try {
         const db = getFirestore();
@@ -62,11 +66,15 @@ function Tecnico() {
         setHistorialHoras(historialData);
 
         setLoading(false);
+        setContentLoaded(true);  // Indica que los datos han sido cargados
       } catch (error) {
         console.error('Error obteniendo datos iniciales:', error);
         setLoading(false);
       }
     };
+
+    // ... (resto del código)
+
 
     obtenerDatosIniciales();
   }, [currentUser]);
@@ -102,6 +110,20 @@ function Tecnico() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Verificar que los campos obligatorios estén llenos
+    if (!horaComienzo || !horaFinalizacion || !tipoTarea || !detalleTareas || !fechaConforme) {
+      // Mostrar mensaje de error al usuario
+      setErrorMensaje('Por favor, completa todos los campos obligatorios.');
+
+      // Ocultar el mensaje después de 2 segundos
+      setTimeout(() => {
+        setErrorMensaje('');
+      }, 2000);
+
+      return;
+    }
+
     const db = getFirestore();
     const fechaCreacion = new Date().toLocaleDateString();
     const horaCreacion = new Date().toLocaleTimeString();
@@ -119,13 +141,16 @@ function Tecnico() {
       horaCreacion,
       fechaConforme,
     });
+
     setConfirmacionVisible(true);
     limpiarFormulario();
     setNroConforme((prevNroConforme) => String(parseInt(prevNroConforme, 10) + 1).padStart(6, '0'));
+
     setTimeout(() => {
       setConfirmacionVisible(false);
     }, 5000);
   };
+
 
   const limpiarFormulario = () => {
     setHoraComienzo('');
@@ -221,10 +246,10 @@ function Tecnico() {
       <div className="historial-mobile">
         <div className="accordion" id="historialAcordeon">
           {historialHoras.map((hora) => (
-            <div className="accordion-item" key={hora.nroConforme}>
+            <div className="accordion-item bg-dark text-light" key={hora.nroConforme}>
               <h2 className="accordion-header" id={`heading${hora.nroConforme}`}>
                 <button
-                  className="accordion-button"
+                  className="accordion-button bg-dark text-light"
                   type="button"
                   data-bs-toggle="collapse"
                   data-bs-target={`#collapse${hora.nroConforme}`}
@@ -263,32 +288,44 @@ function Tecnico() {
   };
 
   return (
-    <div className='tecnico-container'>
-      <h2>Bienvenido, {tecnico.split(', ')[1]}</h2>
-      <div className="botones">
-        <button className='botones-vistas' onClick={() => cambiarVista('form')}>➕ Agregar horas</button>
-        <button className='botones-vistas' onClick={() => cambiarVista('history')}>📝 Ver historial</button>
-      </div>
+    <div>
       {loading ? (
-        <Spinner />
-      ) : view === 'form' ? (
-        <>
+        <div className="spinner-container bg-dark text-light">
+          <Spinner />
+          <p>Cargando...</p>
+        </div>
+      ) : (
+        <div className='tecnico-container bg-dark text-light'>
+          <h2>Bienvenido, {tecnico.split(', ')[1]}</h2>
+          <div className="botones">
+            <button className='botones-vistas' onClick={() => cambiarVista('form')}>➕ Agregar horas</button>
+            <button className='botones-vistas' onClick={() => cambiarVista('history')}>📝 Ver historial</button>
+          </div>
           {confirmacionVisible && (
             <div className="mensaje-confirmacion">
               {`Conforme nro ${nroConforme - 1} cargado`}
             </div>
           )}
-          {renderFormulario()}
-          <form id="form-tecnico" onSubmit={handleSubmit}>
-            <button type="submit">Guardar</button>
-            <button type="button" onClick={limpiarFormulario}>
-              Limpiar
-            </button>
-          </form>
-        </>
-      ) : view === 'history' ? (renderHistorial()) : (<p style={{ color: 'white' }}>Seleccione una opción</p>)}
+          {view === 'form' && (
+            <>
+              {renderFormulario()}
+              {errorMensaje && (
+                <div className="mensaje-error bg-danger text-light rounded p-1 mb-5">
+                  {errorMensaje}
+                </div>
+              )}
+              <form id="form-tecnico" className='mb-5' onSubmit={handleSubmit}>
+                <button type="submit">Guardar</button>
+                <button type="button" onClick={limpiarFormulario}>Limpiar</button>
+              </form>
+            </>
+          )}
+          {view === 'history' && renderHistorial()}
+        </div>
+      )}
     </div>
   );
+
 }
 
 const Spinner = () => {

@@ -1,10 +1,10 @@
-/* Estilos generales */
-
 .tecnico-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-height: 100vh; /* Cambia aquí */
+    flex-grow: 1; /* Agrega esta línea */
 }
 
 h2 {
@@ -45,6 +45,14 @@ textarea {
     padding: 0.5em;
     width: 100%;
     /* Puedes ajustar el valor según tus necesidades */
+    background-color: transparent;
+    color: white;
+    border-radius: 10px;
+}
+
+option{
+    background-color: #1a1a1a;
+    color: white;
 }
 
 textarea {
@@ -62,21 +70,6 @@ button {
     border: none;
 }
 
-/* select,
-textarea {
-    border: 1px solid #ddd;
-} */
-
-#form-tecnico {
-    display: flex;
-    gap: 1em;
-    margin-top: 2em;
-}
-
-/* .historial-container {
-    overflow-x: auto;
-} */
-
 table {
     width: 100%;
     border-collapse: collapse;
@@ -87,11 +80,6 @@ td {
     padding: 1em;
     text-align: left;
 }
-
-/* th {
-    background-color: #333;
-    color: white;
-} */
 
 .mensaje-confirmacion {
     background-color: #4caf50;
@@ -134,6 +122,8 @@ td {
     }
 }
 
+/*Version mobile*/
+
 @media only screen and (max-width: 768px) {
     .historial-desktop {
         display: none;
@@ -152,4 +142,23 @@ td {
         border-radius: 10px;
         padding: 1vh;
     }
+}
+
+#form-tecnico{
+    display: flex;
+    gap: 5vh;
+}
+
+.historial-mobile{
+    min-height: 100vh; /* Cambia aquí */
+    flex-grow: 1; /* Agrega esta línea */
+    margin-top: 5vh;
+}
+
+.spinner-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }

@@ -17,7 +17,7 @@ function Navbar() {
     };
 
     return (
-        <div className="navbar-container">
+        <div className="navbar-container text-light">
             <h3>IT Smart Solutions</h3>
             {currentUser && (
                 <button className="logout-button" onClick={handleLogout}>
