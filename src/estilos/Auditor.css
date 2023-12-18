@@ -3,7 +3,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh;
 }
 
 .historial-container {
@@ -24,8 +24,8 @@ td {
 
 .botones-firmar {
     display: flex;
-    justify-content: flex-end;
-    margin-top: 10px;
+    justify-content: center;
+    margin-top: 5vh;
     gap: 2vh;
 }
 
@@ -46,5 +46,25 @@ td.disconformidad {
 
 td.conformidad input,
 td.disconformidad input {
-    margin: 0; /* Ajusta el margen para centrar la casilla de verificación */
+    margin: 0;
+}
+
+.conformidad,
+.disconformidad {
+    display: flex;
+    justify-content: center;
+}
+
+/* Estilos para la versión móvil */
+.historial-mobile {
+    width: 100%;
+    min-height: min-content;
+}
+
+.accordion-button {
+    text-align: left;
+}
+
+.accordion-body {
+    padding: 10px;
 }

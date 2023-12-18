@@ -7,14 +7,12 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [userTimeOut, setUserTimeOut] = useState(15);
 
     useEffect(() => {
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
-            setLoading(false);
         });
 
         let timeoutId;
@@ -69,11 +67,7 @@ export function AuthProvider({ children }) {
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading ? (
-                children
-            ) : (
-                <div className='loading'>Loading...</div>
-            )}
+            {children}
         </AuthContext.Provider>
     );
 }

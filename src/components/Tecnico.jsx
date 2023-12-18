@@ -24,10 +24,9 @@ function Tecnico() {
   const [errorMensaje, setErrorMensaje] = useState('');
   const [contentLoaded, setContentLoaded] = useState(false);
 
-  if (!currentUser) {
-    Navigate('/login');
-    return null;
-  }
+  const handleFechaConformeChange = (event) => {
+    setFechaConforme(event.target.value);
+  };
 
   const handleEliminarConforme = async (nroConforme) => {
     try {
@@ -40,12 +39,11 @@ function Tecnico() {
     }
   };
 
-  const handleFechaConformeChange = (event) => {
-    setFechaConforme(event.target.value);
-  };
-
   useEffect(() => {
-    // ... (otras importaciones y configuraciones)
+    if (!currentUser) {
+      return;
+
+    }
 
     const obtenerDatosIniciales = async () => {
       try {
@@ -83,10 +81,6 @@ function Tecnico() {
         setLoading(false);
       }
     };
-
-    // ... (resto del código)
-
-
     obtenerDatosIniciales();
   }, [currentUser]);
 
@@ -348,9 +342,9 @@ function Tecnico() {
 
 const Spinner = () => {
   const override = css`
-    display: block;
-    margin: 0 auto;
-  `;
+      display: block;
+      margin: 0 auto;
+    `;
 
   return <BarLoader color="#36D7B7" loading css={override} />;
 };
