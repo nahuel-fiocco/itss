@@ -80,7 +80,7 @@ function Login() {
         <div className="login-container bg-dark text-light">
             <h1>Login</h1>
             {error && <p className="error-message">{error}</p>}
-            <div className="form-container">
+            <div className="form-container bg-dark">
                 <form onSubmit={handleSubmit}>
                     <div className="email-container">
                         <label htmlFor="email">Email:</label>

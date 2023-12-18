@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, collection, doc, getDoc, setDoc, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDoc, setDoc, getDocs, query, orderBy, limit, deleteDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
@@ -28,6 +28,17 @@ function Tecnico() {
     Navigate('/login');
     return null;
   }
+
+  const handleEliminarConforme = async (nroConforme) => {
+    try {
+      const db = getFirestore();
+      const conformesDocRef = doc(collection(db, 'horas'), nroConforme);
+      await deleteDoc(conformesDocRef);
+      setHistorialHoras((prevHistorialHoras) => prevHistorialHoras.filter((hora) => hora.nroConforme !== nroConforme));
+    } catch (error) {
+      console.error('Error eliminando conformes:', error);
+    }
+  };
 
   const handleFechaConformeChange = (event) => {
     setFechaConforme(event.target.value);
@@ -224,6 +235,7 @@ function Tecnico() {
               <th>Detalle de Tareas</th>
               <th>Fecha de Creación</th>
               <th>Hora de Creación</th>
+              <th>Eliminar</th>
             </tr>
           </thead>
           <tbody>
@@ -238,6 +250,11 @@ function Tecnico() {
                 <td>{hora.detalleTareas}</td>
                 <td>{hora.fechaCreacion}</td>
                 <td>{hora.horaCreacion}</td>
+                <td>
+                  <button onClick={() => handleEliminarConforme(hora.nroConforme)}>
+                    <i className="fas fa-trash"></i>
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

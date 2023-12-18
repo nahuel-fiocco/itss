@@ -63,7 +63,7 @@ input {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    right: 5vh;
+    right: 30px;
 }
 
 .botones {
