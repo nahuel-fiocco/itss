@@ -23,6 +23,7 @@ function Tecnico() {
   const [confirmacionVisible, setConfirmacionVisible] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState('');
   const [contentLoaded, setContentLoaded] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
   const handleFechaConformeChange = (event) => {
     setFechaConforme(event.target.value);
@@ -75,7 +76,7 @@ function Tecnico() {
         setHistorialHoras(historialData);
 
         setLoading(false);
-        setContentLoaded(true);  // Indica que los datos han sido cargados
+        setContentLoaded(true);
       } catch (error) {
         console.error('Error obteniendo datos iniciales:', error);
         setLoading(false);
@@ -128,32 +129,39 @@ function Tecnico() {
 
       return;
     }
-
+    setGuardando(true);
     const db = getFirestore();
     const fechaCreacion = new Date().toLocaleDateString();
     const horaCreacion = new Date().toLocaleTimeString();
     const horaDocRef = doc(db, 'horas', nroConforme);
 
-    await setDoc(horaDocRef, {
-      nroConforme,
-      tecnico,
-      horaComienzo,
-      horaFinalizacion,
-      cantidadHoras,
-      tipoTarea,
-      detalleTareas,
-      fechaCreacion,
-      horaCreacion,
-      fechaConforme,
-    });
+    try {
+      await setDoc(horaDocRef, {
+        nroConforme,
+        tecnico,
+        horaComienzo,
+        horaFinalizacion,
+        cantidadHoras,
+        tipoTarea,
+        detalleTareas,
+        fechaCreacion,
+        horaCreacion,
+        fechaConforme,
+      });
 
-    setConfirmacionVisible(true);
-    limpiarFormulario();
-    setNroConforme((prevNroConforme) => String(parseInt(prevNroConforme, 10) + 1).padStart(6, '0'));
 
-    setTimeout(() => {
-      setConfirmacionVisible(false);
-    }, 5000);
+      setConfirmacionVisible(true);
+      limpiarFormulario();
+      setNroConforme((prevNroConforme) => String(parseInt(prevNroConforme, 10) + 1).padStart(6, '0'));
+      setTimeout(() => {
+        setConfirmacionVisible(false);
+      }, 5000);
+    }
+    catch (error) {
+      console.error('Error guardando horas:', error);
+    } finally {
+      setGuardando(false);
+    }
   };
 
 
@@ -314,7 +322,7 @@ function Tecnico() {
             <button className='botones-vistas' onClick={() => cambiarVista('history')}>📝 Ver historial</button>
           </div>
           {confirmacionVisible && (
-            <div className="mensaje-confirmacion">
+            <div className="mensaje-confirmacion rounded p-1">
               {`Conforme nro ${nroConforme - 1} cargado`}
             </div>
           )}
@@ -326,8 +334,8 @@ function Tecnico() {
                   {errorMensaje}
                 </div>
               )}
-              <form id="form-tecnico" className='mb-5' onSubmit={handleSubmit}>
-                <button type="submit">Guardar</button>
+              <form id="form-tecnico" className='mb-5' onSubmit={handleSubmit} disabled={guardando}>
+                <button type="submit">{guardando ? 'Guardando...' : 'Guardar'}</button>
                 <button type="button" onClick={limpiarFormulario}>Limpiar</button>
               </form>
             </>
