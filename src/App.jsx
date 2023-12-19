@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, HashRouter } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 import { DarkModeProvider } from './context/DarkModeContext.jsx';
 import Login from './components/Login';
