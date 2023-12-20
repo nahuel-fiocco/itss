@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, doc, getDoc, setDoc, getDocs, query, orderBy, limit, deleteDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
 import '../estilos/Tecnico.css';
@@ -224,44 +223,46 @@ function Tecnico() {
   const renderHistorial = () => (
     <div className="historial-container">
       <h3>Historial de Horas</h3>
-      <div className="historial-desktop">
-        <table>
-          <thead>
-            <tr>
-              <th>Nro. Conforme</th>
-              <th>Técnico</th>
-              <th>Hora Comienzo</th>
-              <th>Hora Finalización</th>
-              <th>Cantidad de Horas</th>
-              <th>Tipo de Tarea</th>
-              <th>Detalle de Tareas</th>
-              <th>Fecha de Creación</th>
-              <th>Hora de Creación</th>
-              <th>Eliminar</th>
-            </tr>
-          </thead>
-          <tbody>
-            {historialHoras.map((hora) => (
-              <tr key={hora.nroConforme}>
-                <td>{hora.nroConforme}</td>
-                <td>{hora.tecnico}</td>
-                <td>{hora.horaComienzo}</td>
-                <td>{hora.horaFinalizacion}</td>
-                <td>{hora.cantidadHoras}</td>
-                <td>{hora.tipoTarea}</td>
-                <td>{hora.detalleTareas}</td>
-                <td>{hora.fechaCreacion}</td>
-                <td>{hora.horaCreacion}</td>
-                <td>
-                  <button onClick={() => handleEliminarConforme(hora.nroConforme)}>
-                    <i className="fas fa-trash"></i>
-                  </button>
-                </td>
+      {historialHoras.length === 0 ? (<p className="tabla-vacia">No hay conformes cargados.</p>) : (
+        <div className="historial-desktop">
+          <table>
+            <thead>
+              <tr>
+                <th>Nro. Conforme</th>
+                <th>Técnico</th>
+                <th>Hora Comienzo</th>
+                <th>Hora Finalización</th>
+                <th>Cantidad de Horas</th>
+                <th>Tipo de Tarea</th>
+                <th>Detalle de Tareas</th>
+                <th>Fecha de Creación</th>
+                <th>Hora de Creación</th>
+                <th>Eliminar</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {historialHoras.map((hora) => (
+                <tr key={hora.nroConforme}>
+                  <td>{hora.nroConforme}</td>
+                  <td>{hora.tecnico}</td>
+                  <td>{hora.horaComienzo}</td>
+                  <td>{hora.horaFinalizacion}</td>
+                  <td>{hora.cantidadHoras}</td>
+                  <td>{hora.tipoTarea}</td>
+                  <td>{hora.detalleTareas}</td>
+                  <td>{hora.fechaCreacion}</td>
+                  <td>{hora.horaCreacion}</td>
+                  <td>
+                    <button onClick={() => handleEliminarConforme(hora.nroConforme)}>
+                      <i className="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       <div className="historial-mobile">
         <div className="accordion" id="historialAcordeon">
           {historialHoras.map((hora) => (
@@ -321,17 +322,17 @@ function Tecnico() {
             <button className='botones-vistas' onClick={() => cambiarVista('form')}>➕ Agregar horas</button>
             <button className='botones-vistas' onClick={() => cambiarVista('history')}>📝 Ver historial</button>
           </div>
-          {confirmacionVisible && (
-            <div className="mensaje-confirmacion rounded p-1">
-              {`Conforme nro ${nroConforme - 1} cargado`}
-            </div>
-          )}
           {view === 'form' && (
             <>
               {renderFormulario()}
               {errorMensaje && (
                 <div className="mensaje-error bg-danger text-light rounded p-1 mb-5">
                   {errorMensaje}
+                </div>
+              )}
+              {confirmacionVisible && (
+                <div className="mensaje-confirmacion rounded p-1 m-3">
+                  {`Conforme nro ${nroConforme - 1} cargado`}
                 </div>
               )}
               <form id="form-tecnico" className='mb-5' onSubmit={handleSubmit} disabled={guardando}>

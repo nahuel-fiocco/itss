@@ -12,6 +12,8 @@ function Auditor() {
     const [seleccionFirma, setSeleccionFirma] = useState({});
     const [confirmacionVisible, setConfirmacionVisible] = useState(false);
     const [expanded, setExpanded] = useState(null);
+    const [motivoDisconformidad, setMotivoDisconformidad] = useState('');
+    const [errorMsg, setErrorMsg] = useState(null);
 
     const obtenerHorasTrabajo = async () => {
         try {
@@ -34,15 +36,24 @@ function Auditor() {
     const handleCheckboxChange = (horaId, tipoFirma) => {
         setSeleccionFirma((prevSelected) => {
             const newSelection = { ...prevSelected, [horaId]: tipoFirma };
-            // Desmarcar la opción opuesta si se selecciona una nueva
+
+            // Limpiar el mensaje de error si existe
+            setErrorMsg(null);
+
+            if (prevSelected[horaId] === tipoFirma) {
+                delete newSelection[horaId];
+            }
             Object.keys(newSelection).forEach((id) => {
                 if (id !== horaId && newSelection[id] === tipoFirma) {
-                    newSelection[id] = undefined;
+                    delete newSelection[id];
                 }
             });
+            const disconformidadSelected = Object.values(newSelection).some((tipo) => tipo === 'disconformidad');
+            setMotivoDisconformidad(disconformidadSelected ? '' : motivoDisconformidad);
             return newSelection;
         });
     };
+
 
     const handleFirma = async () => {
         try {
@@ -70,11 +81,14 @@ function Auditor() {
                     if (horaDoc.exists()) {
                         const horaData = horaDoc.data();
 
-                        // Obtener el nombre y apellido del auditor desde la colección "users"
-                        const userDocRef = doc(db, 'users', currentUser.uid);
-                        const userDoc = await getDoc(userDocRef);
+                        const userDocRef = currentUser ? doc(db, 'users', currentUser.uid) : null;
+                        let userDoc;
 
-                        if (userDoc.exists()) {
+                        if (userDocRef) {
+                            userDoc = await getDoc(userDocRef);
+                        }
+
+                        if (userDoc && userDoc.exists()) {
                             const userData = userDoc.data();
                             const nombreAuditor = userData.name;
                             const apellidoAuditor = userData.surname;
@@ -85,13 +99,14 @@ function Auditor() {
                                 batch.update(horaDocRef, {
                                     firmado: {
                                         tipo: tipoFirma,
-                                        auditor: `${nombreAuditor} ${apellidoAuditor}`
-                                    }
+                                        auditor: `${nombreAuditor} ${apellidoAuditor}`,
+                                        motivo: tipoFirma === 'disconformidad' ? motivoDisconformidad : null,
+                                    },
                                 });
                                 await actualizarTabla(tipoFirma, { [horaId]: true });
                             }
                         } else {
-                            console.error(`No se encontró el documento del usuario con ID ${currentUser.uid}.`);
+                            console.error(`No se encontró el documento del usuario.`);
                         }
                     } else {
                         console.error(`El documento con ID ${horaId} no existe.`);
@@ -110,6 +125,8 @@ function Auditor() {
             console.error('Error al firmar horas:', error);
         }
     };
+
+
 
     const Spinner = () => {
         const override = css`
@@ -153,26 +170,7 @@ function Auditor() {
                                 <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
                                 <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
                                 <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
-                                <div className="conformidad">
-                                    {hora.firmado && hora.firmado.tipo === 'conformidad' ? 'Conforme ✅' : (
-                                        <input
-                                            type="checkbox"
-                                            checked={seleccionFirma[hora.id] === 'conformidad'}
-                                            onChange={() => handleCheckboxChange(hora.id, 'conformidad')}
-                                            disabled={hora.firmado !== undefined}
-                                        />
-                                    )}
-                                </div>
-                                <div className="disconformidad">
-                                    {hora.firmado && hora.firmado.tipo === 'disconformidad' ? 'Disconforme ❌' : (
-                                        <input
-                                            type="checkbox"
-                                            checked={seleccionFirma[hora.id] === 'disconformidad'}
-                                            onChange={() => handleCheckboxChange(hora.id, 'disconformidad')}
-                                            disabled={hora.firmado !== undefined}
-                                        />
-                                    )}
-                                </div>
+                                <p><strong>Firmado:</strong> {hora.firmado && hora.firmado.tipo === 'conformidad' ? '✅ Conforme' : '❌ Disconforme'}</p>
                             </div>
                         </div>
                     </div>
@@ -193,66 +191,80 @@ function Auditor() {
             ) : (
                 <div className="historial-container">
                     <h3>Historial de Horas</h3>
-                    {window.innerWidth <= 768 ? renderHistorialMobile() : (
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nro. Conforme</th>
-                                    <th>Técnico</th>
-                                    <th>Hora Comienzo</th>
-                                    <th>Hora Finalización</th>
-                                    <th>Cantidad de Horas</th>
-                                    <th>Tipo de Tarea</th>
-                                    <th>Detalle de Tareas</th>
-                                    <th>Fecha de Creación</th>
-                                    <th>Hora de Creación</th>
-                                    <th>Conformidad</th>
-                                    <th>Disconformidad</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {horasTrabajo.map((hora) => (
-                                    <tr key={hora.id}>
-                                        <td>{hora.nroConforme}</td>
-                                        <td>{hora.tecnico}</td>
-                                        <td>{hora.horaComienzo}</td>
-                                        <td>{hora.horaFinalizacion}</td>
-                                        <td>{hora.cantidadHoras}</td>
-                                        <td>{hora.tipoTarea}</td>
-                                        <td>{hora.detalleTareas}</td>
-                                        <td>{hora.fechaCreacion}</td>
-                                        <td>{hora.horaCreacion}</td>
-                                        <td className="conformidad">
-                                            {hora.firmado && hora.firmado.tipo === 'conformidad' ? '✅' : (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={seleccionFirma[hora.id] === 'conformidad'}
-                                                    onChange={() => handleCheckboxChange(hora.id, 'conformidad')}
-                                                    disabled={hora.firmado !== undefined}
-                                                />
-                                            )}
-                                        </td>
-                                        <td className="disconformidad">
-                                            {hora.firmado && hora.firmado.tipo === 'disconformidad' ? '❌' : (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={seleccionFirma[hora.id] === 'disconformidad'}
-                                                    onChange={() => handleCheckboxChange(hora.id, 'disconformidad')}
-                                                    disabled={hora.firmado !== undefined}
-                                                />
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    {horasTrabajo.length === 0 ? (<p className='tabla-vacia'>No hay ningun conforme cargado.</p>) : (
+                        <>
+                            {window.innerWidth <= 768 ? renderHistorialMobile() : (
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nro. Conforme</th>
+                                            <th>Técnico</th>
+                                            <th>Hora Comienzo</th>
+                                            <th>Hora Finalización</th>
+                                            <th>Cantidad de Horas</th>
+                                            <th>Tipo de Tarea</th>
+                                            <th>Detalle de Tareas</th>
+                                            <th>Fecha de Creación</th>
+                                            <th>Hora de Creación</th>
+                                            <th>Conformidad</th>
+                                            <th>Disconformidad</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {horasTrabajo.map((hora) => (
+                                            <tr key={hora.id}>
+                                                <td>{hora.nroConforme}</td>
+                                                <td>{hora.tecnico}</td>
+                                                <td>{hora.horaComienzo}</td>
+                                                <td>{hora.horaFinalizacion}</td>
+                                                <td>{hora.cantidadHoras}</td>
+                                                <td>{hora.tipoTarea}</td>
+                                                <td>{hora.detalleTareas}</td>
+                                                <td>{hora.fechaCreacion}</td>
+                                                <td>{hora.horaCreacion}</td>
+                                                <td className="conformidad">
+                                                    {hora.firmado && hora.firmado.tipo === 'conformidad' ? '✅' : (
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={seleccionFirma[hora.id] === 'conformidad'}
+                                                            onChange={() => handleCheckboxChange(hora.id, 'conformidad')}
+                                                            disabled={hora.firmado !== undefined}
+                                                        />
+                                                    )}
+                                                </td>
+                                                <td className="disconformidad">
+                                                    {hora.firmado && hora.firmado.tipo === 'disconformidad' ? '❌' : (
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={seleccionFirma[hora.id] === 'disconformidad'}
+                                                            onChange={() => handleCheckboxChange(hora.id, 'disconformidad')}
+                                                            disabled={hora.firmado !== undefined}
+                                                        />
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                            {Object.values(seleccionFirma).some((tipo) => tipo === 'disconformidad') && (
+                                <div className="motivo-disconformidad">
+                                    <textarea
+                                        placeholder="Introduzca el motivo de su disconformidad..."
+                                        value={motivoDisconformidad}
+                                        onChange={(e) => setMotivoDisconformidad(e.target.value)} required
+                                    />
+                                </div>
+                            )}
+                            {confirmacionVisible && <p>Firmas registradas exitosamente.</p>}
+                            {errorMsg && <p className="bg-danger rounded p-1">{errorMsg}</p>}
+                            <div className="botones-firmar">
+                                <button className='boton-firmar' type="button" onClick={handleFirma} disabled={!Object.keys(seleccionFirma).length}>
+                                    Firmar
+                                </button>
+                            </div>
+                        </>
                     )}
-                    <div className="botones-firmar">
-                        <button className='boton-firmar' type="button" onClick={handleFirma} disabled={!Object.keys(seleccionFirma).length}>
-                            Firmar
-                        </button>
-                    </div>
-                    {confirmacionVisible && <p>Firmas registradas exitosamente.</p>}
                 </div>
             )}
         </div>
