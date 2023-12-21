@@ -14,7 +14,6 @@ function Login() {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const { toggleDarkMode } = useDarkMode();
 
     const handleAuthentication = (role) => {
         switch (role) {

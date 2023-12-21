@@ -35,7 +35,7 @@ function App() {
         case 'auditor':
           return '/auditor';
         default:
-          return '/';
+          return '/login';
       }
     }
     return '/login';
