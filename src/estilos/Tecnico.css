@@ -3,8 +3,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh; /* Cambia aquí */
-    flex-grow: 1; /* Agrega esta línea */
+    min-height: 100vh;
+    flex-grow: 1;
 }
 
 h2 {
@@ -30,7 +30,6 @@ h2 {
     flex-direction: column;
     margin-bottom: 2em;
     width: 30%;
-    /* Ajusta el valor según tus necesidades */
 }
 
 .label {
@@ -44,7 +43,6 @@ textarea {
     margin-bottom: 1.5em;
     padding: 0.5em;
     width: 100%;
-    /* Puedes ajustar el valor según tus necesidades */
     background-color: transparent;
     color: white;
     border-radius: 10px;
@@ -150,8 +148,8 @@ td {
 }
 
 .historial-mobile{
-    min-height: 100vh; /* Cambia aquí */
-    flex-grow: 1; /* Agrega esta línea */
+    min-height: 100vh;
+    flex-grow: 1;
     margin-top: 5vh;
 }
 

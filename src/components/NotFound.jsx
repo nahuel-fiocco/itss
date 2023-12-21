@@ -17,7 +17,7 @@ function NotFound() {
     <div className="notfound-container bg-dark text-light">
       <h1>404 Not Found</h1>
       <p>La página que buscas no existe.</p>
-      <Link to="/">Ir a la página de inicio</Link>
+      <Link className='backToHome' to="/">Ir a la página de inicio</Link>
     </div>
   );
 }

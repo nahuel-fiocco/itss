@@ -16,13 +16,14 @@ function Tecnico() {
   const [cantidadHoras, setCantidadHoras] = useState('');
   const [historialHoras, setHistorialHoras] = useState([]);
   const [expanded, setExpanded] = useState('collapseOne');
-  const [view, setView] = useState('welcome'); // 'welcome', 'form', 'history'
+  const [view, setView] = useState('welcome');
   const { currentUser } = useAuth();
   const [fechaConforme, setFechaConforme] = useState('');
   const [confirmacionVisible, setConfirmacionVisible] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState('');
   const [contentLoaded, setContentLoaded] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [formRendered, setFormRendered] = useState(false);
 
   const handleFechaConformeChange = (event) => {
     setFechaConforme(event.target.value);
@@ -82,7 +83,7 @@ function Tecnico() {
       }
     };
     obtenerDatosIniciales();
-  }, [currentUser]);
+  }, [currentUser, formRendered]);
 
   const handleHoraComienzoChange = (event) => {
     setHoraComienzo(event.target.value);
@@ -116,12 +117,8 @@ function Tecnico() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Verificar que los campos obligatorios estén llenos
     if (!horaComienzo || !horaFinalizacion || !tipoTarea || !detalleTareas || !fechaConforme) {
-      // Mostrar mensaje de error al usuario
       setErrorMensaje('Por favor, completa todos los campos obligatorios.');
-
-      // Ocultar el mensaje después de 2 segundos
       setTimeout(() => {
         setErrorMensaje('');
       }, 2000);
@@ -175,8 +172,11 @@ function Tecnico() {
   const cambiarVista = async (opcion) => {
     setView(opcion);
 
+    if (opcion === 'form') {
+      setFormRendered(!formRendered);
+    }
+
     if (opcion === 'history') {
-      // Si estamos cambiando a la vista de historial, volvemos a cargar los conformes
       try {
         const db = getFirestore();
         const horasCollectionRef = collection(db, 'horas');

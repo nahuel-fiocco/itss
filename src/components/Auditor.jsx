@@ -37,7 +37,6 @@ function Auditor() {
         setSeleccionFirma((prevSelected) => {
             const newSelection = { ...prevSelected, [horaId]: tipoFirma };
 
-            // Limpiar el mensaje de error si existe
             setErrorMsg(null);
 
             if (prevSelected[horaId] === tipoFirma) {
