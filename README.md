@@ -1,8 +1,20 @@
-# React + Vite
+# Horitas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Horitas es una aplicación de gestión de horas de trabajo con roles de administrador, técnico y auditor. La aplicación está construida utilizando React y Firebase.
 
-Currently, two official plugins are available:
+## Características
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Inicio de sesión:** Los usuarios pueden iniciar sesión con sus credenciales.
+- **Roles de usuario:** Administrador, técnico y auditor.
+- **Registro de horas:** Los técnicos pueden registrar sus horas de trabajo.
+- **Auditoría:** Los auditores pueden revisar y firmar las horas registradas.
+
+## Tecnologías Utilizadas
+
+- React
+- Firebase (Firestore, Authentication)
+- Bootstrap
+
+# Deploy
+
+https://itss-nine.vercel.app/
