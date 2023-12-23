@@ -310,7 +310,6 @@ function Tecnico() {
     <div>
       {loading ? (
         <div className="spinner-container bg-dark text-light">
-          <h1>Tecnico</h1>
           <Spinner />
           <p>Cargando...</p>
         </div>

@@ -184,7 +184,6 @@ function Auditor() {
 
     return (
         <div className="auditor-container bg-dark text-light">
-            <h1>Auditor</h1>
             {loading ? (
                 <Spinner />
             ) : (
