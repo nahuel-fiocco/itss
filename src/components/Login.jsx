@@ -16,7 +16,7 @@ function Login() {
 
     const handleAuthentication = (role) => {
         switch (role) {
-            case 'admin':
+            case 'administrador':
                 navigate('/admin');
                 break;
             case 'tecnico':

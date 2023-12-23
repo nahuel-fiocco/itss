@@ -1,25 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import '../estilos/Administrador.css';
 import { useAuth } from '../context/AuthContext';
-import { getFirestore, doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
+import '../estilos/Administrador.css';
 
 function Administrador() {
     const { currentUser } = useAuth();
-    const [nombreAdministrador, setNombreAdministrador] = useState('');
     const [loading, setLoading] = useState(true);
-    const [horasDelMes, setHorasDelMes] = useState(0);
-    const [horasConformidad, setHorasConformidad] = useState(0);
-    const [horasDisconformidad, setHorasDisconformidad] = useState(0);
-    const [porcentajeConformidad, setPorcentajeConformidad] = useState(0);
-    const [porcentajeDisconformidad, setPorcentajeDisconformidad] = useState(0);
-    const [cantidadConformes, setCantidadConformes] = useState(0);
+    const [stats, setStats] = useState({
+        horasDelMes: '00:00',
+        horasConformidad: '00:00',
+        horasDisconformidad: '00:00',
+        porcentajeConformidad: 0,
+        porcentajeDisconformidad: 0,
+        cantidadConformes: 0,
+    });
+
+    const [currentView, setCurrentView] = useState('conformes');
+
+    const handleConformesClick = () => setCurrentView('conformes');
+    const handleHorasTotalesClick = () => setCurrentView('horasTotales');
+    const handleConformidadClick = () => setCurrentView('conformidad');
+    const handleDisconformidadClick = () => setCurrentView('disconformidad');
+
     const currentDate = new Date();
-    const capitalizeFirstLetter = (string) => {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    };
-    const currentMonth = capitalizeFirstLetter(currentDate.toLocaleString('es-ES', { month: 'long' }));
+    const currentMonth = currentDate.toLocaleString('es-ES', { month: 'long' });
 
     const sumarHoras = (hora1, hora2) => {
         const [horas1, minutos1] = hora1.split(':').map(Number);
@@ -31,70 +37,52 @@ function Administrador() {
         const horasResultado = totalHoras + Math.floor(totalMinutos / 60);
         const minutosResultado = totalMinutos % 60;
 
-        // Formatear el resultado como hh:mm
         const resultado = `${String(horasResultado).padStart(2, '0')}:${String(minutosResultado).padStart(2, '0')}`;
         return resultado;
     };
 
     useEffect(() => {
-        if (!currentUser) {
-            return;
-        }
-
         const fetchData = async () => {
             try {
                 const db = getFirestore();
 
-                // Obtener todas las horas cargadas por los técnicos
                 const horasQuery = await getDocs(collection(db, 'horas'));
                 const totalHoras = horasQuery.docs.reduce((acc, doc) => {
                     const cantidadHoras = doc.data().cantidadHoras;
                     return sumarHoras(acc, cantidadHoras);
                 }, '00:00');
-                setHorasDelMes(totalHoras);
 
-                // Obtener todas las horas firmadas en conformidad
                 const conformidadQuery = await getDocs(query(collection(db, 'horas'), where('firmado.tipo', '==', 'conformidad')));
                 const totalConformidad = conformidadQuery.docs.reduce((acc, doc) => {
                     const cantidadHoras = doc.data().cantidadHoras;
                     return sumarHoras(acc, cantidadHoras);
                 }, '00:00');
-                setHorasConformidad(totalConformidad);
 
-                //Obtener el porcentaje de conformidad
                 const totalHorasConformidad = totalConformidad.split(':').map(Number);
                 const totalHorasMes = totalHoras.split(':').map(Number);
-                const porcentaje = (totalHorasConformidad[0] * 60 + totalHorasConformidad[1]) / (totalHorasMes[0] * 60 + totalHorasMes[1]) * 100;
-                setPorcentajeConformidad(porcentaje.toFixed(2) + '%');
+                const porcentajeConformidad = (totalHorasConformidad[0] * 60 + totalHorasConformidad[1]) / (totalHorasMes[0] * 60 + totalHorasMes[1]) * 100;
 
-                // Obtener todas las horas firmadas en disconformidad
                 const disconformidadQuery = await getDocs(query(collection(db, 'horas'), where('firmado.tipo', '==', 'disconformidad')));
                 const totalDisconformidad = disconformidadQuery.docs.reduce((acc, doc) => {
                     const cantidadHoras = doc.data().cantidadHoras;
                     return sumarHoras(acc, cantidadHoras);
                 }, '00:00');
-                setHorasDisconformidad(totalDisconformidad);
 
-                //Obtener el porcentaje de disconformidad
                 const totalHorasDisconformidad = totalDisconformidad.split(':').map(Number);
                 const porcentajeDisconformidad = (totalHorasDisconformidad[0] * 60 + totalHorasDisconformidad[1]) / (totalHorasMes[0] * 60 + totalHorasMes[1]) * 100;
-                setPorcentajeDisconformidad(porcentajeDisconformidad.toFixed(2) + '%');
-
-                // Obtener el nombre del administrador
-                const userDoc = doc(collection(db, 'users'), currentUser.uid);
-                const userSnapshot = await getDoc(userDoc);
-
-                // Obtener la cantidad de conformes totales
 
                 const conformesQuery = await getDocs(collection(db, 'horas'));
                 const cantidadConformes = conformesQuery.size;
-                setCantidadConformes(cantidadConformes);
 
-                if (userSnapshot.exists()) {
-                    const userData = userSnapshot.data();
-                    const nombreAdministrador = userData.name;
-                    setNombreAdministrador(nombreAdministrador);
-                }
+                setStats({
+                    horasDelMes: totalHoras,
+                    horasConformidad: totalConformidad,
+                    horasDisconformidad: totalDisconformidad,
+                    porcentajeConformidad: porcentajeConformidad.toFixed(2),
+                    porcentajeDisconformidad: porcentajeDisconformidad.toFixed(2),
+                    cantidadConformes,
+                });
+
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -102,7 +90,10 @@ function Administrador() {
             }
         };
 
-        fetchData();
+        if (currentUser) {
+            fetchData();
+        }
+
     }, [currentUser]);
 
     const Spinner = () => {
@@ -123,36 +114,30 @@ function Administrador() {
                 </div>
             ) : (
                 <div className="contenido-container">
-                    <h1>Administrador</h1>
-                    <h3>Bienvenido, {nombreAdministrador}</h3>
                     <div className="dashboard">
-                        <div className="cantidadConformes p-4">
-                            <button className="p-4">
-                                <h4>Conformes:</h4>
-                                <h5>{cantidadConformes}</h5>
+                        <div className="cantidadConformes">
+                            <button className="p-2">
+                                <h6>📜 {stats.cantidadConformes}</h6>
+                                <h5>conformes</h5>
                             </button>
                         </div>
-                        <div className="horasDelMes p-4">
-                            <button className='p-4'>
-                                <h4>Hs. totales:</h4>
-                                <h5>{horasDelMes}</h5>
+                        <div className="horasDelMes">
+                            <button className='p-2'>
+                                <h6>⌛ {stats.horasDelMes}hs.</h6>
+                                <h5>totales</h5>
                             </button>
                         </div>
-                        <div className="horasConformidad p-4">
-                            <button className='p-4'>
-                                <h4>Conformidad: {porcentajeConformidad}</h4>
-                                <h5>{horasConformidad} hs.</h5>
+                        <div className="horasConformidad">
+                            <button className='p-2'>
+                                <h6>✅ {stats.porcentajeConformidad}%</h6>
+                                <h5>conformidad</h5>
+                                <h6></h6>
                             </button>
                         </div>
-                        <div className="horasDisconformidad p-4">
-                            <button className='p-4'>
-                                <h4>Disconformidad: {porcentajeDisconformidad}</h4>
-                                <h5>{horasDisconformidad} hs.</h5>
-                            </button>
-                        </div>
-                        <div className="administrarUsuarios p-4">
-                            <button className='p-4'>
-                                <h5>Administrar usuarios</h5>
+                        <div className="horasDisconformidad">
+                            <button className='p-2'>
+                                <h6>❌ {stats.porcentajeDisconformidad}%</h6>
+                                <h5>disconformidad</h5>
                             </button>
                         </div>
                     </div>

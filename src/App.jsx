@@ -28,7 +28,7 @@ function App() {
   const getRedirectPath = () => {
     if (currentUser) {
       switch (currentUser.role) {
-        case 'admin':
+        case 'administrador':
           return '/admin';
         case 'tecnico':
           return '/tecnico';
@@ -37,9 +37,8 @@ function App() {
         default:
           return '/login';
       }
-    } else {
-      return '/login';
     }
+    return '/login';
   };
 
   return (
