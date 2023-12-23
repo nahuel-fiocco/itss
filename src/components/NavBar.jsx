@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPowerOff } from '@fortawesome/free-solid-svg-icons';
 import '../estilos/NavBar.css';
 
+import logo from '../assets/itss-logo.png';
+
 function Navbar() {
     const navigate = useNavigate();
     const { currentUser, logout } = useAuth();
@@ -24,10 +26,10 @@ function Navbar() {
 
     return (
         <div className="navbar-container text-light">
-            <h3>IT Smart Solutions</h3>
+            <img src={logo} alt="ITSS Logo" className='rounded' width={270} />
             {currentUser && (isRedirected || navigate !== undefined) && (
                 <button className="logout-button" onClick={handleLogout}>
-                    <FontAwesomeIcon icon={faPowerOff} />
+                    <FontAwesomeIcon icon={faPowerOff} style={{ color: "#000000", }} />
                 </button>
             )}
         </div>

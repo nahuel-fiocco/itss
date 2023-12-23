@@ -37,8 +37,9 @@ function App() {
         default:
           return '/login';
       }
+    } else {
+      return '/login';
     }
-    return '/login';
   };
 
   return (

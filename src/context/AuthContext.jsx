@@ -7,7 +7,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(undefined);
     const [userTimeOut, setUserTimeOut] = useState(15);
-
+    
     useEffect(() => {
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, (user) => {

@@ -2,13 +2,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Arial', sans-serif;
-    background-color: var(--body-background);
     color: var(--text-color);
-}
-
-.dark-mode body {
-    --body-background: #343a40; /* Cambia el color de fondo en modo oscuro */
-    --text-color: #ffffff; /* Cambia el color del texto en modo oscuro */
 }
 
 .main-container {
@@ -20,9 +14,6 @@ body {
     background-color: var(--container-background);
 }
 
-.dark-mode .main-container {
-    --container-background: #454d55; /* Cambia el color de fondo del contenedor en modo oscuro */
-}
 
 .form-container {
     width: min-content;
@@ -31,19 +22,12 @@ body {
     border-radius: 8px;
 }
 
-.dark-mode .form-container {
-    --form-background: #495057; /* Cambia el color de fondo del formulario en modo oscuro */
-}
 
 h1 {
-    font-size: 24px;
     margin-bottom: 20px;
     color: var(--heading-color);
 }
 
-.dark-mode h1 {
-    --heading-color: #ffffff; /* Cambia el color del encabezado en modo oscuro */
-}
 
 .error-message {
     color: #ff4d4f;
@@ -62,9 +46,6 @@ label {
     color: var(--label-color);
 }
 
-.dark-mode label {
-    --label-color: #ffffff; /* Cambia el color de las etiquetas en modo oscuro */
-}
 
 input {
     width: 100%;
@@ -75,11 +56,3 @@ input {
     color: var(--input-text-color);
     background-color: var(--input-background-color);
 }
-
-.dark-mode input {
-    --input-border-color: #ced4da; /* Cambia el color del borde del input en modo oscuro */
-    --input-text-color: #ffffff; /* Cambia el color del texto del input en modo oscuro */
-    --input-background-color: #495057; /* Cambia el color de fondo del input en modo oscuro */
-}
-
-/* Otras reglas de estilo pueden ir aquí */

@@ -43,7 +43,6 @@ function Tecnico() {
   useEffect(() => {
     if (!currentUser) {
       return;
-
     }
 
     const obtenerDatosIniciales = async () => {
