@@ -24,6 +24,7 @@ function Tecnico() {
   const [contentLoaded, setContentLoaded] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [formRendered, setFormRendered] = useState(false);
+  const [horasObtenidas, setHorasObtenidas] = useState(false);
 
   const handleFechaConformeChange = (event) => {
     setFechaConforme(event.target.value);
@@ -111,6 +112,7 @@ function Tecnico() {
     };
 
     setCantidadHoras(formato24Horas(horasTrabajadas));
+    setHorasObtenidas(true);
   };
 
   const handleSubmit = async (event) => {
@@ -166,6 +168,7 @@ function Tecnico() {
     setTipoTarea('');
     setDetalleTareas('');
     setCantidadHoras('');
+    setHorasObtenidas(false);
   };
 
   const cambiarVista = async (opcion) => {
@@ -189,32 +192,75 @@ function Tecnico() {
   };
 
   const renderFormulario = () => (
-    <div className="camposycontenido">
-      <div className="campos">
-        <label className="label">Nro. Conforme</label>
-        <label className="label">Técnico</label>
-        <label className="label">Fecha Conforme</label>
-        <label className="label">Hora Comienzo</label>
-        <label className="label">Hora Finalización</label>
-        <label className="label">Cantidad de Horas</label>
-        <label className="label">Tipo de Tarea</label>
-        <label className="label">Detalle de Tareas</label>
+    <div className="vistaFormulario container m-5">
+      <div className="horizontalDiv row">
+        <div className="tagname col">
+          <label className="label">Nro. Conforme</label>
+        </div>
+        <div className="contenido col">
+          {`${String(nroConforme).slice(0, 3)}.${String(nroConforme).slice(3)}`}
+        </div>
       </div>
-      <div className="contenido">
-        <label className="label">{nroConforme}</label>
-        <label className="label">{tecnico}</label>
-        <input type="date" value={fechaConforme} onChange={handleFechaConformeChange} required />
-        <input type="time" value={horaComienzo} onChange={handleHoraComienzoChange} required />
-        <input type="time" value={horaFinalizacion} onChange={handleHoraFinalizacionChange} required />
-        <div className="empty-space"></div>
-        <label className="label">{cantidadHoras}</label>
-        <select value={tipoTarea} onChange={(e) => setTipoTarea(e.target.value)} required>
-          <option value="">Selecciona...</option>
-          <option value="correctivo">Correctivo</option>
-          <option value="preventivo">Preventivo</option>
-          <option value="ambas">Ambas</option>
-        </select>
-        <textarea value={detalleTareas} onChange={(e) => setDetalleTareas(e.target.value)} required />
+      <div className="horizontalDiv row">
+        <div className="tagname col">
+          <label className="label">Técnico</label>
+        </div>
+        <div className="contenido col">
+          <label className="label">{tecnico}</label>
+        </div>
+      </div>
+      <div className="horizontalDiv row">
+        <div className="tagname col">
+          <label className="label">Fecha Conforme</label>
+        </div>
+        <div className="contenido col">
+          <input type="date" value={fechaConforme} onChange={handleFechaConformeChange} required />
+        </div>
+      </div>
+      <div className="horizontalDiv row">
+        <div className="tagname col">
+          <label className="label">Hora Comienzo</label>
+        </div>
+        <div className="contenido col">
+          <input type="time" value={horaComienzo} onChange={handleHoraComienzoChange} required />
+        </div>
+      </div>
+      <div className="horizontalDiv row">
+        <div className="tagname col">
+          <label className="label">Hora Finalización</label>
+        </div>
+        <div className="contenido col">
+          <input type="time" value={horaFinalizacion} onChange={handleHoraFinalizacionChange} required />
+        </div>
+      </div>
+      <div className="horizontalDiv row">
+        <div className="tagname col">
+          <label className="label">Cantidad de Horas</label>
+        </div>
+        <div className="contenido col">
+          {horasObtenidas ? <label className="horasObtenidas">{cantidadHoras}</label> : <label className="horasObtenidas">--:--</label>}
+        </div>
+      </div>
+      <div className="horizontalDiv row">
+        <div className="tagname col">
+          <label className="label">Tipo de Tarea</label>
+        </div>
+        <div className="contenido col">
+          <select value={tipoTarea} onChange={(e) => setTipoTarea(e.target.value)} required>
+            <option value="">Selecciona...</option>
+            <option value="correctivo">Correctivo</option>
+            <option value="preventivo">Preventivo</option>
+            <option value="ambas">Ambas</option>
+          </select>
+        </div>
+      </div>
+      <div className="horizontalDiv">
+        <div className="tagname col">
+          <label className="label">Detalle de Tareas</label>
+        </div>
+        <div className="contenido col">
+          <textarea value={detalleTareas} onChange={(e) => setDetalleTareas(e.target.value)} required />
+        </div>
       </div>
     </div>
   );
@@ -310,8 +356,8 @@ function Tecnico() {
     <div>
       {loading ? (
         <div className="spinner-container bg-dark text-light">
-          <Spinner />
           <p>Cargando...</p>
+          <Spinner />
         </div>
       ) : (
         <div className='tecnico-container bg-dark text-light'>
@@ -330,7 +376,7 @@ function Tecnico() {
               )}
               {confirmacionVisible && (
                 <div className="mensaje-confirmacion rounded p-1 m-3">
-                  {`Conforme nro ${nroConforme - 1} cargado`}
+                  {`Conforme nro ${String(nroConforme - 1).padStart(6, '0').slice(0, 3)}.${String(nroConforme - 1).padStart(6, '0').slice(3)} cargado`}
                 </div>
               )}
               <form id="form-tecnico" className='mb-5' onSubmit={handleSubmit} disabled={guardando}>
@@ -353,7 +399,7 @@ const Spinner = () => {
       margin: 0 auto;
     `;
 
-  return <BarLoader color="#36D7B7" loading css={override} />;
+  return <BarLoader className='rounded' color="#36D7B7" loading css={override} />;
 };
 
 export default Tecnico;

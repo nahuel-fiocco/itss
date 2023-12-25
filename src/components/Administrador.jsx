@@ -102,14 +102,14 @@ function Administrador() {
             margin: 0 auto;
         `;
 
-        return <BarLoader color="#36D7B7" loading css={override} />;
+        return <BarLoader className='rounded' color="#36D7B7" loading css={override} />;
     };
 
     return (
         <div className="administrador-container bg-dark text-light">
             {loading ? (
                 <div className='spinner-container'>
-                    <h1>Cargando...</h1>
+                    <p>Cargando...</p>
                     <Spinner />
                 </div>
             ) : (

@@ -133,7 +133,7 @@ function Auditor() {
       margin: 0 auto;
     `;
 
-        return <BarLoader color="#36D7B7" loading css={override} />;
+        return <BarLoader className='rounded' color="#36D7B7" loading css={override} />;
     };
 
     const renderHistorialMobile = () => (
@@ -185,7 +185,10 @@ function Auditor() {
     return (
         <div className="auditor-container bg-dark text-light">
             {loading ? (
-                <Spinner />
+                <div className="spinner-container bg-dark text-light">
+                    <p>Cargando...</p>
+                    <Spinner />
+                </div>
             ) : (
                 <div className="historial-container">
                     <h3>Historial de Horas</h3>

@@ -16,50 +16,41 @@ h2 {
     gap: 1em;
 }
 
-.camposycontenido {
+.vistaFormulario {
+    width: 60vh;
+}
+
+.horizontalDiv {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    padding-top: 2em;
+    align-items: flex-start;
 }
 
-.campos,
-.contenido {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 2em;
-    width: 30%;
-}
-
-.label {
-    margin-bottom: 1em;
-    width: 100%;
-}
-
-input[type="time"],
+input,
 select,
 textarea {
     margin-bottom: 1.5em;
     padding: 0.5em;
-    width: 100%;
+    width: 20vh;
     background-color: transparent;
     color: white;
-    border-radius: 10px;
+    border-radius: 5px;
 }
 
-option{
+.horasObtenidas {
+    border-radius: 5px;
+    border: 1px solid white;
+    padding: 0.5em;
+    width: 20vh;
+}
+
+option {
     background-color: #1a1a1a;
     color: white;
 }
 
 textarea {
     resize: none;
-}
-
-.empty-space {
-    height: 0;
-    transform: translateY(1em);
+    transform: translate(1.4vh, 0);
 }
 
 button {
@@ -87,14 +78,6 @@ td {
     margin-top: 1em;
 }
 
-.campos {
-    gap: 1em;
-}
-
-.contenido {
-    gap: 0.4em;
-}
-
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -108,6 +91,25 @@ td {
     z-index: 9999;
     color: white;
     font-size: 1.5em;
+}
+
+#form-tecnico {
+    display: flex;
+    gap: 5vh;
+}
+
+.historial-mobile {
+    min-height: 100vh;
+    flex-grow: 1;
+    margin-top: 5vh;
+}
+
+.spinner-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 @media only screen and (min-width: 769px) {
@@ -140,23 +142,8 @@ td {
         border-radius: 10px;
         padding: 1vh;
     }
-}
 
-#form-tecnico{
-    display: flex;
-    gap: 5vh;
-}
-
-.historial-mobile{
-    min-height: 100vh;
-    flex-grow: 1;
-    margin-top: 5vh;
-}
-
-.spinner-container{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    .vistaFormulario {
+        width: 100%;
+    }
 }
