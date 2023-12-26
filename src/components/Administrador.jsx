@@ -17,13 +17,6 @@ function Administrador() {
         cantidadConformes: 0,
     });
 
-    const [currentView, setCurrentView] = useState('conformes');
-
-    const handleConformesClick = () => setCurrentView('conformes');
-    const handleHorasTotalesClick = () => setCurrentView('horasTotales');
-    const handleConformidadClick = () => setCurrentView('conformidad');
-    const handleDisconformidadClick = () => setCurrentView('disconformidad');
-
     const currentDate = new Date();
     const currentMonth = currentDate.toLocaleString('es-ES', { month: 'long' });
 

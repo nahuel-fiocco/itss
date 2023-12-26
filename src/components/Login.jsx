@@ -77,32 +77,31 @@ function Login() {
         <div className="login-container bg-dark text-light">
             <h1>Login</h1>
             {error && <p className="error-message">{error}</p>}
-            <div className="form-container bg-dark">
-                <form className='form-login' onSubmit={handleSubmit}>
-                    <div className="email-container">
-                        <label htmlFor="email">Email:</label>
-                        <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="on" />
-                    </div>
-                    <div className="password-container">
-                        <label htmlFor="password">Contraseña:</label>
-                        <div className="password-input-container">
-                            <input className="password-input" type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                            <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <FontAwesomeIcon inverse className='ojito' icon={faEye} /> : <FontAwesomeIcon inverse className='ojito' icon={faEyeSlash} />}
-                            </button>
-                        </div>
-                    </div>
-                    <div className="botones">
-                        <button type="submit" disabled={loading}>
-                            {loading ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} /> : null}
-                            Login
-                        </button>
-                        <button type="button" onClick={handleForgotPassword}>
-                            Olvidé mi contraseña
+            <form className='form-login' onSubmit={handleSubmit}>
+                <div className="email-container">
+                    <label>Email</label>
+                    <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="on" />
+                </div>
+                <div className="password-container">
+                    <label>Contraseña</label>
+                    <div className="password-input-container">
+                        <input type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                        <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
+                            {showPassword ? <FontAwesomeIcon className='ojito' icon={faEye} /> : <FontAwesomeIcon className='ojito' icon={faEyeSlash} />}
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div className="buttons-container">
+                    <button type="submit" disabled={loading}>
+                        {loading ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} /> : null}
+                        Login
+                    </button>
+                    <button type="button" onClick={handleForgotPassword}>
+                        Olvidé mi contraseña
+                    </button>
+                </div>
+            </form>
+
         </div>
     );
 }

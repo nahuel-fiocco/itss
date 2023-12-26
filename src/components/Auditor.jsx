@@ -125,8 +125,6 @@ function Auditor() {
         }
     };
 
-
-
     const Spinner = () => {
         const override = css`
       display: block;
@@ -134,6 +132,13 @@ function Auditor() {
     `;
 
         return <BarLoader className='rounded' color="#36D7B7" loading css={override} />;
+    };
+
+    const renderFirmado = (hora) => {
+        if (hora.firmado) {
+            return hora.firmado.tipo === 'conformidad' ? '👍 Conforme' : '👎 Disconforme';
+        }
+        return '❌ No';
     };
 
     const renderHistorialMobile = () => (
@@ -169,7 +174,7 @@ function Auditor() {
                                 <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
                                 <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
                                 <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
-                                <p><strong>Firmado:</strong> {hora.firmado && hora.firmado.tipo === 'conformidad' ? '✅ Conforme' : '❌ Disconforme'}</p>
+                                <p><strong>Firmado:</strong> {renderFirmado(hora)}</p>
                             </div>
                         </div>
                     </div>
