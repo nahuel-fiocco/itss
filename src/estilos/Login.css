@@ -10,7 +10,7 @@
     width: min-content;
 }
 
-.form-login  {
+.form-login {
     width: max-content;
     display: flex;
     flex-direction: column;

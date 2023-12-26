@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, HashRouter } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 import { DarkModeProvider } from './context/DarkModeContext.jsx';
 import Login from './components/Login';
@@ -10,6 +10,7 @@ import Tecnico from './components/Tecnico.jsx';
 import Auditor from './components/Auditor.jsx';
 import { initializeApp } from "firebase/app";
 import Navbar from './components/NavBar.jsx';
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyCqM_HBfuxkvh43xgi65cuuRpeq-BaGGao",
