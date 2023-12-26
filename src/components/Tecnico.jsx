@@ -145,8 +145,6 @@ function Tecnico() {
         horaCreacion,
         fechaConforme,
       });
-
-
       setConfirmacionVisible(true);
       limpiarFormulario();
       setNroConforme((prevNroConforme) => String(parseInt(prevNroConforme, 10) + 1).padStart(6, '0'));
@@ -201,7 +199,7 @@ function Tecnico() {
           {`${String(nroConforme).slice(0, 3)}.${String(nroConforme).slice(3)}`}
         </div>
       </div>
-      <div className="horizontalDiv row">
+      <div className="horizontalDiv row  mt-3">
         <div className="tagname col">
           <label className="label">Técnico</label>
         </div>
@@ -209,7 +207,7 @@ function Tecnico() {
           <label className="label">{tecnico}</label>
         </div>
       </div>
-      <div className="horizontalDiv row">
+      <div className="horizontalDiv row  mt-3">
         <div className="tagname col">
           <label className="label">Fecha Conforme</label>
         </div>
@@ -217,7 +215,7 @@ function Tecnico() {
           <input type="date" value={fechaConforme} onChange={handleFechaConformeChange} required />
         </div>
       </div>
-      <div className="horizontalDiv row">
+      <div className="horizontalDiv row  mt-3">
         <div className="tagname col">
           <label className="label">Hora Comienzo</label>
         </div>
@@ -225,7 +223,7 @@ function Tecnico() {
           <input type="time" value={horaComienzo} onChange={handleHoraComienzoChange} required />
         </div>
       </div>
-      <div className="horizontalDiv row">
+      <div className="horizontalDiv row  mt-3">
         <div className="tagname col">
           <label className="label">Hora Finalización</label>
         </div>
@@ -233,7 +231,7 @@ function Tecnico() {
           <input type="time" value={horaFinalizacion} onChange={handleHoraFinalizacionChange} required />
         </div>
       </div>
-      <div className="horizontalDiv row">
+      <div className="horizontalDiv row  mt-3">
         <div className="tagname col">
           <label className="label">Cantidad de Horas</label>
         </div>
@@ -241,12 +239,12 @@ function Tecnico() {
           {horasObtenidas ? <label className="horasObtenidas">{cantidadHoras}</label> : <label className="horasObtenidas">--:--</label>}
         </div>
       </div>
-      <div className="horizontalDiv row">
+      <div className="horizontalDiv row  mt-3">
         <div className="tagname col">
           <label className="label">Tipo de Tarea</label>
         </div>
         <div className="contenido col">
-          <select value={tipoTarea} onChange={(e) => setTipoTarea(e.target.value)} required>
+          <select value={tipoTarea.toLocaleUpperCase()} onChange={(e) => setTipoTarea(e.target.value)} required>
             <option value="">Selecciona...</option>
             <option value="correctivo">Correctivo</option>
             <option value="preventivo">Preventivo</option>

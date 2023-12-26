@@ -78,7 +78,7 @@ function Login() {
             <h1>Login</h1>
             {error && <p className="error-message">{error}</p>}
             <div className="form-container bg-dark">
-                <form onSubmit={handleSubmit}>
+                <form className='form-login' onSubmit={handleSubmit}>
                     <div className="email-container">
                         <label htmlFor="email">Email:</label>
                         <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="on" />
@@ -88,7 +88,7 @@ function Login() {
                         <div className="password-input-container">
                             <input className="password-input" type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                             <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <FontAwesomeIcon className='ojito' icon={faEye} /> : <FontAwesomeIcon className='ojito' icon={faEyeSlash} />}
+                                {showPassword ? <FontAwesomeIcon inverse className='ojito' icon={faEye} /> : <FontAwesomeIcon inverse className='ojito' icon={faEyeSlash} />}
                             </button>
                         </div>
                     </div>

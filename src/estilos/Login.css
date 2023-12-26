@@ -10,8 +10,13 @@
     width: min-content;
 }
 
-form {
+.form-login  {
     width: max-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2vh;
 }
 
 h1 {
@@ -20,7 +25,7 @@ h1 {
 }
 
 .error-message {
-    color: #ff4d4f;
+    color: red;
     margin-bottom: 10px;
 }
 
@@ -36,8 +41,8 @@ label {
     color: white;
 }
 
-input {
-    width: 100%;
+input[type="email"] {
+    width: 110%;
     padding: 10px;
     font-size: 16px;
     border: 1px solid white;
@@ -45,9 +50,24 @@ input {
     background-color: transparent;
 }
 
-.password-input {
-    width: calc(100% - 30px);
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid white;
     border-radius: 4px;
+    background-color: transparent;
+
+}
+
+.password-input,
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid white;
+    border-radius: 4px;
+    background-color: transparent;
 }
 
 .password-input-container {
@@ -63,7 +83,7 @@ input {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    right: 30px;
+    right: 0px;
 }
 
 .botones {

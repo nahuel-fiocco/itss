@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { redirect } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(undefined);
     const [userTimeOut, setUserTimeOut] = useState(15);
-    
+
     useEffect(() => {
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -25,7 +25,8 @@ export function AuthProvider({ children }) {
             timeoutId = setTimeout(() => {
                 logout();
                 console.log('Sesión cerrada por inactividad');
-                redirect('/login');
+                const navigate = useNavigate();
+                navigate('/login');
             }, inactivityTimeout);
         };
 
