@@ -14,7 +14,25 @@ function Tecnico() {
   const [tipoTarea, setTipoTarea] = useState('');
   const [detalleTareas, setDetalleTareas] = useState('');
   const [cantidadHoras, setCantidadHoras] = useState('');
-  const [historialHoras, setHistorialHoras] = useState([]);
+  const [historialHoras, setHistorialHoras] = useState([
+    {
+      nroConforme: '',
+      tecnico: '',
+      horaComienzo: '',
+      horaFinalizacion: '',
+      cantidadHoras: '',
+      tipoTarea: '',
+      detalleTareas: '',
+      fechaCreacion: '',
+      horaCreacion: '',
+      fechaConforme: '',
+      firmado: {
+        tipo: '', // 'conforme', 'disconforme', o vacío si no está firmado
+        auditor: '', // Nombre del auditor que firmó (si está firmado)
+        motivo: '', // Motivo de disconformidad (si está firmado como disconforme)
+      }
+    },
+  ]);
   const [expanded, setExpanded] = useState('collapseOne');
   const [view, setView] = useState('welcome');
   const { currentUser } = useAuth();
@@ -189,6 +207,13 @@ function Tecnico() {
     }
   };
 
+  const renderFirmado = (hora) => {
+    if (hora.firmado && hora.firmado.tipo) {
+      return hora.firmado.tipo === 'conforme' ? '👍 Conforme' : '👎 Disconforme';
+    }
+    return '❌ No';
+  };
+
   const renderFormulario = () => (
     <div className="vistaFormulario container m-5">
       <div className="horizontalDiv row">
@@ -246,9 +271,8 @@ function Tecnico() {
         <div className="contenido col">
           <select value={tipoTarea} onChange={(e) => setTipoTarea(e.target.value)} required>
             <option value="">Selecciona...</option>
-            <option value="correctivo">Correctivo</option>
-            <option value="preventivo">Preventivo</option>
-            <option value="ambas">Ambas</option>
+            <option value="Correctivo">Correctivo</option>
+            <option value="Preventivo">Preventivo</option>
           </select>
         </div>
       </div>
@@ -280,6 +304,7 @@ function Tecnico() {
                 <th>Detalle de Tareas</th>
                 <th>Fecha de Creación</th>
                 <th>Hora de Creación</th>
+                <th>Firmado</th>
                 <th>Eliminar</th>
               </tr>
             </thead>
@@ -295,6 +320,7 @@ function Tecnico() {
                   <td>{hora.detalleTareas}</td>
                   <td>{hora.fechaCreacion}</td>
                   <td>{hora.horaCreacion}</td>
+                  <td>{renderFirmado(hora)}</td>
                   <td>
                     <button onClick={() => handleEliminarConforme(hora.nroConforme)}>
                       <i className="fas fa-trash"></i>
@@ -311,23 +337,11 @@ function Tecnico() {
           {historialHoras.map((hora) => (
             <div className="accordion-item bg-dark text-light" key={hora.nroConforme}>
               <h2 className="accordion-header" id={`heading${hora.nroConforme}`}>
-                <button
-                  className="accordion-button bg-dark text-light"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target={`#collapse${hora.nroConforme}`}
-                  aria-expanded="false"
-                  aria-controls={`collapse${hora.nroConforme}`}
-                >
+                <button className="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${hora.nroConforme}`} aria-expanded="false" aria-controls={`collapse${hora.nroConforme}`}>
                   {hora.nroConforme}
                 </button>
               </h2>
-              <div
-                id={`collapse${hora.nroConforme}`}
-                className="accordion-collapse collapse"
-                aria-labelledby={`heading${hora.nroConforme}`}
-                data-bs-parent="#historialAcordeon"
-              >
+              <div id={`collapse${hora.nroConforme}`} className="accordion-collapse collapse" aria-labelledby={`heading${hora.nroConforme}`} data-bs-parent="#historialAcordeon" >
                 <div className="accordion-body">
                   <p><strong>Técnico:</strong> {hora.tecnico}</p>
                   <p><strong>Hora Comienzo:</strong> {hora.horaComienzo}</p>
@@ -337,6 +351,10 @@ function Tecnico() {
                   <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
                   <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
                   <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
+                  <p><strong>Firmado:</strong> {renderFirmado(hora)}</p>
+                  <button onClick={() => handleEliminarConforme(hora.nroConforme)}>
+                    <p>Eliminar</p>
+                  </button>
                 </div>
               </div>
             </div>
