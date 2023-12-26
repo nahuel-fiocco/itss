@@ -244,7 +244,7 @@ function Tecnico() {
           <label className="label">Tipo de Tarea</label>
         </div>
         <div className="contenido col">
-          <select value={tipoTarea.toLocaleUpperCase()} onChange={(e) => setTipoTarea(e.target.value)} required>
+          <select value={tipoTarea} onChange={(e) => setTipoTarea(e.target.value)} required>
             <option value="">Selecciona...</option>
             <option value="correctivo">Correctivo</option>
             <option value="preventivo">Preventivo</option>
