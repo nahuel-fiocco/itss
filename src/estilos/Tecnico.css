@@ -105,6 +105,7 @@ td {
     min-height: 100vh;
     flex-grow: 1;
     margin-top: 5vh;
+    width: 100%;
 }
 
 .spinner-container {
@@ -134,11 +135,16 @@ td {
 
     .historial-mobile {
         display: block;
+        width: 100%;
     }
 
     .acordeon-contenido {
         border-radius: 5%;
         padding: 1vh;
+    }
+
+    .accordion-button:not(.collapsed) {
+        color: #ffffff;
     }
 
     .acordeon-titulo {
@@ -150,10 +156,21 @@ td {
         width: 100%;
     }
 
-    .acordion-body{
+    .accordion-body {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
     }
+}
+
+.eliminar {
+    height: min-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1vh;
+}
+
+.historial-container {
+    width: 80%;
 }

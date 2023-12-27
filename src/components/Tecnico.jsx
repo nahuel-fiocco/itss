@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
 import '../estilos/Tecnico.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 function Tecnico() {
   const [loading, setLoading] = useState(true);
@@ -27,9 +29,9 @@ function Tecnico() {
       horaCreacion: '',
       fechaConforme: '',
       firmado: {
-        tipo: '', // 'conforme', 'disconforme', o vacío si no está firmado
-        auditor: '', // Nombre del auditor que firmó (si está firmado)
-        motivo: '', // Motivo de disconformidad (si está firmado como disconforme)
+        tipo: '',
+        auditor: '',
+        motivo: '',
       }
     },
   ]);
@@ -322,8 +324,8 @@ function Tecnico() {
                   <td>{hora.horaCreacion}</td>
                   <td>{renderFirmado(hora)}</td>
                   <td>
-                    <button onClick={() => handleEliminarConforme(hora.nroConforme)}>
-                      <i className="fas fa-trash"></i>
+                    <button className='eliminar' onClick={() => handleEliminarConforme(hora.nroConforme)}>
+                      <FontAwesomeIcon icon={faTrash} />
                     </button>
                   </td>
                 </tr>
@@ -337,23 +339,26 @@ function Tecnico() {
           {historialHoras.map((hora) => (
             <div className="accordion-item bg-dark text-light" key={hora.nroConforme}>
               <h2 className="accordion-header" id={`heading${hora.nroConforme}`}>
-                <button className="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${hora.nroConforme}`} aria-expanded="false" aria-controls={`collapse${hora.nroConforme}`}>
+                <button className="accordion-button bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${hora.nroConforme}`} aria-expanded="false" aria-controls={`collapse${hora.nroConforme}`}>
                   {hora.nroConforme}
                 </button>
               </h2>
               <div id={`collapse${hora.nroConforme}`} className="accordion-collapse collapse" aria-labelledby={`heading${hora.nroConforme}`} data-bs-parent="#historialAcordeon" >
                 <div className="accordion-body">
-                  <p><strong>Técnico:</strong> {hora.tecnico}</p>
-                  <p><strong>Hora Comienzo:</strong> {hora.horaComienzo}</p>
-                  <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion}</p>
-                  <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras}</p>
-                  <p><strong>Tipo de Tarea:</strong> {hora.tipoTarea}</p>
-                  <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
-                  <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
-                  <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
-                  <p><strong>Firmado:</strong> {renderFirmado(hora)}</p>
-                  <button onClick={() => handleEliminarConforme(hora.nroConforme)}>
-                    <p>Eliminar</p>
+                  <div className="accordion-body-content">
+                    <p><strong>Técnico:</strong> {hora.tecnico}</p>
+                    <p><strong>Hora Comienzo:</strong> {hora.horaComienzo}</p>
+                    <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion}</p>
+                    <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras}</p>
+                    <p><strong>Tipo de Tarea:</strong> {hora.tipoTarea}</p>
+                    <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
+                    <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
+                    <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
+                    <p><strong>Firmado:</strong> {renderFirmado(hora)}</p>
+                  </div>
+                  <button className='eliminar' onClick={() => handleEliminarConforme(hora.nroConforme)}>
+                    <FontAwesomeIcon icon={faTrash} />
+                    <span>Eliminar</span>
                   </button>
                 </div>
               </div>
