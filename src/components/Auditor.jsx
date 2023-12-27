@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
 import '../estilos/Auditor.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserPen } from '@fortawesome/free-solid-svg-icons';
 
 function Auditor() {
     const [loading, setLoading] = useState(true);
@@ -14,6 +16,16 @@ function Auditor() {
     const [expanded, setExpanded] = useState(null);
     const [motivoDisconformidad, setMotivoDisconformidad] = useState('');
     const [errorMsg, setErrorMsg] = useState(null);
+    const [tipoFirma, setTipoFirma] = useState(null);
+
+    const handleFirmaConforme = (horaId) => {
+        handleFirma(horaId, 'conformidad');
+        setTipoFirma(null);
+    };
+
+    const handleFirmaDisconforme = (horaId) => {
+        setTipoFirma('disconformidad');
+    };
 
     const obtenerHorasTrabajo = async () => {
         try {
@@ -116,7 +128,6 @@ function Auditor() {
             await batch.commit();
             setConfirmacionVisible(true);
             setSeleccionFirma({});
-
             setTimeout(() => {
                 setConfirmacionVisible(false);
             }, 5000);
@@ -144,37 +155,49 @@ function Auditor() {
     const renderHistorialMobile = () => (
         <div className="historial-mobile">
             <div className="accordion" id="historialAcordeon">
-                {horasTrabajo.map((hora) => (
+                {horasTrabajo.slice().reverse().map((hora) => (
                     <div className="accordion-item bg-dark text-light" key={hora.id}>
                         <h2 className="accordion-header" id={`heading${hora.id}`}>
-                            <button
-                                className="accordion-button bg-dark text-light"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target={`#collapse${hora.id}`}
-                                aria-expanded="false"
-                                aria-controls={`collapse${hora.id}`}
-                                onClick={() => toggleAcordeon(hora.id)}
-                            >
+                            <button className="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${hora.id}`} aria-expanded="false" aria-controls={`collapse${hora.id}`} onClick={() => toggleAcordeon(hora.id)}>
                                 {hora.nroConforme}
                             </button>
                         </h2>
-                        <div
-                            id={`collapse${hora.id}`}
-                            className={`accordion-collapse collapse ${expanded === hora.id ? 'show' : ''}`}
-                            aria-labelledby={`heading${hora.id}`}
-                            data-bs-parent="#historialAcordeon"
-                        >
+                        <div id={`collapse${hora.id}`} className={`accordion-collapse collapse ${expanded === hora.id ? 'show' : ''}`} aria-labelledby={`heading${hora.id}`} data-bs-parent="#historialAcordeon" >
                             <div className="accordion-body">
-                                <p><strong>Técnico:</strong> {hora.tecnico}</p>
-                                <p><strong>Hora Comienzo:</strong> {hora.horaComienzo}</p>
-                                <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion}</p>
-                                <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras}</p>
-                                <p><strong>Tipo de Tarea:</strong> {hora.tipoTarea}</p>
-                                <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
-                                <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
-                                <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
-                                <p><strong>Firmado:</strong> {renderFirmado(hora)}</p>
+                                <div className="accordion-body-content">
+                                    <p><strong>Técnico:</strong> {hora.tecnico}</p>
+                                    <p><strong>Hora Comienzo:</strong> {hora.horaComienzo}</p>
+                                    <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion}</p>
+                                    <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras}</p>
+                                    <p><strong>Tipo de Tarea:</strong> {hora.tipoTarea}</p>
+                                    <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
+                                    <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
+                                    <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
+                                    <p><strong>Firmado:</strong> {renderFirmado(hora)}</p>
+                                    {renderMotivoDisconformidad(hora)}
+                                </div>
+                                {hora.firmado ? null : (
+                                    <div>
+                                        <button
+                                            className="boton-firmar-mobile"
+                                            type="button"
+                                            onClick={() => handleConfirmFirma(hora.id, 'conformidad')}
+                                            disabled={hora.firmado !== undefined}
+                                        >
+                                            <FontAwesomeIcon icon={faUserPen} />
+                                            <span>Firmar</span>
+                                        </button>
+                                        <button
+                                            className="boton-firmar-mobile"
+                                            type="button"
+                                            onClick={() => handleFirmaDisconforme(hora.id)}
+                                            disabled={hora.firmado !== undefined}
+                                        >
+                                            <FontAwesomeIcon icon={faUserPen} />
+                                            <span>Firmar Disconforme</span>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -182,6 +205,17 @@ function Auditor() {
             </div>
         </div>
     );
+
+
+    const renderMotivoDisconformidad = (hora) => {
+        if (hora.firmado && hora.firmado.tipo === 'disconformidad') {
+            return (
+                <p><strong>Motivo de Disconformidad:</strong> {hora.firmado.motivo}</p>
+            );
+        }
+        return null;
+    };
+
 
     const toggleAcordeon = (horaId) => {
         setExpanded((prevExpanded) => (prevExpanded === horaId ? null : horaId));
@@ -230,22 +264,13 @@ function Auditor() {
                                                 <td>{hora.horaCreacion}</td>
                                                 <td className="conformidad">
                                                     {hora.firmado && hora.firmado.tipo === 'conformidad' ? '✅' : (
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={seleccionFirma[hora.id] === 'conformidad'}
-                                                            onChange={() => handleCheckboxChange(hora.id, 'conformidad')}
-                                                            disabled={hora.firmado !== undefined}
-                                                        />
+                                                        <input type="checkbox" checked={seleccionFirma[hora.id] === 'conformidad'} onChange={() => handleCheckboxChange(hora.id, 'conformidad')}
+                                                            disabled={hora.firmado !== undefined} />
                                                     )}
                                                 </td>
                                                 <td className="disconformidad">
                                                     {hora.firmado && hora.firmado.tipo === 'disconformidad' ? '❌' : (
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={seleccionFirma[hora.id] === 'disconformidad'}
-                                                            onChange={() => handleCheckboxChange(hora.id, 'disconformidad')}
-                                                            disabled={hora.firmado !== undefined}
-                                                        />
+                                                        <input type="checkbox" checked={seleccionFirma[hora.id] === 'disconformidad'} onChange={() => handleCheckboxChange(hora.id, 'disconformidad')} disabled={hora.firmado !== undefined} />
                                                     )}
                                                 </td>
                                             </tr>
@@ -255,25 +280,20 @@ function Auditor() {
                             )}
                             {Object.values(seleccionFirma).some((tipo) => tipo === 'disconformidad') && (
                                 <div className="motivo-disconformidad">
-                                    <textarea
-                                        placeholder="Introduzca el motivo de su disconformidad..."
-                                        value={motivoDisconformidad}
-                                        onChange={(e) => setMotivoDisconformidad(e.target.value)} required
-                                    />
+                                    <textarea placeholder="Introduzca el motivo de su disconformidad..." value={motivoDisconformidad} onChange={(e) => setMotivoDisconformidad(e.target.value)} required />
                                 </div>
                             )}
                             {confirmacionVisible && <p>Firmas registradas exitosamente.</p>}
                             {errorMsg && <p className="bg-danger rounded p-1">{errorMsg}</p>}
-                            <div className="botones-firmar">
-                                <button className='boton-firmar' type="button" onClick={handleFirma} disabled={!Object.keys(seleccionFirma).length}>
-                                    Firmar
-                                </button>
-                            </div>
+                            <button className="boton-firmar-desktop" type="button" onClick={handleFirma} disabled={Object.keys(seleccionFirma).length === 0}>
+                                <FontAwesomeIcon icon={faUserPen} />
+                                <span>Firmar</span>
+                            </button>
                         </>
                     )}
                 </div>
             )}
-        </div>
+        </div >
     );
 }
 

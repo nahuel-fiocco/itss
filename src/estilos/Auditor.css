@@ -27,13 +27,6 @@ td {
     text-align: left;
 }
 
-.botones-firmar {
-    display: flex;
-    justify-content: center;
-    margin-top: 2vh;
-    gap: 2vh;
-}
-
 button {
     padding: 10px;
     cursor: pointer;
@@ -69,7 +62,16 @@ input[type="checkbox"] {
 }
 
 .accordion-body {
-    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.accordion-body-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
 }
 
 .tabla-vacia {
@@ -81,4 +83,17 @@ input[type="checkbox"] {
 .motivo-disconformidad {
     margin-top: 5vh;
     width: 50%;
+}
+
+.boton-firmar-mobile, .boton-firmar-desktop {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1vh;
+}
+
+@media screen and (max-width: 768px) {
+    .boton-firmar-desktop{
+        display: none;
+    }
 }

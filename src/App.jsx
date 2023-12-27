@@ -11,7 +11,6 @@ import Auditor from './components/Auditor.jsx';
 import { initializeApp } from "firebase/app";
 import Navbar from './components/NavBar.jsx';
 
-
 const firebaseConfig = {
   apiKey: "AIzaSyCqM_HBfuxkvh43xgi65cuuRpeq-BaGGao",
   authDomain: "itss-ab511.firebaseapp.com",
@@ -45,7 +44,6 @@ function App() {
   return (
     <DarkModeProvider>
       <Router>
-        <div>
           <Navbar />
           <Routes>
             <Route path="/" element={<Navigate to={getRedirectPath()} />} />
@@ -56,7 +54,6 @@ function App() {
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </div>
       </Router>
     </DarkModeProvider>
   );

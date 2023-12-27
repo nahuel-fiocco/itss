@@ -78,7 +78,6 @@ td {
     color: white;
     padding: 1.5em;
     text-align: center;
-    margin-top: 1em;
 }
 
 .loading-overlay {
@@ -138,11 +137,6 @@ td {
         width: 100%;
     }
 
-    .acordeon-contenido {
-        border-radius: 5%;
-        padding: 1vh;
-    }
-
     .accordion-button:not(.collapsed) {
         color: #ffffff;
     }
@@ -154,12 +148,6 @@ td {
 
     .vistaFormulario {
         width: 100%;
-    }
-
-    .accordion-body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
     }
 }
 
@@ -173,4 +161,16 @@ td {
 
 .historial-container {
     width: 80%;
+}
+
+.accordion-body-content{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.accordion-body{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
