@@ -79,11 +79,11 @@ function Login() {
             {error && <p className="error-message">{error}</p>}
             <form className='form-login' onSubmit={handleSubmit}>
                 <div className="email-container">
-                    <label>Email</label>
+                    <label htmlFor='email'>Email</label>
                     <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="on" />
                 </div>
                 <div className="password-container">
-                    <label>Contraseña</label>
+                    <label htmlFor='password'>Contraseña</label>
                     <div className="password-input-container">
                         <input type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                         <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
@@ -101,7 +101,6 @@ function Login() {
                     </button>
                 </div>
             </form>
-
         </div>
     );
 }
