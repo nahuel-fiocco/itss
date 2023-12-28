@@ -49,6 +49,7 @@ export function AuthProvider({ children }) {
         try {
             const auth = getAuth();
             await signOut(auth);
+            setCurrentUser(null);
         } catch (error) {
             console.error('Error durante el cierre de sesión:', error);
         }
