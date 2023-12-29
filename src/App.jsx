@@ -9,7 +9,6 @@ import Tecnico from './components/Tecnico.jsx';
 import Auditor from './components/Auditor.jsx';
 import { initializeApp } from "firebase/app";
 import Navbar from './components/NavBar.jsx';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCqM_HBfuxkvh43xgi65cuuRpeq-BaGGao",
@@ -45,13 +44,13 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-        <Route path='/admin' element={<ProtectedRoute element={<Administrador />} allowedRoles={['administrador']} />} />
-        <Route path='/tecnico' element={<ProtectedRoute element={<Tecnico />} allowedRoles={['tecnico']} />} />
-        <Route path='/auditor' element={<ProtectedRoute element={<Auditor />} allowedRoles={['auditor']} />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/forgot-password' element={<ForgotPassword />} />
-        <Route path='/' element={<Navigate to={getRedirectPath()} />} />
-        <Route path='*' element={<NotFound />} />
+        <Route path="/" element={<Navigate to={getRedirectPath()} />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin" element={<Administrador />} />
+        <Route path="/tecnico" element={<Tecnico />} />
+        <Route path="/auditor" element={<Auditor />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
