@@ -16,16 +16,9 @@ function Auditor() {
     const [expanded, setExpanded] = useState(null);
     const [motivoDisconformidad, setMotivoDisconformidad] = useState('');
     const [errorMsg, setErrorMsg] = useState(null);
-    const [tipoFirma, setTipoFirma] = useState(null);
-
-    const handleFirmaConforme = (horaId) => {
-        handleFirma(horaId, 'conformidad');
-        setTipoFirma(null);
-    };
-
-    const handleFirmaDisconforme = (horaId) => {
-        setTipoFirma('disconformidad');
-    };
+    const [tipoFirma, setTipoFirma] = useState('');
+    const [seleccionConformidad, setSeleccionConformidad] = useState({});
+    const [seleccionDisconformidad, setSeleccionDisconformidad] = useState({});
 
     const obtenerHorasTrabajo = async () => {
         try {
@@ -48,23 +41,32 @@ function Auditor() {
     const handleCheckboxChange = (horaId, tipoFirma) => {
         setSeleccionFirma((prevSelected) => {
             const newSelection = { ...prevSelected, [horaId]: tipoFirma };
+            setErrorMsg('');
 
-            setErrorMsg(null);
-
-            if (prevSelected[horaId] === tipoFirma) {
-                delete newSelection[horaId];
+            if (tipoFirma === 'conformidad') {
+                setSeleccionConformidad((prev) => ({
+                    ...prev,
+                    [horaId]: prev[horaId] === 'conformidad' ? '' : 'conformidad',
+                }));
+            } else if (tipoFirma === 'disconformidad') {
+                setSeleccionDisconformidad((prev) => ({
+                    ...prev,
+                    [horaId]: prev[horaId] === 'disconformidad' ? '' : 'disconformidad',
+                }));
             }
+
             Object.keys(newSelection).forEach((id) => {
                 if (id !== horaId && newSelection[id] === tipoFirma) {
                     delete newSelection[id];
                 }
             });
+
             const disconformidadSelected = Object.values(newSelection).some((tipo) => tipo === 'disconformidad');
             setMotivoDisconformidad(disconformidadSelected ? '' : motivoDisconformidad);
+
             return newSelection;
         });
     };
-
 
     const handleFirma = async () => {
         try {
@@ -115,6 +117,26 @@ function Auditor() {
                                     },
                                 });
                                 await actualizarTabla(tipoFirma, { [horaId]: true });
+
+                                if (tipoFirma === 'conformidad') {
+                                    setSeleccionConformidad((prev) => ({
+                                        ...prev,
+                                        [horaId]: 'conformidad',
+                                    }));
+                                    setSeleccionDisconformidad((prev) => ({
+                                        ...prev,
+                                        [horaId]: '',
+                                    }));
+                                } else if (tipoFirma === 'disconformidad') {
+                                    setSeleccionDisconformidad((prev) => ({
+                                        ...prev,
+                                        [horaId]: 'disconformidad',
+                                    }));
+                                    setSeleccionConformidad((prev) => ({
+                                        ...prev,
+                                        [horaId]: '',
+                                    }));
+                                }
                             }
                         } else {
                             console.error(`No se encontró el documento del usuario.`);
@@ -128,6 +150,7 @@ function Auditor() {
             await batch.commit();
             setConfirmacionVisible(true);
             setSeleccionFirma({});
+            renderHistorialMobile();
             setTimeout(() => {
                 setConfirmacionVisible(false);
             }, 5000);
@@ -135,6 +158,7 @@ function Auditor() {
             console.error('Error al firmar horas:', error);
         }
     };
+
 
     const Spinner = () => {
         const override = css`
@@ -149,7 +173,9 @@ function Auditor() {
         if (hora.firmado) {
             return hora.firmado.tipo === 'conformidad' ? '👍 Conforme' : '👎 Disconforme';
         }
-        return '❌ No';
+        else {
+            return '❌ No';
+        }
     };
 
     const renderHistorialMobile = () => (
@@ -162,13 +188,13 @@ function Auditor() {
                                 {hora.nroConforme}
                             </button>
                         </h2>
-                        <div id={`collapse${hora.id}`} className={`accordion-collapse collapse ${expanded === hora.id ? 'show' : ''}`} aria-labelledby={`heading${hora.id}`} data-bs-parent="#historialAcordeon" >
+                        <div id={`collapse${hora.id}`} className={`accordion-collapse collapse ${expanded === hora.id ? 'show' : ''}`} aria-labelledby={`heading${hora.id}`} data-bs-parent="#historialAcordeon">
                             <div className="accordion-body">
                                 <div className="accordion-body-content">
                                     <p><strong>Técnico:</strong> {hora.tecnico}</p>
-                                    <p><strong>Hora Comienzo:</strong> {hora.horaComienzo}</p>
-                                    <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion}</p>
-                                    <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras}</p>
+                                    <p><strong>Hora Comienzo:</strong> {hora.horaComienzo} hs.</p>
+                                    <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion} hs.</p>
+                                    <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras} hs.</p>
                                     <p><strong>Tipo de Tarea:</strong> {hora.tipoTarea}</p>
                                     <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
                                     <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
@@ -177,24 +203,12 @@ function Auditor() {
                                     {renderMotivoDisconformidad(hora)}
                                 </div>
                                 {hora.firmado ? null : (
-                                    <div>
-                                        <button
-                                            className="boton-firmar-mobile"
-                                            type="button"
-                                            onClick={() => handleConfirmFirma(hora.id, 'conformidad')}
-                                            disabled={hora.firmado !== undefined}
-                                        >
-                                            <FontAwesomeIcon icon={faUserPen} />
-                                            <span>Firmar</span>
+                                    <div className='contenedor-firmar-mobile'>
+                                        <button className="boton-firmar-mobile">
+                                            <span>Conforme</span>
                                         </button>
-                                        <button
-                                            className="boton-firmar-mobile"
-                                            type="button"
-                                            onClick={() => handleFirmaDisconforme(hora.id)}
-                                            disabled={hora.firmado !== undefined}
-                                        >
-                                            <FontAwesomeIcon icon={faUserPen} />
-                                            <span>Firmar Disconforme</span>
+                                        <button className="boton-firmar-mobile">
+                                            <span>Disconforme</span>
                                         </button>
                                     </div>
                                 )}
@@ -205,7 +219,6 @@ function Auditor() {
             </div>
         </div>
     );
-
 
     const renderMotivoDisconformidad = (hora) => {
         if (hora.firmado && hora.firmado.tipo === 'disconformidad') {
@@ -222,7 +235,7 @@ function Auditor() {
     };
 
     return (
-        <div className="auditor-container bg-dark text-light">
+        <div className="auditor-container bg-dark text-light pb-5">
             {loading ? (
                 <div className="spinner-container bg-dark text-light">
                     <p>Cargando...</p>
