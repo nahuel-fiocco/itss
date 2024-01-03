@@ -109,26 +109,26 @@ function Administrador() {
                 <div className="contenido-container">
                     <div className="dashboard">
                         <div className="cantidadConformes">
-                            <button className="p-2">
+                            <button className='bg-light-subtle p-2'>
                                 <h6>📜 {stats.cantidadConformes}</h6>
                                 <h5>conformes</h5>
                             </button>
                         </div>
                         <div className="horasDelMes">
-                            <button className='p-2'>
+                            <button className='bg-light-subtle p-2'>
                                 <h6>⌛ {stats.horasDelMes}hs.</h6>
                                 <h5>totales</h5>
                             </button>
                         </div>
                         <div className="horasConformidad">
-                            <button className='p-2'>
+                            <button className='bg-light-subtle p-2'>
                                 <h6>✅ {stats.porcentajeConformidad}%</h6>
                                 <h5>conformidad</h5>
                                 <h6></h6>
                             </button>
                         </div>
                         <div className="horasDisconformidad">
-                            <button className='p-2'>
+                            <button className='bg-light-subtle p-2'>
                                 <h6>❌ {stats.porcentajeDisconformidad}%</h6>
                                 <h5>disconformidad</h5>
                             </button>
