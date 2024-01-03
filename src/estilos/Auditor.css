@@ -79,10 +79,18 @@ input[type="checkbox"] {
 }
 
 .motivo-disconformidad {
+    width: 50%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+textarea {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .boton-firmar-mobile,
@@ -102,6 +110,7 @@ input[type="checkbox"] {
 .contenedor-firmar-mobile {
     width: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
 }
@@ -111,13 +120,18 @@ input[type="checkbox"] {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
 }
 
-.textarea-disconformidad-mobile {
+.contenedor-botones-firmar-mobile {
     width: 100%;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
+}
+
+.textarea-mobile {
+    width: 90%;
+    margin-top: 1vh;
+    margin-right: 10%;
+    padding: 1vh;
 }

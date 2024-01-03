@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs, updateDoc, getDoc, doc, writeBatch } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, onSnapshot, getDoc, doc, writeBatch } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
@@ -18,31 +18,52 @@ function Auditor() {
     const [errorMsg, setErrorMsg] = useState(null);
     const [seleccionConformidad, setSeleccionConformidad] = useState({});
     const [seleccionDisconformidad, setSeleccionDisconformidad] = useState({});
-    const [forceUpdate, setForceUpdate] = useState(0);
     const [firmandoConformidad, setFirmandoConformidad] = useState(false);
     const [firmandoDisconformidad, setFirmandoDisconformidad] = useState(false);
-
-    const obtenerHorasTrabajo = async () => {
-        try {
-            const db = getFirestore();
-            const horasCollectionRef = collection(db, 'horas');
-            const horasQuery = await getDocs(horasCollectionRef);
-            const horasData = horasQuery.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setHorasTrabajo(horasData);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error obteniendo horas de trabajo:', error);
-            setLoading(false);
-        }
-    };
+    const [motivoDisconformidadMobile, setMotivoDisconformidadMobile] = useState(false);
+    const [historialActualizado, setHistorialActualizado] = useState(0);
+    const [showFirmarButton, setShowFirmarButton] = useState(false);
 
     useEffect(() => {
+        const obtenerHorasTrabajo = async () => {
+            try {
+                const db = getFirestore();
+                const horasCollectionRef = collection(db, 'horas');
+                const horasQuery = await getDocs(horasCollectionRef);
+                const horasData = horasQuery.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+                setHorasTrabajo(horasData);
+                setLoading(false);
+
+                // Suscripción a cambios en tiempo real
+                const unsubscribe = onSnapshot(horasCollectionRef, (snapshot) => {
+                    const updatedHoras = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+                    setHorasTrabajo(updatedHoras);
+                });
+
+                // Devolver una función de limpieza
+                return () => unsubscribe();
+            } catch (error) {
+                console.error('Error obteniendo horas de trabajo:', error);
+                setLoading(false);
+                setErrorMsg('Error obteniendo horas de trabajo. Por favor, intenta nuevamente.');
+            }
+        };
+
         obtenerHorasTrabajo();
     }, []);
 
+
     const handleCheckboxChange = (horaId, tipoFirma) => {
         setSeleccionFirma((prevSelected) => {
-            const newSelection = { ...prevSelected, [horaId]: tipoFirma };
+            const newSelection = { ...prevSelected };
+
+            if (newSelection[horaId] === tipoFirma) {
+                delete newSelection[horaId];
+            } else {
+                // Si no estaba seleccionada, la seleccionamos
+                newSelection[horaId] = tipoFirma;
+            }
+
             setErrorMsg('');
 
             if (tipoFirma === 'conformidad') {
@@ -66,9 +87,12 @@ function Auditor() {
             const disconformidadSelected = Object.values(newSelection).some((tipo) => tipo === 'disconformidad');
             setMotivoDisconformidad(disconformidadSelected ? '' : motivoDisconformidad);
 
+            setShowFirmarButton(Object.keys(newSelection).length > 0);
+
             return newSelection;
         });
     };
+
 
     const actualizarTabla = async (tipoFirma, seleccion) => {
         await Promise.all(Object.entries(seleccion).map(async ([horaId, selectedType]) => {
@@ -242,7 +266,6 @@ function Auditor() {
                         setConfirmacionVisible(true);
                         setSeleccionConformidad((prev) => ({ ...prev, [horaId]: 'conformidad' }));
                         setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: '' }));
-                        setForceUpdate((prev) => prev + 1);
                         setTimeout(() => {
                             setConfirmacionVisible(false);
                         }, 5000);
@@ -264,7 +287,6 @@ function Auditor() {
         try {
             setFirmandoDisconformidad(true);
             const tipoFirma = 'disconformidad';
-            // Verificar que el motivo de disconformidad esté completo
             if (!motivoDisconformidad) {
                 setErrorMsg('El motivo de disconformidad es obligatorio.');
                 return;
@@ -307,7 +329,8 @@ function Auditor() {
                         setConfirmacionVisible(true);
                         setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: 'disconformidad' }));
                         setSeleccionConformidad((prev) => ({ ...prev, [horaId]: '' }));
-
+                        setMotivoDisconformidad('');
+                        setMotivoDisconformidadMobile(false);
                         setTimeout(() => {
                             setConfirmacionVisible(false);
                         }, 5000);
@@ -350,14 +373,24 @@ function Auditor() {
                                 </div>
                                 {hora.firmado ? null : (
                                     <div className='contenedor-firmar-mobile'>
-                                        <button className="boton-firmar-mobile" onClick={() => firmarConformeMobile(hora.id)}>
-                                            {firmandoConformidad ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} className="fa-spin" /> : null}
-                                            Conforme
-                                        </button>
-                                        <button className="boton-firmar-mobile" onClick={() => firmarDisconformeMobile(hora.id)}>
-                                            {firmandoDisconformidad ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} className="fa-spin" /> : null}
-                                            Disconforme
-                                        </button>
+                                        <div className="contenedor-botones-firmar-mobile">
+                                            <button className="boton-firmar-mobile" onClick={() => firmarConformeMobile(hora.id)}>
+                                                {firmandoConformidad ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} className="fa-spin" /> : null}
+                                                Conforme
+                                            </button>
+                                            <button className="boton-firmar-mobile" onClick={() => setMotivoDisconformidadMobile(true)}>
+                                                Disconforme
+                                            </button>
+                                        </div>
+                                        {motivoDisconformidadMobile ? (
+                                            <div className="motivo-disconformidad-mobile">
+                                                <textarea className='textarea-mobile' placeholder="Indique el motivo..." value={motivoDisconformidad} onChange={(e) => setMotivoDisconformidad(e.target.value)} required />
+                                                <button className='boton-firmar-mobile' onClick={() => firmarDisconformeMobile(hora.id)}>
+                                                    {firmandoDisconformidad ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} className="fa-spin" /> : null}
+                                                    Firmar en Disconformidad
+                                                </button>
+                                            </div>
+                                        ) : null}
                                     </div>
                                 )}
                             </div>
@@ -383,7 +416,7 @@ function Auditor() {
     };
 
     return (
-        <div key={forceUpdate} className="auditor-container bg-dark text-light pb-5">
+        <div key={historialActualizado} className="auditor-container bg-dark text-light pb-5">
             {loading ? (
                 <div className="spinner-container bg-dark text-light">
                     <p>Cargando...</p>
@@ -445,10 +478,12 @@ function Auditor() {
                                 </div>
                             )}
                             {errorMsg && <p className="bg-danger rounded text-center fs-6 p-1">{errorMsg}</p>}
-                            <button className="boton-firmar-desktop" type="button" onClick={handleFirma} disabled={Object.keys(seleccionFirma).length === 0}>
-                                <FontAwesomeIcon icon={faUserPen} />
-                                <span>Firmar</span>
-                            </button>
+                            {showFirmarButton && (
+                                <button className="boton-firmar-desktop" type="button" onClick={handleFirma} disabled={Object.keys(seleccionFirma).length === 0}>
+                                    <FontAwesomeIcon icon={faUserPen} />
+                                    <span>Firmar</span>
+                                </button>
+                            )}
                         </>
                     )}
                 </div>
