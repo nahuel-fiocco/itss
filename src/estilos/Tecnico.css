@@ -163,13 +163,13 @@ td {
     width: 80%;
 }
 
-.accordion-body-content{
+.accordion-body-content {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 }
 
-.accordion-body{
+.accordion-body {
     display: flex;
     flex-direction: column;
     align-items: flex-start;

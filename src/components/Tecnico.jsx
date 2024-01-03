@@ -116,6 +116,13 @@ function Tecnico() {
   };
 
   const calcularCantidadHoras = (horaInicio, horaFin) => {
+    if (!horaInicio || !horaFin) {
+      // Si alguna de las horas no está definida, establecer cantidadHoras como '--:--'
+      setCantidadHoras('--:--');
+      setHorasObtenidas(false);
+      return;
+    }
+
     const horaInicioArray = horaInicio.split(':');
     const horaFinArray = horaFin.split(':');
 
@@ -134,6 +141,7 @@ function Tecnico() {
     setCantidadHoras(formato24Horas(horasTrabajadas));
     setHorasObtenidas(true);
   };
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
