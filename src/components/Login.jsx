@@ -76,7 +76,7 @@ function Login() {
     return (
         <div className="login-container bg-dark text-light">
             <h1>Login</h1>
-            {error && <p className="error-message">{error}</p>}
+            {error && <p className="error-message text-center">{error}</p>}
             <form className='form-login' onSubmit={handleSubmit}>
                 <div className="email-container">
                     <label htmlFor='email'>Email</label>
