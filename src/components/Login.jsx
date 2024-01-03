@@ -61,7 +61,7 @@ function Login() {
             setPassword('');
         } catch (error) {
             console.error('Error al iniciar sesión:', error.message);
-            setError('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
+            setError('Credenciales incorrectas');
             setEmail('');
             setPassword('');
         } finally {
