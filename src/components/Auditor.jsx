@@ -12,17 +12,17 @@ function Auditor() {
     const [horasTrabajo, setHorasTrabajo] = useState([]);
     const { currentUser } = useAuth();
     const [seleccionFirma, setSeleccionFirma] = useState({});
-    const [confirmacionVisible, setConfirmacionVisible] = useState(false);
-    const [expanded, setExpanded] = useState(null);
-    const [motivoDisconformidad, setMotivoDisconformidad] = useState('');
-    const [errorMsg, setErrorMsg] = useState(null);
     const [seleccionConformidad, setSeleccionConformidad] = useState({});
     const [seleccionDisconformidad, setSeleccionDisconformidad] = useState({});
+    const [confirmacionVisible, setConfirmacionVisible] = useState(false);
     const [firmandoConformidad, setFirmandoConformidad] = useState(false);
     const [firmandoDisconformidad, setFirmandoDisconformidad] = useState(false);
     const [motivoDisconformidadMobile, setMotivoDisconformidadMobile] = useState(false);
-    const [historialActualizado, setHistorialActualizado] = useState(0);
     const [showFirmarButton, setShowFirmarButton] = useState(false);
+    const [expanded, setExpanded] = useState(null);
+    const [errorMsg, setErrorMsg] = useState(null);
+    const [motivoDisconformidad, setMotivoDisconformidad] = useState('');
+    const [historialActualizado, setHistorialActualizado] = useState(0);
 
     useEffect(() => {
         const obtenerHorasTrabajo = async () => {

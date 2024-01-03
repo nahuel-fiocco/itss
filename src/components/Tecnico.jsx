@@ -117,7 +117,6 @@ function Tecnico() {
 
   const calcularCantidadHoras = (horaInicio, horaFin) => {
     if (!horaInicio || !horaFin) {
-      // Si alguna de las horas no está definida, establecer cantidadHoras como '--:--'
       setCantidadHoras('--:--');
       setHorasObtenidas(false);
       return;
