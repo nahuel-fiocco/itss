@@ -16,7 +16,6 @@ function Auditor() {
     const [expanded, setExpanded] = useState(null);
     const [motivoDisconformidad, setMotivoDisconformidad] = useState('');
     const [errorMsg, setErrorMsg] = useState(null);
-    const [tipoFirma, setTipoFirma] = useState('');
     const [seleccionConformidad, setSeleccionConformidad] = useState({});
     const [seleccionDisconformidad, setSeleccionDisconformidad] = useState({});
 
@@ -68,23 +67,23 @@ function Auditor() {
         });
     };
 
+    const actualizarTabla = async (tipoFirma, seleccion) => {
+        await Promise.all(Object.entries(seleccion).map(async ([horaId, selectedType]) => {
+            if (selectedType) {
+                const index = horasTrabajo.findIndex((hora) => hora.id === horaId);
+                if (index !== -1) {
+                    const updatedHorasTrabajo = [...horasTrabajo];
+                    updatedHorasTrabajo[index].firmado = { tipo: tipoFirma };
+                    setHorasTrabajo(updatedHorasTrabajo);
+                }
+            }
+        }));
+    };
+
     const handleFirma = async () => {
         try {
             const db = getFirestore();
             const batch = writeBatch(db);
-
-            const actualizarTabla = async (tipoFirma, seleccion) => {
-                await Promise.all(Object.entries(seleccion).map(async ([horaId, selectedType]) => {
-                    if (selectedType) {
-                        const index = horasTrabajo.findIndex((hora) => hora.id === horaId);
-                        if (index !== -1) {
-                            const updatedHorasTrabajo = [...horasTrabajo];
-                            updatedHorasTrabajo[index].firmado = { tipo: tipoFirma };
-                            setHorasTrabajo(updatedHorasTrabajo);
-                        }
-                    }
-                }));
-            };
 
             await Promise.all(Object.entries(seleccionFirma).map(async ([horaId, tipoFirma]) => {
                 if (tipoFirma) {
@@ -148,9 +147,13 @@ function Auditor() {
             }));
 
             await batch.commit();
+
+            // Actualizar la información de firma específicamente
+            updateFirmaInfo();
+
             setConfirmacionVisible(true);
             setSeleccionFirma({});
-            renderHistorialMobile();
+
             setTimeout(() => {
                 setConfirmacionVisible(false);
             }, 5000);
@@ -158,6 +161,27 @@ function Auditor() {
             console.error('Error al firmar horas:', error);
         }
     };
+
+    // Nueva función para actualizar la información de firma
+    const updateFirmaInfo = () => {
+        setHorasTrabajo((prevHoras) => {
+            const updatedHoras = [...prevHoras];
+
+            // Actualizar solo la información de firma
+            Object.entries(seleccionFirma).forEach(([horaId, tipoFirma]) => {
+                const index = updatedHoras.findIndex((hora) => hora.id === horaId);
+                if (index !== -1) {
+                    updatedHoras[index].firmado = {
+                        tipo: tipoFirma,
+                        motivo: tipoFirma === 'disconformidad' ? motivoDisconformidad : null,
+                    };
+                }
+            });
+
+            return updatedHoras;
+        });
+    };
+
 
 
     const Spinner = () => {
@@ -175,6 +199,127 @@ function Auditor() {
         }
         else {
             return '❌ No';
+        }
+    };
+
+    const firmarConformeMobile = async (horaId) => {
+        try {
+            const tipoFirma = 'conformidad';
+
+            const db = getFirestore();
+            const horaDocRef = doc(db, 'horas', horaId);
+            const horaDoc = await getDoc(horaDocRef);
+
+            if (horaDoc.exists()) {
+                const horaData = horaDoc.data();
+
+                if (horaData.firmado) {
+                    console.error(`El documento con ID ${horaId} ya ha sido firmado.`);
+                } else {
+                    const userDocRef = currentUser ? doc(db, 'users', currentUser.uid) : null;
+                    let userDoc;
+
+                    if (userDocRef) {
+                        userDoc = await getDoc(userDocRef);
+                    }
+
+                    if (userDoc && userDoc.exists()) {
+                        const userData = userDoc.data();
+                        const nombreAuditor = userData.name;
+                        const apellidoAuditor = userData.surname;
+
+                        const batch = writeBatch(db);
+
+                        batch.update(horaDocRef, {
+                            firmado: {
+                                tipo: tipoFirma,
+                                auditor: `${nombreAuditor} ${apellidoAuditor}`,
+                            },
+                        });
+
+                        await batch.commit();
+
+                        setConfirmacionVisible(true);
+                        setSeleccionConformidad((prev) => ({ ...prev, [horaId]: 'conformidad' }));
+                        setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: '' }));
+                        renderHistorialMobile();
+
+                        setTimeout(() => {
+                            setConfirmacionVisible(false);
+                        }, 5000);
+                    } else {
+                        console.error(`No se encontró el documento del usuario.`);
+                    }
+                }
+            } else {
+                console.error(`El documento con ID ${horaId} no existe.`);
+            }
+        } catch (error) {
+            console.error('Error al firmar en conformidad:', error);
+        }
+    };
+
+    const firmarDisconformeMobile = async (horaId) => {
+        try {
+            const tipoFirma = 'disconformidad';
+
+            // Verificar que el motivo de disconformidad esté completo
+            if (!motivoDisconformidad) {
+                setErrorMsg('El motivo de disconformidad es obligatorio.');
+                return;
+            }
+
+            const db = getFirestore();
+            const horaDocRef = doc(db, 'horas', horaId);
+            const horaDoc = await getDoc(horaDocRef);
+
+            if (horaDoc.exists()) {
+                const horaData = horaDoc.data();
+
+                if (horaData.firmado) {
+                    console.error(`El documento con ID ${horaId} ya ha sido firmado.`);
+                } else {
+                    const userDocRef = currentUser ? doc(db, 'users', currentUser.uid) : null;
+                    let userDoc;
+
+                    if (userDocRef) {
+                        userDoc = await getDoc(userDocRef);
+                    }
+
+                    if (userDoc && userDoc.exists()) {
+                        const userData = userDoc.data();
+                        const nombreAuditor = userData.name;
+                        const apellidoAuditor = userData.surname;
+
+                        const batch = writeBatch(db);
+
+                        batch.update(horaDocRef, {
+                            firmado: {
+                                tipo: tipoFirma,
+                                auditor: `${nombreAuditor} ${apellidoAuditor}`,
+                                motivo: motivoDisconformidad,
+                            },
+                        });
+
+                        await batch.commit();
+
+                        setConfirmacionVisible(true);
+                        setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: 'disconformidad' }));
+                        setSeleccionConformidad((prev) => ({ ...prev, [horaId]: '' }));
+                        renderHistorialMobile();
+
+                        setTimeout(() => {
+                            setConfirmacionVisible(false);
+                        }, 5000);
+                    } else {
+                        console.error(`No se encontró el documento del usuario.`);
+                    }
+                }
+            } else {
+                console.error(`El documento con ID ${horaId} no existe.`);
+            }
+        } catch (error) {
+            console.error('Error al firmar en disconformidad:', error);
         }
     };
 
@@ -204,10 +349,10 @@ function Auditor() {
                                 </div>
                                 {hora.firmado ? null : (
                                     <div className='contenedor-firmar-mobile'>
-                                        <button className="boton-firmar-mobile">
+                                        <button className="boton-firmar-mobile" onClick={() => firmarConformeMobile(hora.id)}>
                                             <span>Conforme</span>
                                         </button>
-                                        <button className="boton-firmar-mobile">
+                                        <button className="boton-firmar-mobile" onClick={() => firmarDisconformeMobile(hora.id)}>
                                             <span>Disconforme</span>
                                         </button>
                                     </div>
