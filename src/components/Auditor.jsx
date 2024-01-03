@@ -19,7 +19,8 @@ function Auditor() {
     const [seleccionConformidad, setSeleccionConformidad] = useState({});
     const [seleccionDisconformidad, setSeleccionDisconformidad] = useState({});
     const [forceUpdate, setForceUpdate] = useState(0);
-    const [firmando, setFirmando] = useState(false);
+    const [firmandoConformidad, setFirmandoConformidad] = useState(false);
+    const [firmandoDisconformidad, setFirmandoDisconformidad] = useState(false);
 
     const obtenerHorasTrabajo = async () => {
         try {
@@ -201,7 +202,7 @@ function Auditor() {
 
     const firmarConformeMobile = async (horaId) => {
         try {
-            setFirmando(true);
+            setFirmandoConformidad(true);
             const tipoFirma = 'conformidad';
             const db = getFirestore();
             const horaDocRef = doc(db, 'horas', horaId);
@@ -255,13 +256,13 @@ function Auditor() {
         } catch (error) {
             console.error('Error al firmar en conformidad:', error);
         }
-        setFirmando(false);
+        setFirmandoConformidad(false);
     };
 
 
     const firmarDisconformeMobile = async (horaId) => {
-        setFirmando(true);
         try {
+            setFirmandoDisconformidad(true);
             const tipoFirma = 'disconformidad';
             // Verificar que el motivo de disconformidad esté completo
             if (!motivoDisconformidad) {
@@ -320,7 +321,7 @@ function Auditor() {
         } catch (error) {
             console.error('Error al firmar en disconformidad:', error);
         }
-        setFirmando(false);
+        setFirmandoDisconformidad(false);
     };
 
     const renderHistorialMobile = () => (
@@ -350,10 +351,11 @@ function Auditor() {
                                 {hora.firmado ? null : (
                                     <div className='contenedor-firmar-mobile'>
                                         <button className="boton-firmar-mobile" onClick={() => firmarConformeMobile(hora.id)}>
-                                            {firmando ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} className="fa-spin" /> : null}
+                                            {firmandoConformidad ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} className="fa-spin" /> : null}
                                             Conforme
                                         </button>
                                         <button className="boton-firmar-mobile" onClick={() => firmarDisconformeMobile(hora.id)}>
+                                            {firmandoDisconformidad ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} className="fa-spin" /> : null}
                                             Disconforme
                                         </button>
                                     </div>
