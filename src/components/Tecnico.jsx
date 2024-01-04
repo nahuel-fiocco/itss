@@ -6,6 +6,7 @@ import { BarLoader } from 'react-spinners';
 import '../estilos/Tecnico.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 
 function Tecnico() {
   const [loading, setLoading] = useState(true);
@@ -218,7 +219,7 @@ function Tecnico() {
 
   const renderFirmado = (hora) => {
     if (hora.firmado && hora.firmado.tipo) {
-      return hora.firmado.tipo === 'conforme' ? '👍 Conforme' : '👎 Disconforme';
+      return hora.firmado.tipo === 'conformidad' ? '👍 Conforme' : '👎 Disconforme';
     }
     return '❌ No';
   };
@@ -285,12 +286,12 @@ function Tecnico() {
           </select>
         </div>
       </div>
-      <div className="horizontalDiv">
+      <div className="horizontalDiv row">
         <div className="tagname col">
           <label className="label">Detalle de Tareas</label>
         </div>
         <div className="contenido col">
-          <textarea value={detalleTareas} onChange={(e) => setDetalleTareas(e.target.value)} required />
+          <textarea className='textarea-tecnico' value={detalleTareas} onChange={(e) => setDetalleTareas(e.target.value)} required />
         </div>
       </div>
     </div>
@@ -329,7 +330,30 @@ function Tecnico() {
                   <td>{hora.detalleTareas}</td>
                   <td>{hora.fechaCreacion}</td>
                   <td>{hora.horaCreacion}</td>
-                  <td>{renderFirmado(hora)}</td>
+                  <td className='tipoFirma'>
+                    {hora.firmado.tipo === 'disconformidad' ? (
+                      <OverlayTrigger
+                        trigger="click"
+                        key={hora.nroConforme}
+                        placement="bottom"
+                        overlay={
+                          <Popover id={`popover-${hora.nroConforme}`}>
+                            <Popover.Header as="h3">Motivo de Disconformidad</Popover.Header>
+                            <Popover.Body>{hora.firmado.motivo}</Popover.Body>
+                          </Popover>
+                        }
+                        rootClose
+                      >
+                        <span className='disconforme' style={{ cursor: 'pointer' }}>
+                          {renderFirmado(hora)}
+                        </span>
+                      </OverlayTrigger>
+                    ) : (
+                      <span>
+                        {renderFirmado(hora)}
+                      </span>
+                    )}
+                  </td>
                   <td>
                     <button className='eliminar' onClick={() => handleEliminarConforme(hora.nroConforme)}>
                       <FontAwesomeIcon icon={faTrash} />
@@ -427,7 +451,7 @@ const Spinner = () => {
       margin: 0 auto;
     `;
 
-  return <BarLoader className='rounded' color="#36D7B7" loading css={override} />;
+  return <BarLoader className='rounded' color="white" loading css={override} />;
 };
 
 export default Tecnico;

@@ -212,7 +212,7 @@ function Auditor() {
       margin: 0 auto;
     `;
 
-        return <BarLoader className='rounded' color="#36D7B7" loading css={override} />;
+        return <BarLoader className='rounded' color="white" loading css={override} />;
     };
 
     const renderFirmado = (hora) => {
@@ -474,7 +474,7 @@ function Auditor() {
                             )}
                             {Object.values(seleccionFirma).some((tipo) => tipo === 'disconformidad') && (
                                 <div className="motivo-disconformidad">
-                                    <textarea placeholder="Introduzca el motivo de su disconformidad..." value={motivoDisconformidad} onChange={(e) => setMotivoDisconformidad(e.target.value)} required />
+                                    <textarea className='textarea-mobile' placeholder="Introduzca el motivo de su disconformidad..." value={motivoDisconformidad} onChange={(e) => setMotivoDisconformidad(e.target.value)} required />
                                 </div>
                             )}
                             {errorMsg && <p className="bg-danger rounded text-center fs-6 p-1">{errorMsg}</p>}

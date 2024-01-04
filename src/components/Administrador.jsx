@@ -95,7 +95,7 @@ function Administrador() {
             margin: 0 auto;
         `;
 
-        return <BarLoader className='rounded' color="#36D7B7" loading css={override} />;
+        return <BarLoader className='rounded' color="white" loading css={override} />;
     };
 
     return (

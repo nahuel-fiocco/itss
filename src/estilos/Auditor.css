@@ -86,13 +86,6 @@ input[type="checkbox"] {
     justify-content: center;
 }
 
-textarea {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 .boton-firmar-mobile,
 .boton-firmar-desktop {
     display: flex;

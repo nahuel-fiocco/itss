@@ -27,8 +27,7 @@ h2 {
 
 input[type="date"],
 input[type="time"],
-select,
-textarea {
+select {
     margin-bottom: 1.5em;
     padding: 0.5em;
     width: 20vh;
@@ -50,27 +49,11 @@ option {
     color: white;
 }
 
-textarea {
-    resize: none;
-    transform: translate(1.4vh, 0);
-}
-
 button {
     padding: 1px;
     cursor: pointer;
     border: none;
     border-radius: 5px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th,
-td {
-    padding: 1em;
-    text-align: left;
 }
 
 .mensaje-confirmacion {
@@ -125,8 +108,6 @@ td {
     }
 }
 
-/*Version mobile*/
-
 @media only screen and (max-width: 768px) {
     .historial-desktop {
         display: none;
@@ -175,3 +156,22 @@ td {
     flex-direction: column;
     align-items: flex-start;
 }
+
+.tipoFirma {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    width: max-content;
+}
+
+.textarea-tecnico {
+    width: 20vh;
+    border-radius: 5px;
+    border: 1px solid white;
+    background-color: transparent;
+    color: white;
+    padding: 5px;
+    resize: none;
+}
+
