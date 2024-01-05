@@ -16,6 +16,10 @@ h2 {
     gap: 1em;
 }
 
+td{
+    height: 10vh;
+}
+
 .vistaFormulario {
     width: 60vh;
 }
@@ -30,18 +34,19 @@ input[type="time"],
 select {
     margin-bottom: 1.5em;
     padding: 0.5em;
-    width: 20vh;
+    width: 25vh;
     background-color: transparent;
     color: white;
     border-radius: 5px;
     border: 1px solid white;
 }
 
-.horasObtenidas {
+.horasObtenidas, .tipoTarea {
     border-radius: 5px;
     border: 1px solid white;
     padding: 0.5em;
-    width: 20vh;
+    width: 25vh;
+    height: 6vh;
 }
 
 option {
@@ -166,7 +171,7 @@ button {
 }
 
 .textarea-tecnico {
-    width: 20vh;
+    width: 25vh;
     border-radius: 5px;
     border: 1px solid white;
     background-color: transparent;

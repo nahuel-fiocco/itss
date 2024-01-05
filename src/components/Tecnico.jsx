@@ -132,14 +132,50 @@ function Tecnico() {
     const diferenciaEnMilisegundos = fin.getTime() - inicio.getTime();
     const horasTrabajadas = diferenciaEnMilisegundos / (1000 * 60 * 60);
 
+    // Verificar si el trabajo está dentro del horario laboral regular (09:00 a 18:00 de lunes a viernes)
+    const horaInicioLaboral = new Date(0, 0, 0, 9, 0); // 09:00
+    const horaFinLaboral = new Date(0, 0, 0, 18, 0);   // 18:00
+    const esHorarioLaboral = (inicio >= horaInicioLaboral && fin <= horaFinLaboral);
+
+    // Calcular el factor multiplicador en función del horario laboral
+    const factorMultiplicador = esHorarioLaboral ? 1 : 2;
+
+    // Calcular las horas trabajadas y aplicar el factor multiplicador
+    const horasTotales = horasTrabajadas * factorMultiplicador;
+
+    // Determinar automáticamente el tipo de tarea (ordinaria o extraordinaria)
+    const tipoTareaAutomatico = esHorarioLaboral ? 'Ordinaria' : 'Extraordinaria';
+
     const formato24Horas = (hours) => {
       const roundedHours = Math.floor(hours);
       const minutes = (hours - roundedHours) * 60;
       return `${roundedHours.toString().padStart(2, '0')}:${Math.round(minutes).toString().padStart(2, '0')}`;
     };
 
-    setCantidadHoras(formato24Horas(horasTrabajadas));
+    setCantidadHoras(formato24Horas(horasTotales));
     setHorasObtenidas(true);
+    setTipoTarea(tipoTareaAutomatico); // Establecer automáticamente el tipo de tarea
+  };
+
+  const calcularTipoTarea = (horaInicio, horaFin) => {
+    if (!horaInicio || !horaFin) {
+      return '';
+    }
+
+    const horaInicioArray = horaInicio.split(':');
+    const horaFinArray = horaFin.split(':');
+
+    const inicio = new Date(0, 0, 0, horaInicioArray[0], horaInicioArray[1]);
+    const fin = new Date(0, 0, 0, horaFinArray[0], horaFinArray[1]);
+
+    const horaLaboralInicio = new Date(0, 0, 0, 9, 0); // Hora de inicio del horario laboral
+    const horaLaboralFin = new Date(0, 0, 0, 18, 0); // Hora de fin del horario laboral
+
+    if (inicio >= horaLaboralInicio && fin <= horaLaboralFin) {
+      return 'Ordinaria';
+    } else {
+      return 'Extraordinaria';
+    }
   };
 
 
@@ -219,7 +255,23 @@ function Tecnico() {
 
   const renderFirmado = (hora) => {
     if (hora.firmado && hora.firmado.tipo) {
-      return hora.firmado.tipo === 'conformidad' ? '👍 Conforme' : '👎 Disconforme';
+      if (hora.firmado.tipo === 'conformidad') {
+        return '👍 Conforme';
+      } else if (hora.firmado.tipo === 'disconformidad') {
+        const popover = (
+          <Popover id={`popover-${hora.nroConforme}`} className='p-1 bg-secondary text-light' title="Motivo de Disconformidad">
+            Ver Motivo
+          </Popover>
+        );
+
+        return (
+          <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={popover}>
+            <span className='disconforme' style={{ cursor: 'pointer' }}>
+              👎 Disconforme
+            </span>
+          </OverlayTrigger>
+        );
+      }
     }
     return '❌ No';
   };
@@ -250,7 +302,7 @@ function Tecnico() {
           <input type="date" value={fechaConforme} onChange={handleFechaConformeChange} required />
         </div>
       </div>
-      <div className="horizontalDiv row  mt-3">
+      <div className="horizontalDiv row">
         <div className="tagname col">
           <label className="label">Hora Comienzo</label>
         </div>
@@ -258,7 +310,7 @@ function Tecnico() {
           <input type="time" value={horaComienzo} onChange={handleHoraComienzoChange} required />
         </div>
       </div>
-      <div className="horizontalDiv row  mt-3">
+      <div className="horizontalDiv row">
         <div className="tagname col">
           <label className="label">Hora Finalización</label>
         </div>
@@ -266,7 +318,7 @@ function Tecnico() {
           <input type="time" value={horaFinalizacion} onChange={handleHoraFinalizacionChange} required />
         </div>
       </div>
-      <div className="horizontalDiv row  mt-3">
+      <div className="horizontalDiv row">
         <div className="tagname col">
           <label className="label">Cantidad de Horas</label>
         </div>
@@ -279,14 +331,10 @@ function Tecnico() {
           <label className="label">Tipo de Tarea</label>
         </div>
         <div className="contenido col">
-          <select value={tipoTarea} onChange={(e) => setTipoTarea(e.target.value)} required>
-            <option value="">Selecciona...</option>
-            <option value="Correctivo">Correctivo</option>
-            <option value="Preventivo">Preventivo</option>
-          </select>
+          <label className='tipoTarea'>{calcularTipoTarea(horaComienzo, horaFinalizacion)}</label>
         </div>
       </div>
-      <div className="horizontalDiv row">
+      <div className="horizontalDiv row mt-3">
         <div className="tagname col">
           <label className="label">Detalle de Tareas</label>
         </div>
@@ -335,7 +383,7 @@ function Tecnico() {
                       <OverlayTrigger
                         trigger="click"
                         key={hora.nroConforme}
-                        placement="bottom"
+                        placement="top"
                         overlay={
                           <Popover id={`popover-${hora.nroConforme}`}>
                             <Popover.Header as="h3">Motivo de Disconformidad</Popover.Header>
