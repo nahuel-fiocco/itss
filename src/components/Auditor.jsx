@@ -23,6 +23,7 @@ function Auditor() {
     const [errorMsg, setErrorMsg] = useState(null);
     const [motivoDisconformidad, setMotivoDisconformidad] = useState('');
     const [historialActualizado, setHistorialActualizado] = useState(0);
+    const [firmando, setFirmando] = useState(false);
 
     useEffect(() => {
         const obtenerHorasTrabajo = async () => {
@@ -52,47 +53,33 @@ function Auditor() {
         obtenerHorasTrabajo();
     }, []);
 
-
     const handleCheckboxChange = (horaId, tipoFirma) => {
         setSeleccionFirma((prevSelected) => {
             const newSelection = { ...prevSelected };
 
-            if (newSelection[horaId] === tipoFirma) {
-                delete newSelection[horaId];
-            } else {
-                // Si no estaba seleccionada, la seleccionamos
-                newSelection[horaId] = tipoFirma;
+            if (tipoFirma === 'conformidad') {
+                newSelection[horaId] = newSelection[horaId] === 'conformidad' ? '' : 'conformidad';
+            } else if (tipoFirma === 'disconformidad') {
+                // Solo permitir una disconformidad seleccionada a la vez
+                newSelection[horaId] = newSelection[horaId] === 'disconformidad' ? '' : 'disconformidad';
             }
 
             setErrorMsg('');
 
-            if (tipoFirma === 'conformidad') {
-                setSeleccionConformidad((prev) => ({
-                    ...prev,
-                    [horaId]: prev[horaId] === 'conformidad' ? '' : 'conformidad',
-                }));
-            } else if (tipoFirma === 'disconformidad') {
-                setSeleccionDisconformidad((prev) => ({
-                    ...prev,
-                    [horaId]: prev[horaId] === 'disconformidad' ? '' : 'disconformidad',
-                }));
-            }
+            // Actualizamos los estados de conformidad y disconformidad
+            setSeleccionConformidad((prev) => ({ ...prev, [horaId]: tipoFirma === 'conformidad' ? 'conformidad' : '' }));
+            setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: tipoFirma === 'disconformidad' ? 'disconformidad' : '' }));
 
-            Object.keys(newSelection).forEach((id) => {
-                if (id !== horaId && newSelection[id] === tipoFirma) {
-                    delete newSelection[id];
-                }
-            });
-
+            // Actualizamos el motivo de disconformidad
             const disconformidadSelected = Object.values(newSelection).some((tipo) => tipo === 'disconformidad');
             setMotivoDisconformidad(disconformidadSelected ? '' : motivoDisconformidad);
 
-            setShowFirmarButton(Object.keys(newSelection).length > 0);
+            // Mostramos el botón de firmar si hay alguna selección y si el motivo de disconformidad está presente
+            setShowFirmarButton(Object.keys(newSelection).length > 0 && motivoDisconformidad.trim() !== '');
 
             return newSelection;
         });
     };
-
 
     const actualizarTabla = async (tipoFirma, seleccion) => {
         await Promise.all(Object.entries(seleccion).map(async ([horaId, selectedType]) => {
@@ -108,11 +95,15 @@ function Auditor() {
     };
 
     const handleFirma = async () => {
+        setFirmando(true);
         try {
             const db = getFirestore();
             const batch = writeBatch(db);
-            let nombreAuditor = ''; // Declare these variables
+            let nombreAuditor = '';
             let apellidoAuditor = '';
+
+            // Variable para rastrear si se ha firmado al menos un conformado
+            let alMenosUnConformeFirmado = false;
 
             await Promise.all(Object.entries(seleccionFirma).map(async ([horaId, tipoFirma]) => {
                 if (tipoFirma) {
@@ -144,26 +135,14 @@ function Auditor() {
                                         motivo: tipoFirma === 'disconformidad' ? motivoDisconformidad : null,
                                     },
                                 });
-                                await actualizarTabla(tipoFirma, { [horaId]: true });
 
                                 if (tipoFirma === 'conformidad') {
-                                    setSeleccionConformidad((prev) => ({
-                                        ...prev,
-                                        [horaId]: 'conformidad',
-                                    }));
-                                    setSeleccionDisconformidad((prev) => ({
-                                        ...prev,
-                                        [horaId]: '',
-                                    }));
+                                    setSeleccionConformidad((prev) => ({ ...prev, [horaId]: 'conformidad' }));
+                                    setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: '' }));
+                                    alMenosUnConformeFirmado = true;
                                 } else if (tipoFirma === 'disconformidad') {
-                                    setSeleccionDisconformidad((prev) => ({
-                                        ...prev,
-                                        [horaId]: 'disconformidad',
-                                    }));
-                                    setSeleccionConformidad((prev) => ({
-                                        ...prev,
-                                        [horaId]: '',
-                                    }));
+                                    setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: 'disconformidad' }));
+                                    setSeleccionConformidad((prev) => ({ ...prev, [horaId]: '' }));
                                 }
 
                                 // Call updateFirmaInfo with nombreAuditor and apellidoAuditor
@@ -178,6 +157,11 @@ function Auditor() {
                 }
             }));
 
+            // Si no hay conformes seleccionados después de firmar, ocultar el botón
+            if (!alMenosUnConformeFirmado) {
+                setShowFirmarButton(false);
+            }
+
             await batch.commit();
             setConfirmacionVisible(true);
             setSeleccionFirma({});
@@ -187,7 +171,11 @@ function Auditor() {
         } catch (error) {
             console.error('Error al firmar horas:', error);
         }
+        setFirmando(false);
+        setConfirmacionVisible(false);
     };
+
+
 
     const updateFirmaInfo = (horaId, nombreAuditor, apellidoAuditor) => {
         setHorasTrabajo((prevHoras) => {
@@ -461,7 +449,7 @@ function Auditor() {
                                                         <input type="checkbox" checked={seleccionFirma[hora.id] === 'conformidad'} onChange={() => handleCheckboxChange(hora.id, 'conformidad')}
                                                             disabled={hora.firmado !== undefined} />
                                                     )}
-                                            </td>
+                                                </td>
                                                 <td className="disconformidad">
                                                     {hora.firmado && hora.firmado.tipo === 'disconformidad' ? '❌' : (
                                                         <input type="checkbox" checked={seleccionFirma[hora.id] === 'disconformidad'} onChange={() => handleCheckboxChange(hora.id, 'disconformidad')} disabled={hora.firmado !== undefined} />
@@ -480,7 +468,9 @@ function Auditor() {
                             {errorMsg && <p className="bg-danger rounded text-center fs-6 p-1">{errorMsg}</p>}
                             {showFirmarButton && (
                                 <button className="boton-firmar-desktop" type="button" onClick={handleFirma} disabled={Object.keys(seleccionFirma).length === 0}>
-                                    <FontAwesomeIcon icon={faUserPen} />
+                                    {firmando ?
+                                        <FontAwesomeIcon icon={faSpinner} />
+                                        : <FontAwesomeIcon icon={faUserPen} />}
                                     <span>Firmar</span>
                                 </button>
                             )}
