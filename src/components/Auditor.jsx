@@ -461,7 +461,7 @@ function Auditor() {
                                                         <input type="checkbox" checked={seleccionFirma[hora.id] === 'conformidad'} onChange={() => handleCheckboxChange(hora.id, 'conformidad')}
                                                             disabled={hora.firmado !== undefined} />
                                                     )}
-                                                </td>
+                                            </td>
                                                 <td className="disconformidad">
                                                     {hora.firmado && hora.firmado.tipo === 'disconformidad' ? '❌' : (
                                                         <input type="checkbox" checked={seleccionFirma[hora.id] === 'disconformidad'} onChange={() => handleCheckboxChange(hora.id, 'disconformidad')} disabled={hora.firmado !== undefined} />

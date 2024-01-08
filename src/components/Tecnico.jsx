@@ -5,7 +5,7 @@ import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
 import '../estilos/Tecnico.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 
 function Tecnico() {
@@ -258,19 +258,7 @@ function Tecnico() {
       if (hora.firmado.tipo === 'conformidad') {
         return '👍 Conforme';
       } else if (hora.firmado.tipo === 'disconformidad') {
-        const popover = (
-          <Popover id={`popover-${hora.nroConforme}`} className='p-1 bg-secondary text-light' title="Motivo de Disconformidad">
-            Ver Motivo
-          </Popover>
-        );
-
-        return (
-          <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={popover}>
-            <span className='disconforme' style={{ cursor: 'pointer' }}>
-              👎 Disconforme
-            </span>
-          </OverlayTrigger>
-        );
+        return '👎 Disconforme';
       }
     }
     return '❌ No';
@@ -348,7 +336,9 @@ function Tecnico() {
   const renderHistorial = () => (
     <div className="historial-container">
       <h3>Historial de Horas</h3>
-      {historialHoras.length === 0 ? (<p className="tabla-vacia">No hay conformes cargados.</p>) : (
+      {historialHoras.length === 0 ? (
+        <p className="tabla-vacia">No hay conformes cargados.</p>
+      ) : (
         <div className="historial-desktop">
           <table>
             <thead>
@@ -379,23 +369,24 @@ function Tecnico() {
                   <td>{hora.fechaCreacion}</td>
                   <td>{hora.horaCreacion}</td>
                   <td className='tipoFirma'>
-                    {hora.firmado.tipo === 'disconformidad' ? (
-                      <OverlayTrigger
-                        trigger="click"
-                        key={hora.nroConforme}
-                        placement="top"
-                        overlay={
-                          <Popover id={`popover-${hora.nroConforme}`}>
-                            <Popover.Header as="h3">Motivo de Disconformidad</Popover.Header>
-                            <Popover.Body>{hora.firmado.motivo}</Popover.Body>
-                          </Popover>
-                        }
-                        rootClose
-                      >
-                        <span className='disconforme' style={{ cursor: 'pointer' }}>
-                          {renderFirmado(hora)}
-                        </span>
-                      </OverlayTrigger>
+                    {hora.firmado && hora.firmado.motivo ? (
+                      <span className="disconforme-indicator">
+                        {renderFirmado(hora)}{' '}
+                        <OverlayTrigger
+                          trigger={['hover', 'focus']}
+                          placement="top"
+                          overlay={
+                            <Popover id={`popover-${hora.nroConforme}`} className='p-2 bg-secondary text-light' title="Motivo de Disconformidad">
+                              <div className='text-center'>
+                                <div>Motivo</div>
+                                <div>{hora.firmado.motivo}</div>
+                              </div>
+                            </Popover>
+                          }
+                        >
+                          <FontAwesomeIcon icon={faInfoCircle} />
+                        </OverlayTrigger>
+                      </span>
                     ) : (
                       <span>
                         {renderFirmado(hora)}
@@ -434,6 +425,11 @@ function Tecnico() {
                     <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
                     <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
                     <p><strong>Firmado:</strong> {renderFirmado(hora)}</p>
+                    {hora.firmado && hora.firmado.tipo === 'disconformidad' && (
+                      <p>
+                        <strong>Motivo de Disconformidad:</strong> {hora.firmado.motivo}
+                      </p>
+                    )}
                   </div>
                   <button className='eliminar' onClick={() => handleEliminarConforme(hora.nroConforme)}>
                     <FontAwesomeIcon icon={faTrash} />
