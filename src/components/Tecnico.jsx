@@ -46,6 +46,15 @@ function Tecnico() {
   const [guardando, setGuardando] = useState(false);
   const [formRendered, setFormRendered] = useState(false);
   const [horasObtenidas, setHorasObtenidas] = useState(false);
+  const [horaComienzoError, setHoraComienzoError] = useState('');
+  const [horaFinalizacionError, setHoraFinalizacionError] = useState('');
+
+  const mostrarError = (mensaje, duracion = 2000) => {
+    setErrorMensaje(mensaje);
+    setTimeout(() => {
+      setErrorMensaje('');
+    }, duracion);
+  };
 
   const handleFechaConformeChange = (event) => {
     setFechaConforme(event.target.value);
@@ -58,7 +67,7 @@ function Tecnico() {
       await deleteDoc(conformesDocRef);
       setHistorialHoras((prevHistorialHoras) => prevHistorialHoras.filter((hora) => hora.nroConforme !== nroConforme));
     } catch (error) {
-      console.error('Error eliminando conformes:', error);
+      mostrarError('Error eliminando conformes', error);
     }
   };
 
@@ -99,7 +108,7 @@ function Tecnico() {
         setLoading(false);
         setContentLoaded(true);
       } catch (error) {
-        console.error('Error obteniendo datos iniciales:', error);
+        mostrarError('Error obteniendo datos iniciales:', error);
         setLoading(false);
       }
     };
@@ -107,13 +116,37 @@ function Tecnico() {
   }, [currentUser, formRendered]);
 
   const handleHoraComienzoChange = (event) => {
-    setHoraComienzo(event.target.value);
-    calcularCantidadHoras(event.target.value, horaFinalizacion);
+    const nuevaHoraComienzo = event.target.value;
+    setHoraComienzo(nuevaHoraComienzo);
+    setHoraComienzoError('');  // Limpiar el error al cambiar la hora
+    validarHoras(nuevaHoraComienzo, horaFinalizacion);
+    calcularCantidadHoras(nuevaHoraComienzo, horaFinalizacion);
   };
 
   const handleHoraFinalizacionChange = (event) => {
-    setHoraFinalizacion(event.target.value);
-    calcularCantidadHoras(horaComienzo, event.target.value);
+    const nuevaHoraFinalizacion = event.target.value;
+    setHoraFinalizacion(nuevaHoraFinalizacion);
+    setHoraFinalizacionError('');  // Limpiar el error al cambiar la hora
+    validarHoras(horaComienzo, nuevaHoraFinalizacion);
+    calcularCantidadHoras(horaComienzo, nuevaHoraFinalizacion);
+  };
+
+  const validarHoras = (horaInicio, horaFin) => {
+    if (horaInicio && horaFin) {
+      const horaInicioArray = horaInicio.split(':');
+      const horaFinArray = horaFin.split(':');
+
+      const inicio = new Date(0, 0, 0, horaInicioArray[0], horaInicioArray[1]);
+      const fin = new Date(0, 0, 0, horaFinArray[0], horaFinArray[1]);
+
+      if (inicio >= fin) {
+        return "La hora de comienzo debe ser anterior a la hora de finalización.";
+      } else if (fin < inicio) {
+        return "La hora de finalización debe ser posterior a la hora de comienzo.";
+      } else {
+        return null; // Sin error
+      }
+    }
   };
 
   const calcularCantidadHoras = (horaInicio, horaFin) => {
@@ -132,18 +165,13 @@ function Tecnico() {
     const diferenciaEnMilisegundos = fin.getTime() - inicio.getTime();
     const horasTrabajadas = diferenciaEnMilisegundos / (1000 * 60 * 60);
 
-    // Verificar si el trabajo está dentro del horario laboral regular (09:00 a 18:00 de lunes a viernes)
     const horaInicioLaboral = new Date(0, 0, 0, 9, 0); // 09:00
     const horaFinLaboral = new Date(0, 0, 0, 18, 0);   // 18:00
     const esHorarioLaboral = (inicio >= horaInicioLaboral && fin <= horaFinLaboral);
 
-    // Calcular el factor multiplicador en función del horario laboral
     const factorMultiplicador = esHorarioLaboral ? 1 : 2;
 
-    // Calcular las horas trabajadas y aplicar el factor multiplicador
     const horasTotales = horasTrabajadas * factorMultiplicador;
-
-    // Determinar automáticamente el tipo de tarea (ordinaria o extraordinaria)
     const tipoTareaAutomatico = esHorarioLaboral ? 'Ordinaria' : 'Extraordinaria';
 
     const formato24Horas = (hours) => {
@@ -152,10 +180,30 @@ function Tecnico() {
       return `${roundedHours.toString().padStart(2, '0')}:${Math.round(minutes).toString().padStart(2, '0')}`;
     };
 
-    setCantidadHoras(formato24Horas(horasTotales));
-    setHorasObtenidas(true);
-    setTipoTarea(tipoTareaAutomatico); // Establecer automáticamente el tipo de tarea
+    if (inicio >= fin) {
+      // Mostrar Popover indicando el error de la hora de comienzo posterior a la hora de finalización
+      const popover = (
+        <Popover id={`popover-error-hora-${nroConforme}`} className='p-2 bg-danger text-light' title="Error">
+          <div className='text-center'>
+            <div>La hora de comienzo debe ser anterior a la hora de finalización.</div>
+          </div>
+        </Popover>
+      );
+
+      setCantidadHoras(
+        <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={popover}>
+          <span className='text-danger'>Error <FontAwesomeIcon icon={faInfoCircle} /></span>
+        </OverlayTrigger>
+      );
+      setHorasObtenidas(true);
+    } else {
+      setCantidadHoras(formato24Horas(horasTotales));
+      setHorasObtenidas(true);
+      setTipoTarea('');
+    }
   };
+
+
 
   const calcularTipoTarea = (horaInicio, horaFin) => {
     if (!horaInicio || !horaFin) {
@@ -173,17 +221,33 @@ function Tecnico() {
 
     if (inicio >= horaLaboralInicio && fin <= horaLaboralFin) {
       return 'Ordinaria';
-    } else {
+    } else if ((inicio < horaLaboralInicio && fin <= horaLaboralInicio) || (inicio >= horaLaboralFin && fin > horaLaboralFin)) {
       return 'Extraordinaria';
+    } else {
+      // Mostrar Popover indicando que la carga de horas de distinto tipo debe hacerse en conformes diferentes
+      const popover = (
+        <Popover id={`popover-error-hora-fin-${nroConforme}`} className='p-2 bg-danger text-light' title="Error">
+          <div className='text-center'>
+            <div>La carga de horas de distinto tipo debe hacerse en conformes diferentes.</div>
+          </div>
+        </Popover>
+      );
+      return (
+        <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={popover}>
+          <span className='text-danger'>Error <FontAwesomeIcon icon={faInfoCircle} /></span>
+        </OverlayTrigger>
+      );
     }
   };
+
+
 
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!horaComienzo || !horaFinalizacion || !tipoTarea || !detalleTareas || !fechaConforme) {
-      setErrorMensaje('Por favor, completa todos los campos obligatorios.');
+      mostrarError('Por favor, completa todos los campos obligatorios.');
       setTimeout(() => {
         setErrorMensaje('');
       }, 2000);
@@ -217,7 +281,7 @@ function Tecnico() {
       }, 5000);
     }
     catch (error) {
-      console.error('Error guardando horas:', error);
+      mostrarError('Error guardando horas:', error);
     } finally {
       setGuardando(false);
     }
@@ -248,7 +312,7 @@ function Tecnico() {
         const historialData = historialQuery.docs.map((doc) => doc.data());
         setHistorialHoras(historialData);
       } catch (error) {
-        console.error('Error obteniendo historial:', error);
+        mostrarError('Error obteniendo historial:', error);
       }
     }
   };
