@@ -16,7 +16,7 @@ h2 {
     gap: 1em;
 }
 
-td{
+td {
     height: 10vh;
 }
 
@@ -41,7 +41,8 @@ select {
     border: 1px solid white;
 }
 
-.horasObtenidas, .tipoTarea {
+.horasObtenidas,
+.tipoTarea {
     border-radius: 5px;
     border: 1px solid white;
     padding: 0.5em;
@@ -179,4 +180,3 @@ button {
     padding: 5px;
     resize: none;
 }
-
