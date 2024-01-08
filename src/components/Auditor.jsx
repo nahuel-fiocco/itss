@@ -6,6 +6,7 @@ import { BarLoader } from 'react-spinners';
 import '../estilos/Auditor.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPen, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 
 function Auditor() {
     const [loading, setLoading] = useState(true);
@@ -14,7 +15,6 @@ function Auditor() {
     const [seleccionFirma, setSeleccionFirma] = useState({});
     const [seleccionConformidad, setSeleccionConformidad] = useState({});
     const [seleccionDisconformidad, setSeleccionDisconformidad] = useState({});
-    const [confirmacionVisible, setConfirmacionVisible] = useState(false);
     const [firmandoConformidad, setFirmandoConformidad] = useState(false);
     const [firmandoDisconformidad, setFirmandoDisconformidad] = useState(false);
     const [motivoDisconformidadMobile, setMotivoDisconformidadMobile] = useState(false);
@@ -24,6 +24,7 @@ function Auditor() {
     const [motivoDisconformidad, setMotivoDisconformidad] = useState('');
     const [historialActualizado, setHistorialActualizado] = useState(0);
     const [firmando, setFirmando] = useState(false);
+    const [registroExitoso, setRegistroExitoso] = useState(false);
 
     useEffect(() => {
         const obtenerHorasTrabajo = async () => {
@@ -53,34 +54,6 @@ function Auditor() {
         obtenerHorasTrabajo();
     }, []);
 
-    const handleCheckboxChange = (horaId, tipoFirma) => {
-        setSeleccionFirma((prevSelected) => {
-            const newSelection = { ...prevSelected };
-
-            if (tipoFirma === 'conformidad') {
-                newSelection[horaId] = newSelection[horaId] === 'conformidad' ? '' : 'conformidad';
-            } else if (tipoFirma === 'disconformidad') {
-                // Solo permitir una disconformidad seleccionada a la vez
-                newSelection[horaId] = newSelection[horaId] === 'disconformidad' ? '' : 'disconformidad';
-            }
-
-            setErrorMsg('');
-
-            // Actualizamos los estados de conformidad y disconformidad
-            setSeleccionConformidad((prev) => ({ ...prev, [horaId]: tipoFirma === 'conformidad' ? 'conformidad' : '' }));
-            setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: tipoFirma === 'disconformidad' ? 'disconformidad' : '' }));
-
-            // Actualizamos el motivo de disconformidad
-            const disconformidadSelected = Object.values(newSelection).some((tipo) => tipo === 'disconformidad');
-            setMotivoDisconformidad(disconformidadSelected ? '' : motivoDisconformidad);
-
-            // Mostramos el botón de firmar si hay alguna selección y si el motivo de disconformidad está presente
-            setShowFirmarButton(Object.keys(newSelection).length > 0 && motivoDisconformidad.trim() !== '');
-
-            return newSelection;
-        });
-    };
-
     const actualizarTabla = async (tipoFirma, seleccion) => {
         await Promise.all(Object.entries(seleccion).map(async ([horaId, selectedType]) => {
             if (selectedType) {
@@ -94,15 +67,56 @@ function Auditor() {
         }));
     };
 
+    const handleCheckboxChange = (horaId, tipoFirma) => {
+        setSeleccionFirma((prevSelected) => {
+            const newSelection = { ...prevSelected };
+
+            if (tipoFirma === 'conformidad') {
+                newSelection[horaId] = newSelection[horaId] === 'conformidad' ? '' : 'conformidad';
+            } else if (tipoFirma === 'disconformidad') {
+                Object.keys(newSelection).forEach((key) => {
+                    if (newSelection[key] === 'disconformidad' && key !== horaId) {
+                        newSelection[key] = ''; // Desmarcar la disconformidad anterior
+                    }
+                });
+
+                newSelection[horaId] = newSelection[horaId] === 'disconformidad' ? '' : 'disconformidad';
+            }
+
+            // Actualizar estados de conformidad y disconformidad
+            setSeleccionConformidad((prev) => ({ ...prev, [horaId]: tipoFirma === 'conformidad' ? 'conformidad' : '' }));
+            setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: tipoFirma === 'disconformidad' ? 'disconformidad' : '' }));
+
+            // Actualizar el motivo de disconformidad
+            const disconformidadSelected = Object.values(newSelection).some((tipo) => tipo === 'disconformidad');
+            setMotivoDisconformidad(disconformidadSelected ? '' : motivoDisconformidad);
+
+            // Mostrar el botón de firmar si hay al menos una conformidad o disconformidad seleccionada
+            const haySeleccion = Object.values(newSelection).some((tipo) => tipo === 'conformidad' || tipo === 'disconformidad');
+            setShowFirmarButton(haySeleccion);
+
+            setErrorMsg('');
+
+            return newSelection;
+        });
+    };
+
+
     const handleFirma = async () => {
         setFirmando(true);
+
         try {
+            // Validar motivo de disconformidad
+            if (Object.values(seleccionFirma).includes('disconformidad') && motivoDisconformidad.trim() === '') {
+                setErrorMsg('El motivo de disconformidad es obligatorio.');
+                setFirmando(false);
+                return;
+            }
+            setErrorMsg('');
             const db = getFirestore();
             const batch = writeBatch(db);
             let nombreAuditor = '';
             let apellidoAuditor = '';
-
-            // Variable para rastrear si se ha firmado al menos un conformado
             let alMenosUnConformeFirmado = false;
 
             await Promise.all(Object.entries(seleccionFirma).map(async ([horaId, tipoFirma]) => {
@@ -157,22 +171,20 @@ function Auditor() {
                 }
             }));
 
-            // Si no hay conformes seleccionados después de firmar, ocultar el botón
-            if (!alMenosUnConformeFirmado) {
-                setShowFirmarButton(false);
-            }
-
             await batch.commit();
-            setConfirmacionVisible(true);
-            setSeleccionFirma({});
+
+            // Actualiza el estado de registroExitoso
+            setRegistroExitoso(alMenosUnConformeFirmado);
             setTimeout(() => {
-                setConfirmacionVisible(false);
+                // Restablece el estado después de un período de tiempo
+                setRegistroExitoso(false);
             }, 5000);
+            setSeleccionFirma({});
+            setShowFirmarButton(false);
         } catch (error) {
             console.error('Error al firmar horas:', error);
         }
         setFirmando(false);
-        setConfirmacionVisible(false);
     };
 
 
@@ -251,12 +263,8 @@ function Auditor() {
 
                         await batch.commit();
                         updateFirmaInfo(horaId);
-                        setConfirmacionVisible(true);
                         setSeleccionConformidad((prev) => ({ ...prev, [horaId]: 'conformidad' }));
                         setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: '' }));
-                        setTimeout(() => {
-                            setConfirmacionVisible(false);
-                        }, 5000);
                     } else {
                         console.error(`No se encontró el documento del usuario.`);
                     }
@@ -314,14 +322,10 @@ function Auditor() {
 
                         await batch.commit();
                         updateFirmaInfo();
-                        setConfirmacionVisible(true);
                         setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: 'disconformidad' }));
                         setSeleccionConformidad((prev) => ({ ...prev, [horaId]: '' }));
                         setMotivoDisconformidad('');
                         setMotivoDisconformidadMobile(false);
-                        setTimeout(() => {
-                            setConfirmacionVisible(false);
-                        }, 5000);
                     } else {
                         console.error(`No se encontró el documento del usuario.`);
                     }
@@ -403,6 +407,12 @@ function Auditor() {
         setExpanded((prevExpanded) => (prevExpanded === horaId ? null : horaId));
     };
 
+    const renderPopover = (hora) => (
+        <Popover id={`popover-${hora.id}`}>
+            <Popover.Body>{hora.firmado.motivo}</Popover.Body>
+        </Popover>
+    );
+
     return (
         <div key={historialActualizado} className="auditor-container bg-dark text-light pb-5">
             {loading ? (
@@ -451,7 +461,11 @@ function Auditor() {
                                                     )}
                                                 </td>
                                                 <td className="disconformidad">
-                                                    {hora.firmado && hora.firmado.tipo === 'disconformidad' ? '❌' : (
+                                                    {hora.firmado && hora.firmado.tipo === 'disconformidad' ? (
+                                                        <OverlayTrigger overlay={renderPopover(hora)}>
+                                                            <span role="img" aria-label="Disconforme">❌</span>
+                                                        </OverlayTrigger>
+                                                    ) : (
                                                         <input type="checkbox" checked={seleccionFirma[hora.id] === 'disconformidad'} onChange={() => handleCheckboxChange(hora.id, 'disconformidad')} disabled={hora.firmado !== undefined} />
                                                     )}
                                                 </td>
@@ -466,14 +480,15 @@ function Auditor() {
                                 </div>
                             )}
                             {errorMsg && <p className="bg-danger rounded text-center fs-6 p-1">{errorMsg}</p>}
-                            {showFirmarButton && (
-                                <button className="boton-firmar-desktop" type="button" onClick={handleFirma} disabled={Object.keys(seleccionFirma).length === 0}>
+                            {registroExitoso && <p className="bg-success rounded text-center fs-6 p-1">Firmas registradas exitosamente.</p>}
+                            {showFirmarButton ? (
+                                <button className="boton-firmar-desktop" type="button" onClick={handleFirma}>
                                     {firmando ?
                                         <FontAwesomeIcon icon={faSpinner} />
                                         : <FontAwesomeIcon icon={faUserPen} />}
                                     <span>Firmar</span>
                                 </button>
-                            )}
+                            ) : null}
                         </>
                     )}
                 </div>
