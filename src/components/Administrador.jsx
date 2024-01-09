@@ -1,81 +1,98 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
+import { Container, Row, Col, Card } from 'react-bootstrap';
 import '../estilos/Administrador.css';
+import { PieChart } from '@mui/x-charts';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import moment from 'moment';
 
 function Administrador() {
     const { currentUser } = useAuth();
     const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState({
-        horasDelMes: '00:00',
-        horasConformidad: '00:00',
-        horasDisconformidad: '00:00',
-        porcentajeConformidad: 0,
-        porcentajeDisconformidad: 0,
-        cantidadConformes: 0,
-    });
+    const [chartData, setChartData] = useState(null);
+    const [totalHoras, setTotalHoras] = useState(0);
 
-    const currentDate = new Date();
-    const currentMonth = currentDate.toLocaleString('es-ES', { month: 'long' });
+    const formatTotalHoras = (totalMinutos) => {
+        const horas = Math.floor(totalMinutos / 60);
+        const minutos = totalMinutos % 60;
+        return `${horas}:${minutos.toString().padStart(2, '0')}hs`;
+    };
 
-    const sumarHoras = (hora1, hora2) => {
-        const [horas1, minutos1] = hora1.split(':').map(Number);
-        const [horas2, minutos2] = hora2.split(':').map(Number);
+    const formattedChartData = chartData
+        ? chartData.map(item => ({
+            ...item,
+            value: Number(item.value) || 0,  // Asegura que 'value' sea un número, o usa 0 si no es un número válido
+        }))
+        : [];
 
-        const totalHoras = horas1 + horas2;
-        const totalMinutos = minutos1 + minutos2;
-
-        const horasResultado = totalHoras + Math.floor(totalMinutos / 60);
-        const minutosResultado = totalMinutos % 60;
-
-        const resultado = `${String(horasResultado).padStart(2, '0')}:${String(minutosResultado).padStart(2, '0')}`;
-        return resultado;
+    const TooltipContent = ({ datum, color }) => {
+        return (
+            <div style={{ color }}>
+                <strong>{datum.label}</strong>: {formatDuration(datum.value)}
+            </div>
+        );
     };
 
     useEffect(() => {
+
+        const formatDuration = (durationInMinutes) => {
+            const hours = Math.floor(durationInMinutes / 60);
+            const minutes = durationInMinutes % 60;
+            return `${hours}:${minutes.toString().padStart(2, '0')}hs`;
+        };
+
         const fetchData = async () => {
             try {
                 const db = getFirestore();
 
-                const horasQuery = await getDocs(collection(db, 'horas'));
-                const totalHoras = horasQuery.docs.reduce((acc, doc) => {
-                    const cantidadHoras = doc.data().cantidadHoras;
-                    return sumarHoras(acc, cantidadHoras);
-                }, '00:00');
+                // Obtén la fecha actual y el primer día del mes
+                const currentDate = moment();
+                const firstDayOfMonth = currentDate.clone().startOf('month').format('YYYY-MM-DD');
 
-                const conformidadQuery = await getDocs(query(collection(db, 'horas'), where('firmado.tipo', '==', 'conformidad')));
-                const totalConformidad = conformidadQuery.docs.reduce((acc, doc) => {
-                    const cantidadHoras = doc.data().cantidadHoras;
-                    return sumarHoras(acc, cantidadHoras);
-                }, '00:00');
+                // Consulta para obtener las horas del mes actual
+                const querySnapshot = await getDocs(
+                    query(collection(db, 'horas'), where('fechaConforme', '>=', firstDayOfMonth))
+                );
 
-                const totalHorasConformidad = totalConformidad.split(':').map(Number);
-                const totalHorasMes = totalHoras.split(':').map(Number);
-                const porcentajeConformidad = (totalHorasConformidad[0] * 60 + totalHorasConformidad[1]) / (totalHorasMes[0] * 60 + totalHorasMes[1]) * 100;
+                // Procesa los resultados para obtener la cantidad total, conformes y disconformes
+                let conformesFirmadosConformidad = 0;
+                let conformesFirmadosDisconformidad = 0;
+                let conformesNoFirmados = 0;
+                let totalMinutos = 0;
 
-                const disconformidadQuery = await getDocs(query(collection(db, 'horas'), where('firmado.tipo', '==', 'disconformidad')));
-                const totalDisconformidad = disconformidadQuery.docs.reduce((acc, doc) => {
-                    const cantidadHoras = doc.data().cantidadHoras;
-                    return sumarHoras(acc, cantidadHoras);
-                }, '00:00');
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
 
-                const totalHorasDisconformidad = totalDisconformidad.split(':').map(Number);
-                const porcentajeDisconformidad = (totalHorasDisconformidad[0] * 60 + totalHorasDisconformidad[1]) / (totalHorasMes[0] * 60 + totalHorasMes[1]) * 100;
+                    // Asegúrate de tener un formato de fecha consistente
+                    const fechaConforme = moment(data.fechaConforme, 'YYYY-MM-DD');
 
-                const conformesQuery = await getDocs(collection(db, 'horas'));
-                const cantidadConformes = conformesQuery.size;
-
-                setStats({
-                    horasDelMes: totalHoras,
-                    horasConformidad: totalConformidad,
-                    horasDisconformidad: totalDisconformidad,
-                    porcentajeConformidad: porcentajeConformidad.toFixed(2),
-                    porcentajeDisconformidad: porcentajeDisconformidad.toFixed(2),
-                    cantidadConformes,
+                    // Verifica que la fecha esté dentro del mes actual
+                    if (fechaConforme.isSameOrBefore(currentDate, 'month')) {
+                        if (data.firmado) {
+                            if (data.firmado.tipo === 'conformidad') {
+                                conformesFirmadosConformidad += moment.duration(data.cantidadHoras).asMinutes();
+                            } else if (data.firmado.tipo === 'disconformidad') {
+                                conformesFirmadosDisconformidad += moment.duration(data.cantidadHoras).asMinutes();
+                            }
+                        } else {
+                            conformesNoFirmados += moment.duration(data.cantidadHoras).asMinutes();
+                        }
+                    }
                 });
 
+                totalMinutos = conformesFirmadosConformidad + conformesFirmadosDisconformidad + conformesNoFirmados;
+                setTotalHoras(totalMinutos);
+
+                // Crea el objeto de datos para el gráfico
+                const chartData = [
+                    { id: 0, value: conformesFirmadosConformidad, label: 'Conformidad', color: 'green' },
+                    { id: 1, value: conformesFirmadosDisconformidad, label: 'Disconformidad', color: 'red' },
+                    { id: 2, value: conformesNoFirmados, label: 'No Firmados', color: 'blue' },
+                ];
+
+                setChartData(chartData);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -86,7 +103,6 @@ function Administrador() {
         if (currentUser) {
             fetchData();
         }
-
     }, [currentUser]);
 
     const Spinner = () => {
@@ -106,35 +122,48 @@ function Administrador() {
                     <Spinner />
                 </div>
             ) : (
-                <div className="contenido-container">
-                    <div className="dashboard">
-                        <div className="cantidadConformes">
-                            <button className='bg-light-subtle p-2'>
-                                <h6>📜 {stats.cantidadConformes}</h6>
-                                <h5>conformes</h5>
-                            </button>
-                        </div>
-                        <div className="horasDelMes">
-                            <button className='bg-light-subtle p-2'>
-                                <h6>⌛ {stats.horasDelMes}hs.</h6>
-                                <h5>totales</h5>
-                            </button>
-                        </div>
-                        <div className="horasConformidad">
-                            <button className='bg-light-subtle p-2'>
-                                <h6>✅ {stats.porcentajeConformidad}%</h6>
-                                <h5>conformidad</h5>
-                                <h6></h6>
-                            </button>
-                        </div>
-                        <div className="horasDisconformidad">
-                            <button className='bg-light-subtle p-2'>
-                                <h6>❌ {stats.porcentajeDisconformidad}%</h6>
-                                <h5>disconformidad</h5>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <Container fluid>
+                    <Row>
+                        <Col xs={12} md={6} lg={4}>
+                            <Card className='p-1'>
+                                <h5 className='text-center'>Dashboard</h5>
+                                <Card.Body className=''>
+                                    <PieChart
+                                        series={[{
+                                            data: formattedChartData,
+                                            innerRadius: 20,
+                                            outerRadius: 50,
+                                            paddingAngle: 2,
+                                            cornerRadius: 5,
+                                            startAngle: -90,
+                                            endAngle: 180,
+                                            cx: 50
+                                        }]}
+                                        width={300}
+                                        height={100}
+                                        tooltip={<TooltipContent />}
+                                    />
+                                    <span>Total: {formatTotalHoras(totalHoras)}</span>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                        <Col xs={12} md={6} lg={4}>
+                            <Card>
+                                <Card.Body>
+                                    {/* Contenido de la segunda card */}
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                        <Col xs={12} md={6} lg={4}>
+                            <Card>
+                                <Card.Body>
+                                    {/* Contenido de la tercera card */}
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                        {/* Puedes agregar más columnas según sea necesario */}
+                    </Row>
+                </Container>
             )}
         </div>
     );

@@ -203,8 +203,6 @@ function Tecnico() {
     }
   };
 
-
-
   const calcularTipoTarea = (horaInicio, horaFin) => {
     if (!horaInicio || !horaFin) {
       return '';
@@ -239,9 +237,6 @@ function Tecnico() {
       );
     }
   };
-
-
-
 
   const handleSubmit = async (event) => {
     event.preventDefault();
