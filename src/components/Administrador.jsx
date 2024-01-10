@@ -4,15 +4,26 @@ import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import '../estilos/Administrador.css';
-import { PieChart } from '@mui/x-charts';
+import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import moment from 'moment';
+
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
 
 function Administrador() {
     const { currentUser } = useAuth();
     const [loading, setLoading] = useState(true);
     const [chartData, setChartData] = useState(null);
     const [totalHoras, setTotalHoras] = useState(0);
+    const [techChartData, setTechChartData] = useState(null);
+    const [loadingTechData, setLoadingTechData] = useState(true);
 
     const formatTotalHoras = (totalMinutos) => {
         const horas = Math.floor(totalMinutos / 60);
@@ -23,40 +34,36 @@ function Administrador() {
     const formattedChartData = chartData
         ? chartData.map(item => ({
             ...item,
-            value: Number(item.value) || 0,  // Asegura que 'value' sea un número, o usa 0 si no es un número válido
+            value: Number(item.value) || 0,
         }))
         : [];
 
     const TooltipContent = ({ datum, color }) => {
+        const formattedValue = formatDuration(datum.value);
         return (
             <div style={{ color }}>
-                <strong>{datum.label}</strong>: {formatDuration(datum.value)}
+                <strong>{datum.label}</strong>: {formattedValue}
             </div>
         );
     };
 
+    const formatDuration = (durationInMinutes) => {
+        const hours = Math.floor(durationInMinutes / 60);
+        const minutes = durationInMinutes % 60;
+        return `${hours}:${minutes.toString().padStart(2, '0')}hs`;
+    };
+
     useEffect(() => {
-
-        const formatDuration = (durationInMinutes) => {
-            const hours = Math.floor(durationInMinutes / 60);
-            const minutes = durationInMinutes % 60;
-            return `${hours}:${minutes.toString().padStart(2, '0')}hs`;
-        };
-
         const fetchData = async () => {
             try {
                 const db = getFirestore();
-
-                // Obtén la fecha actual y el primer día del mes
                 const currentDate = moment();
                 const firstDayOfMonth = currentDate.clone().startOf('month').format('YYYY-MM-DD');
 
-                // Consulta para obtener las horas del mes actual
                 const querySnapshot = await getDocs(
                     query(collection(db, 'horas'), where('fechaConforme', '>=', firstDayOfMonth))
                 );
 
-                // Procesa los resultados para obtener la cantidad total, conformes y disconformes
                 let conformesFirmadosConformidad = 0;
                 let conformesFirmadosDisconformidad = 0;
                 let conformesNoFirmados = 0;
@@ -64,11 +71,8 @@ function Administrador() {
 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-
-                    // Asegúrate de tener un formato de fecha consistente
                     const fechaConforme = moment(data.fechaConforme, 'YYYY-MM-DD');
 
-                    // Verifica que la fecha esté dentro del mes actual
                     if (fechaConforme.isSameOrBefore(currentDate, 'month')) {
                         if (data.firmado) {
                             if (data.firmado.tipo === 'conformidad') {
@@ -85,18 +89,57 @@ function Administrador() {
                 totalMinutos = conformesFirmadosConformidad + conformesFirmadosDisconformidad + conformesNoFirmados;
                 setTotalHoras(totalMinutos);
 
-                // Crea el objeto de datos para el gráfico
                 const chartData = [
-                    { id: 0, value: conformesFirmadosConformidad, label: 'Conformidad', color: 'green' },
-                    { id: 1, value: conformesFirmadosDisconformidad, label: 'Disconformidad', color: 'red' },
-                    { id: 2, value: conformesNoFirmados, label: 'No Firmados', color: 'blue' },
+                    { id: 0, value: conformesFirmadosConformidad, label: 'Conformidad', color: '#31ca71' },
+                    { id: 1, value: conformesFirmadosDisconformidad, label: 'Disconformidad', color: '#E95646' },
+                    { id: 2, value: conformesNoFirmados, label: 'No Firmados', color: '#764dfa' },
                 ];
 
                 setChartData(chartData);
                 setLoading(false);
+                await fetchTechChartData();
             } catch (error) {
                 console.error('Error fetching data:', error);
                 setLoading(false);
+            }
+        };
+
+        const fetchTechChartData = async () => {
+            try {
+                const db = getFirestore();
+
+                // Paso 1: Obtener la lista de técnicos
+                const techQuerySnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'tecnico')));
+                const techCount = techQuerySnapshot.size;
+
+                // Paso 2 y 3: Calcular la cantidad de horas trabajadas por cada técnico
+                const techChartData = [];
+                for (let i = 0; i < techCount; i++) {
+                    const techDoc = techQuerySnapshot.docs[i];
+                    const techId = techDoc.id;
+
+                    const techHoursQuerySnapshot = await getDocs(query(collection(db, 'horas'), where('tecnicoId', '==', techId)));
+                    let techTotalHours = 0;
+
+                    techHoursQuerySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        techTotalHours += moment.duration(data.cantidadHoras).asMinutes();
+                    });
+
+                    techChartData.push({
+                        id: i,
+                        value: techTotalHours,
+                        label: techDoc.data().nombre,
+                        color: getRandomColor(),
+                    });
+                }
+
+                // Paso 4: Visualizar el nuevo Pie Chart
+                setTechChartData(techChartData);
+                setLoadingTechData(false); // Indicar que la carga de datos de técnicos ha finalizado
+            } catch (error) {
+                console.error('Error fetching tech data:', error);
+                setLoadingTechData(false);
             }
         };
 
@@ -124,44 +167,46 @@ function Administrador() {
             ) : (
                 <Container fluid>
                     <Row>
-                        <Col xs={12} md={6} lg={4}>
-                            <Card className='p-1'>
-                                <h5 className='text-center'>Dashboard</h5>
-                                <Card.Body className=''>
-                                    <PieChart
-                                        series={[{
+                        <Col>
+                            <Card className='card'>
+                                <Card.Header className='text-center'>Dashboard</Card.Header>
+                                <PieChart
+                                    series={[
+                                        {
+                                            arcLabel: (item) => formatDuration(item.value),
+                                            arcLabelMinAngle: 45,
                                             data: formattedChartData,
                                             innerRadius: 20,
-                                            outerRadius: 50,
-                                            paddingAngle: 2,
-                                            cornerRadius: 5,
-                                            startAngle: -90,
-                                            endAngle: 180,
-                                            cx: 50
-                                        }]}
-                                        width={300}
-                                        height={100}
-                                        tooltip={<TooltipContent />}
-                                    />
-                                    <span>Total: {formatTotalHoras(totalHoras)}</span>
-                                </Card.Body>
+                                            outerRadius: 80,
+                                            paddingAngle: 5,
+                                            cornerRadius: 8,
+                                        },
+                                    ]}
+                                    height={200}
+                                    tooltip={<TooltipContent />}
+                                />
+                                <Card.Footer className='text-center'>Total: {formatTotalHoras(totalHoras)}</Card.Footer>
                             </Card>
                         </Col>
-                        <Col xs={12} md={6} lg={4}>
-                            <Card>
-                                <Card.Body>
-                                    {/* Contenido de la segunda card */}
-                                </Card.Body>
+                        <Col>
+                            <Card className="card">
+                                <PieChart
+                                    series={[
+                                        {
+                                            arcLabel: (item) => formatDuration(item.value),
+                                            arcLabelMinAngle: 45,
+                                            data: techChartData || [],
+                                            innerRadius: 20,
+                                            outerRadius: 80,
+                                            paddingAngle: 5,
+                                            cornerRadius: 8,
+                                        },
+                                    ]}
+                                    height={200}
+                                    tooltip={<TooltipContent />}
+                                />
                             </Card>
                         </Col>
-                        <Col xs={12} md={6} lg={4}>
-                            <Card>
-                                <Card.Body>
-                                    {/* Contenido de la tercera card */}
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                        {/* Puedes agregar más columnas según sea necesario */}
                     </Row>
                 </Container>
             )}

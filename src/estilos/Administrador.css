@@ -6,3 +6,7 @@
     min-height: 100vh;
     flex-grow: 1;
 }
+
+.card{
+    background-color: #b3b3b3;
+}
