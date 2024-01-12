@@ -4,7 +4,7 @@ import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import '../estilos/Administrador.css';
-import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
+import { PieChart } from '@mui/x-charts/PieChart';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import moment from 'moment';
 
@@ -173,7 +173,7 @@ function Administrador() {
                     <Row>
                         <Col>
                             <Card className='card'>
-                                <Card.Header className='text-center'>Hs. / </Card.Header>
+                                <Card.Header className='text-center'>Dashboard</Card.Header>
                                 <PieChart
                                     series={[
                                         {
