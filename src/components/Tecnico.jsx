@@ -241,7 +241,7 @@ function Tecnico() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!horaComienzo || !horaFinalizacion || !tipoTarea || !detalleTareas || !fechaConforme) {
+    if (!horaComienzo || !horaFinalizacion || !detalleTareas || !fechaConforme) {
       mostrarError('Por favor, completa todos los campos obligatorios.');
       setTimeout(() => {
         setErrorMensaje('');

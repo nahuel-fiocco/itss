@@ -22,15 +22,11 @@ function Administrador() {
     const [loading, setLoading] = useState(true);
     const [chartData, setChartData] = useState(null);
     const [totalHoras, setTotalHoras] = useState(0);
-    const [techChartData, setTechChartData] = useState(null);
-    const [loadingTechData, setLoadingTechData] = useState(true);
-    const [totalTecnicos, setTotalTecnicos] = useState(0);
 
     const formatTotalHoras = (totalMinutos) => {
         if (isNaN(totalMinutos) || totalMinutos === 0) {
             return 'N/A';
         }
-
         const horas = Math.floor(totalMinutos / 60);
         const minutos = totalMinutos % 60;
         return `${horas}:${minutos.toString().padStart(2, '0')}hs`;
@@ -102,7 +98,6 @@ function Administrador() {
 
                 setChartData(chartData);
                 setLoading(false);
-                await fetchTechChartData();
             } catch (error) {
                 console.error('Error fetching data:', error);
                 setLoading(false);
@@ -113,44 +108,6 @@ function Administrador() {
             fetchData();
         }
     }, [currentUser]);
-
-    const fetchTechChartData = async () => {
-        try {
-            const db = getFirestore();
-
-            const techQuerySnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'tecnico')));
-            const techCount = techQuerySnapshot.size;
-
-            const techChartData = [];
-            for (let i = 0; i < techCount; i++) {
-                const techDoc = techQuerySnapshot.docs[i];
-                const techId = techDoc.id;
-
-                const techHoursQuerySnapshot = await getDocs(query(collection(db, 'horas'), where('tecnicoId', '==', techId)));
-                let techTotalHours = 0;
-
-                techHoursQuerySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    techTotalHours += moment.duration(data.cantidadHoras).asMinutes();
-                });
-
-                techChartData.push({
-                    id: i,
-                    value: techTotalHours,
-                    label: techDoc.data().nombre,
-                    color: getRandomColor(),
-                });
-            }
-
-            setTotalTecnicos(techCount);
-            setTechChartData(techChartData);
-            setLoadingTechData(false);
-        } catch (error) {
-            console.error('Error fetching tech data:', error);
-            setLoadingTechData(false);
-        }
-    };
-
 
     const Spinner = () => {
         const override = css`
@@ -171,9 +128,9 @@ function Administrador() {
             ) : (
                 <Container fluid>
                     <Row>
-                        <Col>
+                        <Col md={6}>
                             <Card className='card'>
-                                <Card.Header className='text-center'>Dashboard</Card.Header>
+                                <Card.Header className='text-center'>Horas de trabajo</Card.Header>
                                 <PieChart
                                     series={[
                                         {
@@ -184,6 +141,8 @@ function Administrador() {
                                             outerRadius: 80,
                                             paddingAngle: 5,
                                             cornerRadius: 8,
+                                            cx: 100,
+                                            cy: 100,
                                         },
                                     ]}
                                     height={200}
@@ -192,46 +151,13 @@ function Administrador() {
                                 <Card.Footer className='text-center'>Total: {formatTotalHoras(totalHoras)}</Card.Footer>
                             </Card>
                         </Col>
-                        <Col>
+                        <Col md={6}>
                             <Card className='card'>
-                                <Card.Header className='text-center'>Hs. / Tecnico</Card.Header>
-                                <PieChart
-                                    series={[
-                                        {
-                                            arcLabel: (item) => formatDuration(item.value),
-                                            arcLabelMinAngle: 45,
-                                            data: techChartData || [],
-                                            innerRadius: 20,
-                                            outerRadius: 80,
-                                            paddingAngle: 5,
-                                            cornerRadius: 8,
-                                        },
-                                    ]}
-                                    height={200}
-                                    tooltip={<TooltipContent />}
-                                />
-                                <Card.Footer className='text-center'>Total de tecnicos: {totalTecnicos}</Card.Footer>
-                            </Card>
-                        </Col>
-                        <Col>
-                            <Card className='card'>
-                                <Card.Header className='text-center'>Hs. / </Card.Header>
-                                <PieChart
-                                    series={[
-                                        {
-                                            arcLabel: (item) => formatDuration(item.value),
-                                            arcLabelMinAngle: 45,
-                                            data: formattedChartData,
-                                            innerRadius: 20,
-                                            outerRadius: 80,
-                                            paddingAngle: 5,
-                                            cornerRadius: 8,
-                                        },
-                                    ]}
-                                    height={200}
-                                    tooltip={<TooltipContent />}
-                                />
-                                <Card.Footer className='text-center'>Total: {formatTotalHoras(totalHoras)}</Card.Footer>
+                                <Card.Header className='text-center'>Hs. / Técnico</Card.Header>
+
+                                <Card.Footer className='text-center'>
+                                    Promedio: {0}
+                                </Card.Footer>
                             </Card>
                         </Col>
                     </Row>
