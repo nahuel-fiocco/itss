@@ -8,15 +8,6 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import moment from 'moment';
 
-function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
-
 function Administrador() {
     const { currentUser } = useAuth();
     const [loading, setLoading] = useState(true);
@@ -93,7 +84,7 @@ function Administrador() {
                 const chartData = [
                     { id: 0, value: conformesFirmadosConformidad, label: 'Conformidad', color: '#31ca71' },
                     { id: 1, value: conformesFirmadosDisconformidad, label: 'Disconformidad', color: '#E95646' },
-                    { id: 2, value: conformesNoFirmados, label: 'No Firmados', color: '#764dfa' },
+                    { id: 2, value: conformesNoFirmados, label: 'No Firmados', color: '#ffb' },
                 ];
 
                 setChartData(chartData);
