@@ -21,7 +21,7 @@ function Administrador() {
             return 'N/A';
         }
         const horas = Math.floor(totalMinutos / 60);
-        const minutos = totalMinutos % 60;
+        const minutos = Math.ceil(totalMinutos % 60); // Utilizar Math.ceil para redondear hacia arriba
         return `${horas}:${minutos.toString().padStart(2, '0')}hs`;
     };
 
@@ -54,7 +54,7 @@ function Administrador() {
             const firstDayOfMonth = currentDate.clone().startOf('month').format('YYYY-MM-DD');
 
             const [querySnapshot, usersSnapshot] = await Promise.all([
-                getDocs(query(collection(db, 'horas'), where('fechaConforme', '>=', firstDayOfMonth))),
+                getDocs(query(collection(db, 'horas'))),
                 getDocs(collection(db, 'users')),
             ]);
 
@@ -68,13 +68,6 @@ function Administrador() {
             let totalMinutos = 0;
 
             const horasPorTecnico = getHorasPorTecnico(conformesSnapshot.docs);
-            const horasFormateadas = formatHorasPorTecnico(horasPorTecnico);
-            horasFormateadas.forEach((info) => {
-                console.log(info);
-            });
-
-            const promedioHorasPorTecnicoFormateadas = formatTotalHoras(getPromedioHorasPorTecnico(horasPorTecnico));
-            console.log('promedio:', promedioHorasPorTecnicoFormateadas);
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
@@ -104,14 +97,12 @@ function Administrador() {
 
             setChartData(chartData);
 
-            const chartDataPromedio = tecnicosUsers.map((tecnico) => ({
-                id: tecnico.id,
-                value: horasPorTecnico[tecnico.id] || 0,
-                label: tecnico.displayName,
-                color: '#31ca71',
+            const chartDataPromedio = Object.entries(horasPorTecnico).map(([tecnico, minutos], index) => ({
+                id: index,
+                value: minutos,
+                label: tecnico,
+                color: getRandomContrastColor(),
             }));
-
-            console.log('chartDataPromedio:', chartDataPromedio);
 
             setChartDataPromedio(chartDataPromedio);
 
@@ -124,6 +115,38 @@ function Administrador() {
             setLoading(false);
         }
     };
+
+    const isColorDark = (color) => {
+        // Convertir el color hexadecimal a RGB
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+
+        // Calcular el brillo usando la fórmula de luminancia
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+        // Devolver true si el brillo es bajo (oscuro), false si es alto (claro)
+        return brightness < 128;
+    };
+
+    const getRandomColor = () => {
+        // Generar colores aleatorios en formato hexadecimal
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    };
+
+    const getRandomContrastColor = () => {
+        let color;
+        do {
+            color = getRandomColor();
+        } while (isColorDark(color));
+        return color;
+    };
+
 
     const getHorasPorTecnico = (conformes) => {
         const horasPorTecnico = {};
@@ -146,19 +169,11 @@ function Administrador() {
         return horasPorTecnico;
     };
 
-    const formatHorasPorTecnico = (horasPorTecnico) => {
-        return Object.entries(horasPorTecnico).map(([tecnico, minutos]) => {
-            const horas = Math.floor(minutos / 60);
-            const minutosRestantes = minutos % 60;
-            return `${tecnico} trabajó ${horas}:${minutosRestantes.toString().padStart(2, '0')}hs`;
-        });
-    };
-
     const getPromedioHorasPorTecnico = (horasPorTecnico) => {
         const cantidadTecnicos = Object.keys(horasPorTecnico).length;
         const totalHoras = Object.values(horasPorTecnico).reduce((total, horas) => total + horas, 0);
-
-        return totalHoras / cantidadTecnicos;
+        const promedioHoras = totalHoras / cantidadTecnicos;
+        return promedioHoras;
     };
 
     useEffect(() => {
@@ -188,7 +203,7 @@ function Administrador() {
                             <Card className='card'>
                                 <Card.Header className='text-center'>Horas de trabajo</Card.Header>
                                 <PieChart
-                                    className='horas-chart'
+                                    className='horasChart'
                                     series={[
                                         {
                                             arcLabel: (item) => formatDuration(item.value),
@@ -212,7 +227,7 @@ function Administrador() {
                             <Card className='card'>
                                 <Card.Header className='text-center'>Hs. / Técnico</Card.Header>
                                 <PieChart
-                                    className='promedio-chart'
+                                    className='promedioChart'
                                     series={[
                                         {
                                             arcLabel: (item) => formatDuration(item.value),
