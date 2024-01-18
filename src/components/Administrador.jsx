@@ -5,7 +5,7 @@ import { BarLoader } from 'react-spinners';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import '../estilos/Administrador.css';
 import { PieChart } from '@mui/x-charts/PieChart';
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query } from 'firebase/firestore';
 import moment from 'moment';
 
 function Administrador() {
@@ -15,6 +15,7 @@ function Administrador() {
     const [totalHoras, setTotalHoras] = useState(0);
     const [promedioHoras, setPromedioHoras] = useState(0);
     const [chartDataPromedio, setChartDataPromedio] = useState([]);
+    const [detalleConformesVisible, setDetalleConformesVisible] = useState(false);
 
     const formatTotalHoras = (totalMinutos) => {
         if (isNaN(totalMinutos) || totalMinutos === 0) {
@@ -199,7 +200,7 @@ function Administrador() {
             ) : (
                 <Container fluid>
                     <Row>
-                        <Col md={6}>
+                        <Col md={4}>
                             <Card className='card'>
                                 <Card.Header className='text-center'>Horas de trabajo</Card.Header>
                                 <PieChart
@@ -223,7 +224,7 @@ function Administrador() {
                                 <Card.Footer className='text-center'>Total: {formatTotalHoras(totalHoras)}</Card.Footer>
                             </Card>
                         </Col>
-                        <Col md={6}>
+                        <Col md={4}>
                             <Card className='card'>
                                 <Card.Header className='text-center'>Hs. / Técnico</Card.Header>
                                 <PieChart
@@ -245,6 +246,27 @@ function Administrador() {
                                     tooltip={<TooltipContent />}
                                 />
                                 <Card.Footer className='text-center'>Promedio: {formatTotalHoras(promedioHoras)}/tec</Card.Footer>
+                            </Card>
+                        </Col>
+                        <Col md={4}>
+                            <Card className='card mostrarDetalle' onClick={() => setDetalleConformesVisible(!detalleConformesVisible)}>
+                                <Card.Header className='text-center'>Detalle de Conformes</Card.Header>
+                                <Card.Body className={detalleConformesVisible ? 'detalle-visible' : 'detalle-oculto'}>
+                                    {detalleConformesVisible ? (
+                                        // Mostrar tabla con ícono de lapicito
+                                        <div>
+                                            {/* Aquí va la lógica de la tabla con íconos de lapicito */}
+                                            {/* ... */}
+                                        </div>
+                                    ) : (
+                                        // Mostrar icono de flecha y texto 'Ver Detalle'
+                                        <div className='ver-detalle-container'>
+                                            <span className='ver-detalle-icon'>➤</span>
+                                            <span className='ver-detalle-text'>Ver Detalle</span>
+                                        </div>
+                                    )}
+                                </Card.Body>
+                                <Card.Footer className='text-center'>{detalleConformesVisible ? 'Ocultar' : 'Mostrar'} Detalle</Card.Footer>
                             </Card>
                         </Col>
                     </Row>
