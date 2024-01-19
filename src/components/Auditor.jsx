@@ -54,19 +54,6 @@ function Auditor() {
         obtenerHorasTrabajo();
     }, []);
 
-    const actualizarTabla = async (tipoFirma, seleccion) => {
-        await Promise.all(Object.entries(seleccion).map(async ([horaId, selectedType]) => {
-            if (selectedType) {
-                const index = horasTrabajo.findIndex((hora) => hora.id === horaId);
-                if (index !== -1) {
-                    const updatedHorasTrabajo = [...horasTrabajo];
-                    updatedHorasTrabajo[index].firmado = { tipo: tipoFirma };
-                    setHorasTrabajo(updatedHorasTrabajo);
-                }
-            }
-        }));
-    };
-
     const handleCheckboxChange = (horaId, tipoFirma) => {
         setSeleccionFirma((prevSelected) => {
             const newSelection = { ...prevSelected };
@@ -211,7 +198,6 @@ function Auditor() {
       display: block;
       margin: 0 auto;
     `;
-
         return <BarLoader className='rounded' color="white" loading css={override} />;
     };
 

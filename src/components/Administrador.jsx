@@ -9,7 +9,7 @@ import { getFirestore, collection, getDocs, query } from 'firebase/firestore';
 import moment from 'moment';
 import { IoMdPaper } from "react-icons/io";
 import { FaUsers } from "react-icons/fa";
-import DetalleConformes from './DetalleConformes';
+import DetalleConformes from './DetalleConformes.jsx';
 
 function Administrador() {
     const { currentUser } = useAuth();
@@ -19,6 +19,7 @@ function Administrador() {
     const [promedioHoras, setPromedioHoras] = useState(0);
     const [chartDataPromedio, setChartDataPromedio] = useState([]);
     const [mostrarDetalles, setMostrarDetalles] = useState(false);
+    const [mostrarUsuarios, setMostrarUsuarios] = useState(false);
 
     const formatTotalHoras = (totalMinutos) => {
         if (isNaN(totalMinutos) || totalMinutos === 0) {
@@ -174,6 +175,10 @@ function Administrador() {
         setMostrarDetalles(true);
     };
 
+    const handleMostrarUsuariosClick = () => {
+        setMostrarUsuarios(true);
+    };
+
     return (
         <div className="administrador-container bg-dark text-light">
             {loading ? (
@@ -182,120 +187,122 @@ function Administrador() {
                     <Spinner />
                 </div>
             ) : (
-                <Container fluid>
-                    <Row>
-                        <Col md={6}>
-                            <Card className='card'>
-                                <Card.Header className='text-center'>Horas de trabajo</Card.Header>
-                                {window.innerWidth < 768 && (<PieChart
-                                    className='horasChart'
-                                    series={[
-                                        {
-                                            arcLabel: (item) => formatDuration(item.value),
-                                            arcLabelMinAngle: 45,
-                                            data: formattedChartData,
-                                            innerRadius: 20,
-                                            outerRadius: 80,
-                                            paddingAngle: 5,
-                                            cornerRadius: 8,
-                                            cx: 90,
-                                            cy: 100,
-                                        },
-                                    ]}
-                                    height={200}
-                                    width={360}
-                                    tooltip={<TooltipContent />}
-                                />)}
-                                {window.innerWidth > 768 && (<PieChart
-                                    className='horasChart'
-                                    series={[
-                                        {
-                                            arcLabel: (item) => formatDuration(item.value),
-                                            arcLabelMinAngle: 45,
-                                            data: formattedChartData,
-                                            innerRadius: 30,
-                                            outerRadius: 100,
-                                            paddingAngle: 5,
-                                            cornerRadius: 8,
-                                            cx: 150,
-                                            cy: 120,
-                                        },
-                                    ]}
-                                    height={250}
-                                    width={700}
-                                    tooltip={<TooltipContent />}
-                                />)}
-                                <Card.Footer className='text-center'>Total: {formatTotalHoras(totalHoras)}</Card.Footer>
-                            </Card>
-                        </Col>
-                        <Col md={6}>
-                            <Card className='card'>
-                                <Card.Header className='text-center'>Hs. / Técnico</Card.Header>
-                                {window.innerWidth < 768 && (<PieChart
-                                    className='promedioChart'
-                                    series={[
-                                        {
-                                            arcLabel: (item) => formatDuration(item.value),
-                                            arcLabelMinAngle: 45,
-                                            data: chartDataPromedio,
-                                            innerRadius: 20,
-                                            outerRadius: 80,
-                                            paddingAngle: 5,
-                                            cornerRadius: 8,
-                                            cx: 90,
-                                            cy: 100,
-                                        },
-                                    ]}
-                                    height={200}
-                                    width={360}
-                                    tooltip={<TooltipContent />}
-                                />)}
-                                {window.innerWidth > 768 && (<PieChart
-                                    className='horasChart'
-                                    series={[
-                                        {
-                                            arcLabel: (item) => formatDuration(item.value),
-                                            arcLabelMinAngle: 45,
-                                            data: chartDataPromedio,
-                                            innerRadius: 30,
-                                            outerRadius: 100,
-                                            paddingAngle: 5,
-                                            cornerRadius: 8,
-                                            cx: 150,
-                                            cy: 120,
-                                        },
-                                    ]}
-                                    height={250}
-                                    width={700}
-                                    tooltip={<TooltipContent />}
-                                />)}
-                                <Card.Footer className='text-center'>Promedio: {formatTotalHoras(promedioHoras)}/tec</Card.Footer>
-                            </Card>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={6}>
-                            <Card className='card mostrarDetalles text-center' onClick={() => handleMostrarDetallesClick()}>
-                                <Card.Header className='text-center'>Mas informacion</Card.Header>
-                                <Card.Body className='text-center mostrarDetallesBody'>
-                                    <IoMdPaper className='paperIcon' />
-                                    <span>Ver detalle</span>
-                                </Card.Body>
-                                <Card.Footer className='text-center'>Generar reportes, editar, eliminar conformes, etc.</Card.Footer>
-                            </Card>
-                        </Col>
-                        <Col md={6}>
-                            <Card className='card usuarios text-center' onClick={() => handleMostrarDetallesClick()}>
-                                <Card.Header className='text-center'>Administracion de usuarios</Card.Header>
-                                <Card.Body className='text-center usuariosBody'>
-                                    <FaUsers className='usuariosIcon' />
-                                    <span>Administrar usuarios</span>
-                                </Card.Body>
-                                <Card.Footer className='text-center'>Crear, editar, eliminar usuarios, etc.</Card.Footer>
-                            </Card>
-                        </Col>
-                    </Row>
-                </Container>
+                mostrarDetalles ? <DetalleConformes /> : (
+                    <Container fluid>
+                        <Row>
+                            <Col md={6}>
+                                <Card className='card'>
+                                    <Card.Header className='text-center'>Horas de trabajo</Card.Header>
+                                    {window.innerWidth < 768 && (<PieChart
+                                        className='horasChart'
+                                        series={[
+                                            {
+                                                arcLabel: (item) => formatDuration(item.value),
+                                                arcLabelMinAngle: 45,
+                                                data: formattedChartData,
+                                                innerRadius: 20,
+                                                outerRadius: 80,
+                                                paddingAngle: 5,
+                                                cornerRadius: 8,
+                                                cx: 90,
+                                                cy: 100,
+                                            },
+                                        ]}
+                                        height={200}
+                                        width={360}
+                                        tooltip={<TooltipContent />}
+                                    />)}
+                                    {window.innerWidth > 768 && (<PieChart
+                                        className='horasChart'
+                                        series={[
+                                            {
+                                                arcLabel: (item) => formatDuration(item.value),
+                                                arcLabelMinAngle: 45,
+                                                data: formattedChartData,
+                                                innerRadius: 30,
+                                                outerRadius: 100,
+                                                paddingAngle: 5,
+                                                cornerRadius: 8,
+                                                cx: 150,
+                                                cy: 120,
+                                            },
+                                        ]}
+                                        height={250}
+                                        width={700}
+                                        tooltip={<TooltipContent />}
+                                    />)}
+                                    <Card.Footer className='text-center'>Total: {formatTotalHoras(totalHoras)}</Card.Footer>
+                                </Card>
+                            </Col>
+                            <Col md={6}>
+                                <Card className='card'>
+                                    <Card.Header className='text-center'>Hs. / Técnico</Card.Header>
+                                    {window.innerWidth < 768 && (<PieChart
+                                        className='promedioChart'
+                                        series={[
+                                            {
+                                                arcLabel: (item) => formatDuration(item.value),
+                                                arcLabelMinAngle: 45,
+                                                data: chartDataPromedio,
+                                                innerRadius: 20,
+                                                outerRadius: 80,
+                                                paddingAngle: 5,
+                                                cornerRadius: 8,
+                                                cx: 90,
+                                                cy: 100,
+                                            },
+                                        ]}
+                                        height={200}
+                                        width={360}
+                                        tooltip={<TooltipContent />}
+                                    />)}
+                                    {window.innerWidth > 768 && (<PieChart
+                                        className='horasChart'
+                                        series={[
+                                            {
+                                                arcLabel: (item) => formatDuration(item.value),
+                                                arcLabelMinAngle: 45,
+                                                data: chartDataPromedio,
+                                                innerRadius: 30,
+                                                outerRadius: 100,
+                                                paddingAngle: 5,
+                                                cornerRadius: 8,
+                                                cx: 150,
+                                                cy: 120,
+                                            },
+                                        ]}
+                                        height={250}
+                                        width={700}
+                                        tooltip={<TooltipContent />}
+                                    />)}
+                                    <Card.Footer className='text-center'>Promedio: {formatTotalHoras(promedioHoras)}/tec</Card.Footer>
+                                </Card>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col md={6}>
+                                <Card className='card mostrarDetalles text-center' onClick={() => handleMostrarDetallesClick()}>
+                                    <Card.Header className='text-center'>Mas informacion</Card.Header>
+                                    <Card.Body className='text-center mostrarDetallesBody'>
+                                        <IoMdPaper className='paperIcon' />
+                                        <span>Ver detalle</span>
+                                    </Card.Body>
+                                    <Card.Footer className='text-center'>Generar reportes, editar, eliminar conformes, etc.</Card.Footer>
+                                </Card>
+                            </Col>
+                            <Col md={6}>
+                                <Card className='card usuarios text-center' onClick={() => handleMostrarUsuariosClick()}>
+                                    <Card.Header className='text-center'>Administracion de usuarios</Card.Header>
+                                    <Card.Body className='text-center usuariosBody'>
+                                        <FaUsers className='usuariosIcon' />
+                                        <span>Administrar usuarios</span>
+                                    </Card.Body>
+                                    <Card.Footer className='text-center'>Crear, editar, eliminar usuarios, etc.</Card.Footer>
+                                </Card>
+                            </Col>
+                        </Row>
+                    </Container>
+                )
             )}
         </div>
     );

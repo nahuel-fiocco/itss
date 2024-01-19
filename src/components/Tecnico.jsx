@@ -222,11 +222,10 @@ function Tecnico() {
     } else if ((inicio < horaLaboralInicio && fin <= horaLaboralInicio) || (inicio >= horaLaboralFin && fin > horaLaboralFin)) {
       return 'Extraordinaria';
     } else {
-      // Mostrar Popover indicando que la carga de horas de distinto tipo debe hacerse en conformes diferentes
       const popover = (
         <Popover id={`popover-error-hora-fin-${nroConforme}`} className='p-2 bg-danger text-light' title="Error">
           <div className='text-center'>
-            <div>La carga de horas de distinto tipo debe hacerse en conformes diferentes.</div>
+            <div>Las horas ordinarias y extraordinarias deben estar en conformes diferentes.</div>
           </div>
         </Popover>
       );
@@ -238,15 +237,15 @@ function Tecnico() {
     }
   };
 
+  const tipoTareaCalculado = calcularTipoTarea(horaComienzo, horaFinalizacion);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     if (!horaComienzo || !horaFinalizacion || !detalleTareas || !fechaConforme) {
       mostrarError('Por favor, completa todos los campos obligatorios.');
       setTimeout(() => {
         setErrorMensaje('');
       }, 2000);
-
       return;
     }
     setGuardando(true);
@@ -254,7 +253,6 @@ function Tecnico() {
     const fechaCreacion = new Date().toLocaleDateString();
     const horaCreacion = new Date().toLocaleTimeString();
     const horaDocRef = doc(db, 'horas', nroConforme);
-
     try {
       await setDoc(horaDocRef, {
         nroConforme,
@@ -262,7 +260,7 @@ function Tecnico() {
         horaComienzo,
         horaFinalizacion,
         cantidadHoras,
-        tipoTarea,
+        tipoTarea: tipoTareaCalculado,
         detalleTareas,
         fechaCreacion,
         horaCreacion,
@@ -281,7 +279,6 @@ function Tecnico() {
       setGuardando(false);
     }
   };
-
 
   const limpiarFormulario = () => {
     setHoraComienzo('');
