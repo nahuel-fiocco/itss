@@ -7,6 +7,9 @@ import '../estilos/Administrador.css';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { getFirestore, collection, getDocs, query } from 'firebase/firestore';
 import moment from 'moment';
+import { IoMdPaper } from "react-icons/io";
+import { FaUsers } from "react-icons/fa";
+import DetalleConformes from './DetalleConformes';
 
 function Administrador() {
     const { currentUser } = useAuth();
@@ -15,7 +18,7 @@ function Administrador() {
     const [totalHoras, setTotalHoras] = useState(0);
     const [promedioHoras, setPromedioHoras] = useState(0);
     const [chartDataPromedio, setChartDataPromedio] = useState([]);
-    const [detalleConformesVisible, setDetalleConformesVisible] = useState(false);
+    const [mostrarDetalles, setMostrarDetalles] = useState(false);
 
     const formatTotalHoras = (totalMinutos) => {
         if (isNaN(totalMinutos) || totalMinutos === 0) {
@@ -53,27 +56,21 @@ function Administrador() {
             const db = getFirestore();
             const currentDate = moment();
             const firstDayOfMonth = currentDate.clone().startOf('month').format('YYYY-MM-DD');
-
             const [querySnapshot, usersSnapshot] = await Promise.all([
                 getDocs(query(collection(db, 'horas'))),
                 getDocs(collection(db, 'users')),
             ]);
-
             const conformesSnapshot = querySnapshot;
             const usersData = usersSnapshot.docs.map((doc) => doc.data());
             const tecnicosUsers = usersData.filter((user) => user.role === 'tecnico');
-
             let conformesFirmadosConformidad = 0;
             let conformesFirmadosDisconformidad = 0;
             let conformesNoFirmados = 0;
             let totalMinutos = 0;
-
             const horasPorTecnico = getHorasPorTecnico(conformesSnapshot.docs);
-
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 const fechaConforme = moment(data.fechaConforme, 'YYYY-MM-DD');
-
                 if (fechaConforme.isSameOrBefore(currentDate, 'month')) {
                     if (data.firmado) {
                         if (data.firmado.tipo === 'conformidad') {
@@ -86,29 +83,22 @@ function Administrador() {
                     }
                 }
             });
-
             totalMinutos = conformesFirmadosConformidad + conformesFirmadosDisconformidad + conformesNoFirmados;
             setTotalHoras(totalMinutos);
-
             const chartData = [
-                { id: 0, value: conformesFirmadosConformidad, label: 'Conformidad', color: '#31ca71' },
-                { id: 1, value: conformesFirmadosDisconformidad, label: 'Disconformidad', color: '#E95646' },
-                { id: 2, value: conformesNoFirmados, label: 'No Firmados', color: '#ffb' },
+                { id: 0, value: conformesFirmadosConformidad, label: 'Conformes', color: '#31ca71' },
+                { id: 1, value: conformesFirmadosDisconformidad, label: 'Disconformes', color: '#E95646' },
+                { id: 2, value: conformesNoFirmados, label: 'No firmados', color: '#ffb' },
             ];
-
             setChartData(chartData);
-
             const chartDataPromedio = Object.entries(horasPorTecnico).map(([tecnico, minutos], index) => ({
                 id: index,
                 value: minutos,
                 label: tecnico,
                 color: getRandomContrastColor(),
             }));
-
             setChartDataPromedio(chartDataPromedio);
-
             setLoading(false);
-
             const promedioHorasPorTecnico = getPromedioHorasPorTecnico(horasPorTecnico);
             setPromedioHoras(promedioHorasPorTecnico);
         } catch (error) {
@@ -118,20 +108,14 @@ function Administrador() {
     };
 
     const isColorDark = (color) => {
-        // Convertir el color hexadecimal a RGB
         const r = parseInt(color.slice(1, 3), 16);
         const g = parseInt(color.slice(3, 5), 16);
         const b = parseInt(color.slice(5, 7), 16);
-
-        // Calcular el brillo usando la fórmula de luminancia
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-
-        // Devolver true si el brillo es bajo (oscuro), false si es alto (claro)
         return brightness < 128;
     };
 
     const getRandomColor = () => {
-        // Generar colores aleatorios en formato hexadecimal
         const letters = '0123456789ABCDEF';
         let color = '#';
         for (let i = 0; i < 6; i++) {
@@ -151,14 +135,11 @@ function Administrador() {
 
     const getHorasPorTecnico = (conformes) => {
         const horasPorTecnico = {};
-
         conformes.forEach((conforme) => {
             const data = conforme.data();
             const tecnico = data.tecnico;
-
             if (tecnico) {
                 const cantidadHoras = moment.duration(data.cantidadHoras).asMinutes();
-
                 if (horasPorTecnico[tecnico]) {
                     horasPorTecnico[tecnico] += cantidadHoras;
                 } else {
@@ -166,7 +147,6 @@ function Administrador() {
                 }
             }
         });
-
         return horasPorTecnico;
     };
 
@@ -190,6 +170,10 @@ function Administrador() {
         return <BarLoader className='rounded' color="white" loading css={override} />;
     };
 
+    const handleMostrarDetallesClick = () => {
+        setMostrarDetalles(true);
+    };
+
     return (
         <div className="administrador-container bg-dark text-light">
             {loading ? (
@@ -200,10 +184,10 @@ function Administrador() {
             ) : (
                 <Container fluid>
                     <Row>
-                        <Col md={4}>
+                        <Col md={6}>
                             <Card className='card'>
                                 <Card.Header className='text-center'>Horas de trabajo</Card.Header>
-                                <PieChart
+                                {window.innerWidth < 768 && (<PieChart
                                     className='horasChart'
                                     series={[
                                         {
@@ -214,20 +198,40 @@ function Administrador() {
                                             outerRadius: 80,
                                             paddingAngle: 5,
                                             cornerRadius: 8,
-                                            cx: 100,
+                                            cx: 90,
                                             cy: 100,
                                         },
                                     ]}
                                     height={200}
+                                    width={360}
                                     tooltip={<TooltipContent />}
-                                />
+                                />)}
+                                {window.innerWidth > 768 && (<PieChart
+                                    className='horasChart'
+                                    series={[
+                                        {
+                                            arcLabel: (item) => formatDuration(item.value),
+                                            arcLabelMinAngle: 45,
+                                            data: formattedChartData,
+                                            innerRadius: 30,
+                                            outerRadius: 100,
+                                            paddingAngle: 5,
+                                            cornerRadius: 8,
+                                            cx: 150,
+                                            cy: 120,
+                                        },
+                                    ]}
+                                    height={250}
+                                    width={700}
+                                    tooltip={<TooltipContent />}
+                                />)}
                                 <Card.Footer className='text-center'>Total: {formatTotalHoras(totalHoras)}</Card.Footer>
                             </Card>
                         </Col>
-                        <Col md={4}>
+                        <Col md={6}>
                             <Card className='card'>
                                 <Card.Header className='text-center'>Hs. / Técnico</Card.Header>
-                                <PieChart
+                                {window.innerWidth < 768 && (<PieChart
                                     className='promedioChart'
                                     series={[
                                         {
@@ -238,35 +242,56 @@ function Administrador() {
                                             outerRadius: 80,
                                             paddingAngle: 5,
                                             cornerRadius: 8,
-                                            cx: 100,
+                                            cx: 90,
                                             cy: 100,
                                         },
                                     ]}
                                     height={200}
+                                    width={360}
                                     tooltip={<TooltipContent />}
-                                />
+                                />)}
+                                {window.innerWidth > 768 && (<PieChart
+                                    className='horasChart'
+                                    series={[
+                                        {
+                                            arcLabel: (item) => formatDuration(item.value),
+                                            arcLabelMinAngle: 45,
+                                            data: chartDataPromedio,
+                                            innerRadius: 30,
+                                            outerRadius: 100,
+                                            paddingAngle: 5,
+                                            cornerRadius: 8,
+                                            cx: 150,
+                                            cy: 120,
+                                        },
+                                    ]}
+                                    height={250}
+                                    width={700}
+                                    tooltip={<TooltipContent />}
+                                />)}
                                 <Card.Footer className='text-center'>Promedio: {formatTotalHoras(promedioHoras)}/tec</Card.Footer>
                             </Card>
                         </Col>
-                        <Col md={4}>
-                            <Card className='card mostrarDetalle' onClick={() => setDetalleConformesVisible(!detalleConformesVisible)}>
-                                <Card.Header className='text-center'>Detalle de Conformes</Card.Header>
-                                <Card.Body className={detalleConformesVisible ? 'detalle-visible' : 'detalle-oculto'}>
-                                    {detalleConformesVisible ? (
-                                        // Mostrar tabla con ícono de lapicito
-                                        <div>
-                                            {/* Aquí va la lógica de la tabla con íconos de lapicito */}
-                                            {/* ... */}
-                                        </div>
-                                    ) : (
-                                        // Mostrar icono de flecha y texto 'Ver Detalle'
-                                        <div className='ver-detalle-container'>
-                                            <span className='ver-detalle-icon'>➤</span>
-                                            <span className='ver-detalle-text'>Ver Detalle</span>
-                                        </div>
-                                    )}
+                    </Row>
+                    <Row>
+                        <Col md={6}>
+                            <Card className='card mostrarDetalles text-center' onClick={() => handleMostrarDetallesClick()}>
+                                <Card.Header className='text-center'>Mas informacion</Card.Header>
+                                <Card.Body className='text-center mostrarDetallesBody'>
+                                    <IoMdPaper className='paperIcon' />
+                                    <span>Ver detalle</span>
                                 </Card.Body>
-                                <Card.Footer className='text-center'>{detalleConformesVisible ? 'Ocultar' : 'Mostrar'} Detalle</Card.Footer>
+                                <Card.Footer className='text-center'>Generar reportes, editar, eliminar conformes, etc.</Card.Footer>
+                            </Card>
+                        </Col>
+                        <Col md={6}>
+                            <Card className='card usuarios text-center' onClick={() => handleMostrarDetallesClick()}>
+                                <Card.Header className='text-center'>Administracion de usuarios</Card.Header>
+                                <Card.Body className='text-center usuariosBody'>
+                                    <FaUsers className='usuariosIcon' />
+                                    <span>Administrar usuarios</span>
+                                </Card.Body>
+                                <Card.Footer className='text-center'>Crear, editar, eliminar usuarios, etc.</Card.Footer>
                             </Card>
                         </Col>
                     </Row>
@@ -277,3 +302,4 @@ function Administrador() {
 }
 
 export default Administrador;
+
