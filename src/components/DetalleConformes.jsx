@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs, onSnapshot, getDoc, doc, writeBatch } from 'firebase/firestore';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { getFirestore, collection, getDocs, onSnapshot } from 'firebase/firestore';
 
 function ConformeDetalles() {
     const [expanded, setExpanded] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [errorMsg, setErrorMsg] = useState(null);
     const [horasTrabajo, setHorasTrabajo] = useState([]);
 
     useEffect(() => {
@@ -17,20 +13,15 @@ function ConformeDetalles() {
                 const horasQuery = await getDocs(horasCollectionRef);
                 const horasData = horasQuery.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
                 setHorasTrabajo(horasData);
-                setLoading(false);
-
                 // Suscripción a cambios en tiempo real
                 const unsubscribe = onSnapshot(horasCollectionRef, (snapshot) => {
                     const updatedHoras = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
                     setHorasTrabajo(updatedHoras);
                 });
-
                 // Devolver una función de limpieza
                 return () => unsubscribe();
             } catch (error) {
                 console.error('Error obteniendo horas de trabajo:', error);
-                setLoading(false);
-                setErrorMsg('Error obteniendo horas de trabajo. Por favor, intenta nuevamente.');
             }
         };
 
