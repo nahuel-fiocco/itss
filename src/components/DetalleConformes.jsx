@@ -173,7 +173,7 @@ function ConformeDetalles() {
 
     return (
         <div className="historial-container">
-            <h3>Detalle historico de conformes</h3>
+            {window.innerWidth > 768 ? <h3>Historial de conformes</h3> : <h5>Detalle historico de conformes</h5>}
             {window.innerWidth < 768 ? renderHistorialMobile() : renderHistorialDesktop()}
         </div>
     );
