@@ -285,7 +285,7 @@ function Administrador() {
                                     <Card.Header className='text-center'>Mas informacion</Card.Header>
                                     <Card.Body className='text-center mostrarDetallesBody'>
                                         <IoMdPaper className='paperIcon' />
-                                        <span>Ver detalle</span>
+                                        <span>Ver historico</span>
                                     </Card.Body>
                                     <Card.Footer className='text-center'>Generar reportes, editar, eliminar conformes, etc.</Card.Footer>
                                 </Card>

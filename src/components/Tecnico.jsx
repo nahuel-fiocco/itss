@@ -181,7 +181,6 @@ function Tecnico() {
     };
 
     if (inicio >= fin) {
-      // Mostrar Popover indicando el error de la hora de comienzo posterior a la hora de finalización
       const popover = (
         <Popover id={`popover-error-hora-${nroConforme}`} className='p-2 bg-danger text-light' title="Error">
           <div className='text-center'>

@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, getDocs, onSnapshot } from 'firebase/firestore';
+import '../estilos/DetalleConformes.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPen, faTrash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 
 function ConformeDetalles() {
     const [expanded, setExpanded] = useState(null);
@@ -13,12 +17,10 @@ function ConformeDetalles() {
                 const horasQuery = await getDocs(horasCollectionRef);
                 const horasData = horasQuery.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
                 setHorasTrabajo(horasData);
-                // Suscripción a cambios en tiempo real
                 const unsubscribe = onSnapshot(horasCollectionRef, (snapshot) => {
                     const updatedHoras = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
                     setHorasTrabajo(updatedHoras);
                 });
-                // Devolver una función de limpieza
                 return () => unsubscribe();
             } catch (error) {
                 console.error('Error obteniendo horas de trabajo:', error);
@@ -27,6 +29,14 @@ function ConformeDetalles() {
 
         obtenerHorasTrabajo();
     }, []);
+
+    const editarConforme = () => {
+        console.log('Editar Conforme');
+    };
+
+    const eliminarConforme = () => {
+        console.log('Eliminar Conforme');
+    };
 
     const renderHistorialMobile = () => (
         <div className="historial-mobile">
@@ -52,6 +62,16 @@ function ConformeDetalles() {
                                     <p><strong>Firmado:</strong> {renderFirmado(hora)}</p>
                                     {renderMotivoDisconformidad(hora)}
                                 </div>
+                                <div className="contenedor-botones">
+                                    <button type="button" onClick={editarConforme}>
+                                        <FontAwesomeIcon icon={faPen} />
+                                        Editar
+                                    </button>
+                                    <button type="button" onClick={eliminarConforme}>
+                                        <FontAwesomeIcon icon={faTrash} />
+                                        Eliminar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -73,6 +93,9 @@ function ConformeDetalles() {
                     <th>Detalle de Tareas</th>
                     <th>Fecha de Creación</th>
                     <th>Hora de Creación</th>
+                    <th>Firmado</th>
+                    <th>Editar</th>
+                    <th>Eliminar</th>
                 </tr>
             </thead>
             <tbody>
@@ -87,16 +110,44 @@ function ConformeDetalles() {
                         <td>{hora.detalleTareas}</td>
                         <td>{hora.fechaCreacion}</td>
                         <td>{hora.horaCreacion}</td>
+                        <td className='tipoFirma'>
+                            {hora.firmado && hora.firmado.motivo ? (
+                                <span className="disconforme-indicator">
+                                    {renderFirmado(hora)}{' '}
+                                    <OverlayTrigger
+                                        trigger={['hover', 'focus']}
+                                        placement="top"
+                                        overlay={
+                                            <Popover id={`popover-${hora.nroConforme}`} className='p-2 bg-secondary text-light' title="Motivo de Disconformidad">
+                                                <div className='text-center'>
+                                                    <div>{hora.firmado.motivo}</div>
+                                                </div>
+                                            </Popover>
+                                        }
+                                    >
+                                        <FontAwesomeIcon icon={faInfoCircle} />
+                                    </OverlayTrigger>
+                                </span>
+                            ) : (
+                                <span>
+                                    {renderFirmado(hora)}
+                                </span>
+                            )}
+                        </td>
+                        <td>
+                            <button type="button" onClick={editarConforme}>
+                                <FontAwesomeIcon icon={faPen} />
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" onClick={eliminarConforme}>
+                                <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                        </td>
                     </tr>
                 ))}
             </tbody>
         </table>
-    );
-
-    const renderPopover = (hora) => (
-        <Popover id={`popover-${hora.id}`}>
-            <Popover.Body>{hora.firmado.motivo}</Popover.Body>
-        </Popover>
     );
 
     const renderFirmado = (hora) => {
@@ -122,7 +173,7 @@ function ConformeDetalles() {
 
     return (
         <div className="historial-container">
-            <h3>Historial de Horas</h3>
+            <h3>Detalle historico de conformes</h3>
             {window.innerWidth < 768 ? renderHistorialMobile() : renderHistorialDesktop()}
         </div>
     );
