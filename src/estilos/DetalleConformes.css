@@ -3,6 +3,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 5vh;
+    width: 100%;
 }
 
 button {
@@ -12,3 +13,32 @@ button {
     gap: 1vh;
 }
 
+.formularioEdicion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: end;
+    width: 100%;
+}
+
+.contenedorBotonesEdicion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5vh;
+}
+
+.tagname {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.contenido {
+    display: flex;
+    justify-content: flex-end;
+    width: 60%;
+}
+
+.contenedorBotonesEdicion button {
+    margin-top: 1vh;
+}

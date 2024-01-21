@@ -5,10 +5,14 @@
     justify-content: center;
     min-height: 100vh;
     flex-grow: 1;
+    gap: 5vh;
+    padding-top: 60px;
+    /* Ajusta según el alto de tu barra de navegación */
 }
 
 .card {
     background-color: #b3b3b3;
+    margin-bottom: 5vh;
 }
 
 .mostrarDetalles,
@@ -31,3 +35,8 @@
     font-size: 6vh;
 }
 
+@media (min-width: 768px) {
+    .mostrarDetalles{
+        margin-bottom: 5vh;
+    }
+}
