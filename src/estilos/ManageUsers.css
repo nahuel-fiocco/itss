@@ -1,8 +1,15 @@
-.manage-users-container{
+.manage-users-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     width: 100%;
     gap: 5vh;
+}
+
+.contenedorDropdownMobile {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }

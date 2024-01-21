@@ -6,7 +6,7 @@ import { BarLoader } from 'react-spinners';
 import '../estilos/Tecnico.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
 
 function Tecnico() {
   const [loading, setLoading] = useState(true);
@@ -395,7 +395,7 @@ function Tecnico() {
         <p className="tabla-vacia">No hay conformes cargados.</p>
       ) : (
         <div className="historial-desktop">
-          <table>
+          <Table striped bordered hover variant="dark" responsive>
             <thead>
               <tr>
                 <th>Nro. Conforme</th>
@@ -456,7 +456,7 @@ function Tecnico() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
       )}
       <div className="historial-mobile">

@@ -6,7 +6,7 @@ import { BarLoader } from 'react-spinners';
 import '../estilos/Auditor.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPen, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
 
 function Auditor() {
     const [loading, setLoading] = useState(true);
@@ -160,10 +160,8 @@ function Auditor() {
 
             await batch.commit();
 
-            // Actualiza el estado de registroExitoso
             setRegistroExitoso(alMenosUnConformeFirmado);
             setTimeout(() => {
-                // Restablece el estado después de un período de tiempo
                 setRegistroExitoso(false);
             }, 5000);
             setSeleccionFirma({});
@@ -412,7 +410,7 @@ function Auditor() {
                     {horasTrabajo.length === 0 ? (<p className='tabla-vacia'>No hay ningun conforme cargado.</p>) : (
                         <>
                             {window.innerWidth <= 768 ? renderHistorialMobile() : (
-                                <table>
+                                <Table striped bordered hover variant="dark" responsive>
                                     <thead>
                                         <tr>
                                             <th>Nro. Conforme</th>
@@ -458,7 +456,7 @@ function Auditor() {
                                             </tr>
                                         ))}
                                     </tbody>
-                                </table>
+                                </Table>
                             )}
                             {Object.values(seleccionFirma).some((tipo) => tipo === 'disconformidad') && (
                                 <div className="motivo-disconformidad">

@@ -168,7 +168,7 @@ button {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    width: max-content;
+    width: 100%;
 }
 
 .textarea-tecnico {

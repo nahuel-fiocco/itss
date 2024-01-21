@@ -3,7 +3,7 @@ import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc, deleteDoc }
 import '../estilos/DetalleConformes.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faTrash, faInfoCircle, faHouse } from '@fortawesome/free-solid-svg-icons';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 
 const ConformeDetalles = ({ onRegresar }) => {
@@ -266,7 +266,7 @@ const ConformeDetalles = ({ onRegresar }) => {
             return <p>No hay conformes cargados</p>;
         }
         return (
-            <table>
+            <Table striped bordered hover variant="dark" responsive>
                 <thead>
                     <tr>
                         <th>Nro. Conforme</th>
@@ -332,7 +332,7 @@ const ConformeDetalles = ({ onRegresar }) => {
                         </tr>
                     ))}
                 </tbody>
-            </table>
+            </Table>
         );
     };
 
