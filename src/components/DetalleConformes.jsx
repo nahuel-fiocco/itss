@@ -5,13 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faTrash, faInfoCircle, faHouse, faFilePdf, faFileExcel, faFileCsv } from '@fortawesome/free-solid-svg-icons';
 import { Dropdown, DropdownButton, OverlayTrigger, Popover, Table } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-import { saveAs } from 'file-saver';
-import { jsPDF } from 'jspdf';
-import * as XLSX from 'xlsx';
-import * as Papa from 'papaparse';
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 const ConformeDetalles = ({ onRegresar }) => {
     const [expanded, setExpanded] = useState(null);
