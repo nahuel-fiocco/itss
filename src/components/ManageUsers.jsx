@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse } from "@fortawesome/free-solid-svg-icons";
+import { faHouse, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { Table, Dropdown, DropdownButton } from "react-bootstrap";
+import { getAuth } from "firebase/auth";
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { auth } from "firebase/auth";
 import "../estilos/ManageUsers.css";
+import UserForm from "./UserForm.jsx";
+import PasswordResetForm from "./PasswordResetForm.jsx";
 
 const ManageUsers = ({ onRegresar }) => {
     const [users, setUsers] = useState([]);
     const [expanded, setExpanded] = useState(null);
+    const [editUserId, setEditUserId] = useState(null);
+    const [resetPasswordUserId, setResetPasswordUserId] = useState(null);
 
     const toggleAcordeon = (userId) => {
         setExpanded((prevExpanded) => (prevExpanded === userId ? null : userId));
     };
+
+    const auth = getAuth();
 
     const getUsersFromFirestore = async () => {
         const db = getFirestore();
@@ -31,8 +37,8 @@ const ManageUsers = ({ onRegresar }) => {
 
     const resetPassword = async (userId) => {
         try {
-            await auth.sendPasswordResetEmail(users.find(user => user.id === userId).email);
-            console.log(`Email de reestablecimiento de contraseña enviado para el usuario con ID: ${userId}`);
+            await auth.sendPasswordResetEmail(userId);
+            console.log(`Email de reestablecimiento de contraseña enviado al usuario con ID: ${userId}`);
         } catch (error) {
             console.error('Error al enviar el email de reestablecimiento de contraseña:', error.message);
         }
@@ -56,13 +62,21 @@ const ManageUsers = ({ onRegresar }) => {
         }
     };
 
-    const editUser = async (userId) => {
-        try {
-            // Aquí debes implementar la lógica de edición del usuario según tus necesidades
-            console.log(`Editar datos del usuario con ID: ${userId}`);
-        } catch (error) {
-            console.error('Error al actualizar los datos del usuario:', error.message);
-        }
+    const editUser = (userId) => {
+        setEditUserId(userId);
+    };
+
+    const saveUserChanges = (updatedUserData) => {
+        // Aquí debes implementar la lógica para guardar los cambios en el usuario
+        console.log("Guardar cambios para el usuario con ID:", editUserId, updatedUserData);
+
+        // Después de guardar los cambios, reseteamos el estado de edición
+        setEditUserId(null);
+    };
+
+    const cancelEditUser = () => {
+        // Cancelar la edición, reseteando el estado de edición
+        setEditUserId(null);
     };
 
     const handleDropdownAction = (action, userId) => {
@@ -107,7 +121,7 @@ const ManageUsers = ({ onRegresar }) => {
                                         <p><strong>Rol:</strong> {user.role}</p>
                                         <div className="contenedorDropdownMobile">
                                             <DropdownButton variant={'secondary'} title={'Acciones'}>
-                                                <Dropdown.Item onClick={() => handleDropdownAction("resetPassword", user.id)}>
+                                                <Dropdown.Item onClick={() => setResetPasswordUserId(user.id)}>
                                                     Reestablecer Contraseña
                                                 </Dropdown.Item>
                                                 <Dropdown.Item onClick={() => handleDropdownAction("disableAccount", user.id)}>
@@ -116,7 +130,7 @@ const ManageUsers = ({ onRegresar }) => {
                                                 <Dropdown.Item onClick={() => handleDropdownAction("deleteAccount", user.id)}>
                                                     Eliminar Cuenta
                                                 </Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDropdownAction("editUser", user.id)}>
+                                                <Dropdown.Item onClick={() => editUser(user.id)}>
                                                     Editar Usuario
                                                 </Dropdown.Item>
                                             </DropdownButton>
@@ -149,7 +163,7 @@ const ManageUsers = ({ onRegresar }) => {
                                 <td>{user.role}</td>
                                 <td className="text-center">
                                     <DropdownButton title={''} variant="secondary" id={`dropdown-button-${user.id}`}>
-                                        <Dropdown.Item onClick={() => handleDropdownAction("resetPassword", user.id)}>
+                                        <Dropdown.Item onClick={() => setResetPasswordUserId(user.id)}>
                                             Reestablecer Contraseña
                                         </Dropdown.Item>
                                         <Dropdown.Item onClick={() => handleDropdownAction("disableAccount", user.id)}>
@@ -158,7 +172,7 @@ const ManageUsers = ({ onRegresar }) => {
                                         <Dropdown.Item onClick={() => handleDropdownAction("deleteAccount", user.id)}>
                                             Eliminar Cuenta
                                         </Dropdown.Item>
-                                        <Dropdown.Item onClick={() => handleDropdownAction("editUser", user.id)}>
+                                        <Dropdown.Item onClick={() => editUser(user.id)}>
                                             Editar Usuario
                                         </Dropdown.Item>
                                     </DropdownButton>
@@ -168,11 +182,17 @@ const ManageUsers = ({ onRegresar }) => {
                     </tbody>
                 </Table>
             )}
-
-            <button onClick={onRegresar}>
-                <FontAwesomeIcon icon={faHouse} />
-                Volver al inicio
-            </button>
+            <div className="contenedor-botones-usuarios">
+                <button onClick={onRegresar}>
+                    <FontAwesomeIcon icon={faHouse} />
+                    Inicio
+                </button>
+                <button>
+                    <FontAwesomeIcon icon={faUserPlus} />
+                    Nuevo usuario
+                </button>
+                <UserForm onSave={saveUserChanges} onCancel={() => { }} />
+            </div>
         </div>
     );
 };

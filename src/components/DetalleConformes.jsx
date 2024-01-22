@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import '../estilos/DetalleConformes.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faTrash, faInfoCircle, faHouse } from '@fortawesome/free-solid-svg-icons';
-import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
+import { faPen, faTrash, faInfoCircle, faHouse, faFilePdf, faFileExcel, faFileCsv } from '@fortawesome/free-solid-svg-icons';
+import { Dropdown, DropdownButton, OverlayTrigger, Popover, Table } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { saveAs } from 'file-saver';
+import { jsPDF } from 'jspdf';
+import * as XLSX from 'xlsx';
+import * as Papa from 'papaparse';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 const ConformeDetalles = ({ onRegresar }) => {
     const [expanded, setExpanded] = useState(null);
@@ -18,9 +25,11 @@ const ConformeDetalles = ({ onRegresar }) => {
     const [horaFinalizacion, setHoraFinalizacion] = useState('');
     const [cantidadHoras, setCantidadHoras] = useState(null);
     const [detalleTareas, setDetalleTareas] = useState('');
+    const [obteniendoDatos, setObteniendoDatos] = useState(true);
 
     useEffect(() => {
         const obtenerHorasTrabajo = async () => {
+            setObteniendoDatos(true);
             try {
                 const db = getFirestore();
                 if (currentUser) {
@@ -38,6 +47,7 @@ const ConformeDetalles = ({ onRegresar }) => {
                 const horasQuery = await getDocs(horasCollectionRef);
                 const horasData = horasQuery.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
                 setHorasTrabajo(horasData);
+                setObteniendoDatos(false);
                 const unsubscribe = onSnapshot(horasCollectionRef, (snapshot) => {
                     const updatedHoras = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
                     setHorasTrabajo(updatedHoras);
@@ -131,9 +141,29 @@ const ConformeDetalles = ({ onRegresar }) => {
         setModoEdicion(false);
     };
 
-    const guardarCambios = () => {
-        setModoEdicion(false);
-        setHoraEditando(null);
+    const guardarCambios = async () => {
+        try {
+            const db = getFirestore();
+            const conformesCollection = collection(db, 'horas');
+            const conformesDoc = doc(conformesCollection, horaEditando.id);
+
+            // Actualiza el documento con los nuevos datos
+            await updateDoc(conformesDoc, {
+                fechaConforme,
+                horaComienzo,
+                horaFinalizacion,
+                cantidadHoras,
+                detalleTareas,
+            });
+
+            // Restablece el estado de edición
+            setModoEdicion(false);
+            setHoraEditando(null);
+
+            console.log('Conformé actualizado correctamente.');
+        } catch (error) {
+            console.error('Error al actualizar el conformé:', error);
+        }
     };
 
     const iniciarEdicion = (hora) => {
@@ -357,28 +387,80 @@ const ConformeDetalles = ({ onRegresar }) => {
         setExpanded((prevExpanded) => (prevExpanded === horaId ? null : horaId));
     };
 
+    const generarReportePDF = () => {
+        // Crea un nuevo documento PDF
+        const pdfDoc = new jsPDF();
+
+        // Agrega contenido al documento (puedes personalizar esto según tus necesidades)
+        pdfDoc.text('Historial de Conformes', 20, 10);
+        pdfDoc.text('----------------------------------------', 20, 20);
+
+        horasTrabajo.forEach((hora, index) => {
+            pdfDoc.text(`${index + 1}. Fecha: ${hora.fechaConforme}, Técnico: ${hora.tecnico}`, 20, 30 + index * 10);
+            // Puedes agregar más información según tus necesidades
+        });
+
+        // Guarda el documento como archivo PDF
+        pdfDoc.save('historial_conformes.pdf');
+    };
+
+    const generarReporteExcel = () => {
+        // Crea una hoja de cálculo de Excel
+        const ws = XLSX.utils.json_to_sheet(horasTrabajo);
+
+        // Crea un libro de Excel
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Historial Conformes');
+
+        // Guarda el libro como archivo Excel
+        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(data, 'historial_conformes.xlsx');
+    };
+
+    const generarReporteCSV = () => {
+        // Convierte los datos a formato CSV utilizando Papaparse
+        const csvData = Papa.unparse(horasTrabajo);
+
+        // Guarda el archivo CSV
+        const csvBlob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+        saveAs(csvBlob, 'historial_conformes.csv');
+    };
+
     return (
         <div className="historial-container">
-            {modoEdicion ? (
-                // Mostrar formulario de edición
-                <div className='formularioEdicion'>
-                    {renderFormularioEdicion()}
-                    <div className="contenedorBotonesEdicion">
-                        <button onClick={guardarCambios}>Guardar Cambios</button>
-                        <button onClick={cancelarEdicion}>Cancelar</button>
+            {obteniendoDatos ? <p>Obteniendo datos...</p> :
+                modoEdicion ? (
+                    <div className='formularioEdicion'>
+                        {renderFormularioEdicion()}
+                        <div className="contenedorBotonesEdicion">
+                            <button onClick={guardarCambios}>Guardar Cambios</button>
+                            <button onClick={cancelarEdicion}>Cancelar</button>
+                        </div>
                     </div>
-                </div>
-            ) : (
-                // Mostrar historial
-                <>
-                    {window.innerWidth > 768 ? <h3>Historial de conformes</h3> : <h5>Detalle historico de conformes</h5>}
-                    {window.innerWidth < 768 ? renderHistorialMobile() : renderHistorialDesktop()}
-                </>
-            )}
-            <button onClick={onRegresar}>
-                <FontAwesomeIcon icon={faHouse} />
-                Volver al inicio
-            </button>
+                ) : (
+                    <>
+                        {window.innerWidth > 768 ? <h3>Historial de conformes</h3> : <h5>Detalle historico de conformes</h5>}
+                        {window.innerWidth < 768 ? renderHistorialMobile() : renderHistorialDesktop()}
+                    </>
+                )}
+            <div className="d-flex gap-4 align-items-center">
+                <button onClick={onRegresar}>
+                    <FontAwesomeIcon icon={faHouse} />
+                    Inicio
+                </button>
+                <DropdownButton title={'Generar reporte'} variant="secondary">
+                    <Dropdown.Item onClick={generarReportePDF}>
+                        <FontAwesomeIcon icon={faFilePdf} /> PDF
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={generarReporteExcel}>
+                        <FontAwesomeIcon icon={faFileExcel} /> Excel
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={generarReporteCSV}>
+                        <FontAwesomeIcon icon={faFileCsv} /> CSV
+                    </Dropdown.Item>
+                </DropdownButton>
+            </div>
         </div>
     );
 };
