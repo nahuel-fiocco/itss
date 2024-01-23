@@ -142,7 +142,6 @@ const ConformeDetalles = ({ onRegresar }) => {
             const conformesCollection = collection(db, 'horas');
             const conformesDoc = doc(conformesCollection, horaEditando.id);
 
-            // Actualiza el documento con los nuevos datos
             await updateDoc(conformesDoc, {
                 fechaConforme,
                 horaComienzo,
@@ -151,7 +150,6 @@ const ConformeDetalles = ({ onRegresar }) => {
                 detalleTareas,
             });
 
-            // Restablece el estado de edición
             setModoEdicion(false);
             setHoraEditando(null);
 
@@ -172,7 +170,6 @@ const ConformeDetalles = ({ onRegresar }) => {
                 const db = getFirestore();
                 const conformesCollection = collection(db, 'horas');
 
-                // Utiliza el ID del conforma para eliminar el documento correspondiente
                 await deleteDoc(doc(conformesCollection, hora.id));
                 setModoEdicion(false);
                 setHoraEditando(null);
@@ -226,8 +223,8 @@ const ConformeDetalles = ({ onRegresar }) => {
         const inicio = new Date(0, 0, 0, horaInicioArray[0], horaInicioArray[1]);
         const fin = new Date(0, 0, 0, horaFinArray[0], horaFinArray[1]);
 
-        const horaLaboralInicio = new Date(0, 0, 0, 9, 0); // Hora de inicio del horario laboral
-        const horaLaboralFin = new Date(0, 0, 0, 18, 0); // Hora de fin del horario laboral
+        const horaLaboralInicio = new Date(0, 0, 0, 9, 0);
+        const horaLaboralFin = new Date(0, 0, 0, 18, 0);
 
         if (inicio >= horaLaboralInicio && fin <= horaLaboralFin) {
             return 'Ordinaria';
@@ -383,61 +380,82 @@ const ConformeDetalles = ({ onRegresar }) => {
     };
 
     const generarReportePDF = () => {
-        // Crea un nuevo documento PDF
         const pdfDoc = new jsPDF();
 
-        // Título centrado horizontalmente
-        pdfDoc.text("Reporte de Conformes de Servicio", pdfDoc.internal.pageSize.getWidth() / 2, 80, { align: 'center' });
+        const espacioEntreConformidades = pdfDoc.internal.pageSize.getHeight() / 2 - 10;
 
         horasTrabajo.forEach((hora, index) => {
-            const yPos = 30 + index * 90; // Incrementé el espacio vertical para mayor separación entre conformes
+            if (index % 2 === 0 && index > 0) {
+                pdfDoc.addPage();
+            }
 
-            // // Títulos contra el margen izquierdo y valores contra el margen derecho
-            // pdfDoc.text(`Conforme nro: ${index + 1}`, 20, yPos);
-            // pdfDoc.text(`Fecha: ${hora.fechaConforme}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos, { align: 'right' });
-            // pdfDoc.text(`Técnico: ${hora.tecnico}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 10, { align: 'right' });
-            // pdfDoc.text(`Hora Comienzo: ${hora.horaComienzo} hs.`, 20, yPos + 20);
-            // pdfDoc.text(`Hora Finalización: ${hora.horaFinalizacion} hs.`, 20, yPos + 30);
-            // pdfDoc.text(`Cantidad de Horas: ${hora.cantidadHoras} hs.`, 20, yPos + 40);
-            // pdfDoc.text(`Tipo de Tarea: ${hora.tipoTareaCalculado}`, 20, yPos + 50);
-            // pdfDoc.text(`Detalle de Tareas: ${hora.detalleTareas}`, 20, yPos + 60);
-            // pdfDoc.text(`Fecha de Creación: ${hora.fechaCreacion}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 70, { align: 'right' });
-            // pdfDoc.text(`Hora de Creación: ${hora.horaCreacion}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 80, { align: 'right' });
-            // pdfDoc.text(`Firmado: ${renderFirmado(hora)}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 90, { align: 'right' });
+            const conformidadEnPagina = index % 2 === 0 ? 1 : 2;
 
-            pdfDoc.text('Conforme nro:', 20, yPos);
-            pdfDoc.text(`${index + 1}`, 80, yPos);
+            const yPos = 25 + ((conformidadEnPagina - 1) * espacioEntreConformidades);
 
-            // Línea de guiones
-            pdfDoc.text('----------------------------------------', 20, yPos + 100);
+            const numeroConforme = (index + 1).toString().padStart(6, '0');
+            pdfDoc.text(`Conforme nro: ${numeroConforme}`, pdfDoc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+
+            pdfDoc.text(`Fecha:`, 20, yPos + 10);
+            pdfDoc.text(`Técnico:`, 20, yPos + 20);
+            pdfDoc.text(`Hora Comienzo:`, 20, yPos + 30);
+            pdfDoc.text(`Hora Finalización:`, 20, yPos + 40);
+            pdfDoc.text(`Cantidad de Horas:`, 20, yPos + 50);
+            pdfDoc.text(`Tipo de Tarea:`, 20, yPos + 60);
+            pdfDoc.text(`Detalle de Tareas:`, 20, yPos + 70);
+            pdfDoc.text(`Fecha de Creación:`, 20, yPos + 80);
+            pdfDoc.text(`Hora de Creación:`, 20, yPos + 90);
+            pdfDoc.text(`Firmado:`, 20, yPos + 100);
+
+            pdfDoc.text(`${hora.fechaConforme}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 10, { align: 'right' });
+            pdfDoc.text(`${hora.tecnico}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 20, { align: 'right' });
+            pdfDoc.text(`${hora.horaComienzo} hs.`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 30, { align: 'right' });
+            pdfDoc.text(`${hora.horaFinalizacion} hs.`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 40, { align: 'right' });
+            pdfDoc.text(`${hora.cantidadHoras} hs.`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 50, { align: 'right' });
+
+            const tipoTarea = hora.tipoTarea ? hora.tipoTarea : 'ordinaria';
+            pdfDoc.text(`${tipoTarea}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 60, { align: 'right' });
+
+            pdfDoc.text(`${hora.detalleTareas}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 70, { align: 'right' });
+            pdfDoc.text(`${hora.fechaCreacion}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 80, { align: 'right' });
+            pdfDoc.text(`${hora.horaCreacion}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 90, { align: 'right' });
+
+            let textoFirma = '';
+            if (renderFirmado(hora) === '👍 Conforme') {
+                textoFirma = 'Conforme';
+                pdfDoc.text(`${textoFirma}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 100, { align: 'right' });
+            } else if (renderFirmado(hora) === '👎 Disconforme') {
+                textoFirma = 'Disconforme';
+                pdfDoc.text(`${textoFirma}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 100, { align: 'right' });
+                pdfDoc.text(`Motivo:`, 20, yPos + 110);
+                pdfDoc.text(`${hora.firmado.motivo}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 110, { align: 'right' });
+            } else {
+                textoFirma = 'No';
+                pdfDoc.text(`${textoFirma}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 100, { align: 'right' });
+            }
         });
 
-        // Guarda el documento como archivo PDF
         pdfDoc.save('historial_conformes.pdf');
     };
 
     const generarReporteExcel = async () => {
         try {
-            // Crea un nuevo libro de Excel
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet('Historial Conformes');
 
-            // Define las columnas del encabezado en el archivo Excel
             sheet.columns = [
-                { header: 'Nro. Conforme', key: 'nroConforme', width: 15 },
-                { header: 'Técnico', key: 'tecnico', width: 30 },
-                { header: 'Fecha Conforme', key: 'fechaConforme', width: 15 },
-                { header: 'Hora Comienzo', key: 'horaComienzo', width: 15 },
-                { header: 'Hora Finalización', key: 'horaFinalizacion', width: 15 },
-                { header: 'Cantidad de Horas', key: 'cantidadHoras', width: 15 },
-                { header: 'Tipo de Tarea', key: 'tipoTareaCalculado', width: 20 },
-                { header: 'Detalle de Tareas', key: 'detalleTareas', width: 30 },
-                { header: 'Fecha de Creación', key: 'fechaCreacion', width: 15 },
-                { header: 'Firmado', key: 'firmado', width: 15 }
-                // Añade más columnas según tus necesidades
+                { header: 'Nro. Conforme', key: 'nroConforme' },
+                { header: 'Técnico', key: 'tecnico' },
+                { header: 'Fecha Conforme', key: 'fechaConforme' },
+                { header: 'Hora Comienzo', key: 'horaComienzo' },
+                { header: 'Hora Finalización', key: 'horaFinalizacion' },
+                { header: 'Cantidad de Horas', key: 'cantidadHoras' },
+                { header: 'Tipo de Tarea', key: 'tipoTareaCalculado' },
+                { header: 'Detalle de Tareas', key: 'detalleTareas' },
+                { header: 'Fecha de Creación', key: 'fechaCreacion' },
+                { header: 'Firmado', key: 'firmado' }
             ];
 
-            // Agrega los datos de cada conformé a la hoja de cálculo
             horasTrabajo.forEach((hora) => {
                 sheet.addRow({
                     nroConforme: hora.nroConforme,
@@ -450,16 +468,13 @@ const ConformeDetalles = ({ onRegresar }) => {
                     detalleTareas: hora.detalleTareas,
                     fechaCreacion: hora.fechaCreacion,
                     firmado: renderFirmado(hora),
-                    // Agrega más propiedades según tus necesidades
                 });
             });
 
-            // Guarda el libro de Excel como archivo
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const url = URL.createObjectURL(blob);
 
-            // Crea un enlace y simula un clic para iniciar la descarga
             const link = document.createElement('a');
             link.href = url;
             link.download = 'historial_conformes.xlsx';
