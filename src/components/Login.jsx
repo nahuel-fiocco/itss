@@ -5,6 +5,7 @@ import { getFirestore, collection, doc, getDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import '../estilos/Login.css';
+import ForgotPassword from './ForgotPassword';
 
 function Login() {
     const navigate = useNavigate();
@@ -70,7 +71,7 @@ function Login() {
     };
 
     const handleForgotPassword = () => {
-        navigate('/forgotpassword');
+        navigate('/forgot-password');
     };
 
     return (
