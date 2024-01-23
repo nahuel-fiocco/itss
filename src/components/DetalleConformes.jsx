@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import '../estilos/DetalleConformes.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faTrash, faInfoCircle, faHouse, faFilePdf, faFileExcel, faFileCsv } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faTrash, faInfoCircle, faHouse, faFilePdf, faFileExcel } from '@fortawesome/free-solid-svg-icons';
 import { Dropdown, DropdownButton, OverlayTrigger, Popover, Table } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
+import jsPDF from 'jspdf';
+import ExcelJS from 'exceljs';
 
 const ConformeDetalles = ({ onRegresar }) => {
     const [expanded, setExpanded] = useState(null);
@@ -384,40 +386,91 @@ const ConformeDetalles = ({ onRegresar }) => {
         // Crea un nuevo documento PDF
         const pdfDoc = new jsPDF();
 
-        // Agrega contenido al documento (puedes personalizar esto según tus necesidades)
-        pdfDoc.text('Historial de Conformes', 20, 10);
-        pdfDoc.text('----------------------------------------', 20, 20);
+        // Título centrado horizontalmente
+        pdfDoc.text("Reporte de Conformes de Servicio", pdfDoc.internal.pageSize.getWidth() / 2, 80, { align: 'center' });
 
         horasTrabajo.forEach((hora, index) => {
-            pdfDoc.text(`${index + 1}. Fecha: ${hora.fechaConforme}, Técnico: ${hora.tecnico}`, 20, 30 + index * 10);
-            // Puedes agregar más información según tus necesidades
+            const yPos = 30 + index * 90; // Incrementé el espacio vertical para mayor separación entre conformes
+
+            // // Títulos contra el margen izquierdo y valores contra el margen derecho
+            // pdfDoc.text(`Conforme nro: ${index + 1}`, 20, yPos);
+            // pdfDoc.text(`Fecha: ${hora.fechaConforme}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos, { align: 'right' });
+            // pdfDoc.text(`Técnico: ${hora.tecnico}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 10, { align: 'right' });
+            // pdfDoc.text(`Hora Comienzo: ${hora.horaComienzo} hs.`, 20, yPos + 20);
+            // pdfDoc.text(`Hora Finalización: ${hora.horaFinalizacion} hs.`, 20, yPos + 30);
+            // pdfDoc.text(`Cantidad de Horas: ${hora.cantidadHoras} hs.`, 20, yPos + 40);
+            // pdfDoc.text(`Tipo de Tarea: ${hora.tipoTareaCalculado}`, 20, yPos + 50);
+            // pdfDoc.text(`Detalle de Tareas: ${hora.detalleTareas}`, 20, yPos + 60);
+            // pdfDoc.text(`Fecha de Creación: ${hora.fechaCreacion}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 70, { align: 'right' });
+            // pdfDoc.text(`Hora de Creación: ${hora.horaCreacion}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 80, { align: 'right' });
+            // pdfDoc.text(`Firmado: ${renderFirmado(hora)}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 90, { align: 'right' });
+
+            pdfDoc.text('Conforme nro:', 20, yPos);
+            pdfDoc.text(`${index + 1}`, 80, yPos);
+
+            // Línea de guiones
+            pdfDoc.text('----------------------------------------', 20, yPos + 100);
         });
 
         // Guarda el documento como archivo PDF
         pdfDoc.save('historial_conformes.pdf');
     };
 
-    const generarReporteExcel = () => {
-        // Crea una hoja de cálculo de Excel
-        const ws = XLSX.utils.json_to_sheet(horasTrabajo);
+    const generarReporteExcel = async () => {
+        try {
+            // Crea un nuevo libro de Excel
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet('Historial Conformes');
 
-        // Crea un libro de Excel
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Historial Conformes');
+            // Define las columnas del encabezado en el archivo Excel
+            sheet.columns = [
+                { header: 'Nro. Conforme', key: 'nroConforme', width: 15 },
+                { header: 'Técnico', key: 'tecnico', width: 30 },
+                { header: 'Fecha Conforme', key: 'fechaConforme', width: 15 },
+                { header: 'Hora Comienzo', key: 'horaComienzo', width: 15 },
+                { header: 'Hora Finalización', key: 'horaFinalizacion', width: 15 },
+                { header: 'Cantidad de Horas', key: 'cantidadHoras', width: 15 },
+                { header: 'Tipo de Tarea', key: 'tipoTareaCalculado', width: 20 },
+                { header: 'Detalle de Tareas', key: 'detalleTareas', width: 30 },
+                { header: 'Fecha de Creación', key: 'fechaCreacion', width: 15 },
+                { header: 'Firmado', key: 'firmado', width: 15 }
+                // Añade más columnas según tus necesidades
+            ];
 
-        // Guarda el libro como archivo Excel
-        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(data, 'historial_conformes.xlsx');
-    };
+            // Agrega los datos de cada conformé a la hoja de cálculo
+            horasTrabajo.forEach((hora) => {
+                sheet.addRow({
+                    nroConforme: hora.nroConforme,
+                    tecnico: hora.tecnico,
+                    fechaConforme: hora.fechaConforme,
+                    horaComienzo: hora.horaComienzo,
+                    horaFinalizacion: hora.horaFinalizacion,
+                    cantidadHoras: hora.cantidadHoras,
+                    tipoTareaCalculado: calcularTipoTarea(hora.horaComienzo, hora.horaFinalizacion),
+                    detalleTareas: hora.detalleTareas,
+                    fechaCreacion: hora.fechaCreacion,
+                    firmado: renderFirmado(hora),
+                    // Agrega más propiedades según tus necesidades
+                });
+            });
 
-    const generarReporteCSV = () => {
-        // Convierte los datos a formato CSV utilizando Papaparse
-        const csvData = Papa.unparse(horasTrabajo);
+            // Guarda el libro de Excel como archivo
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
 
-        // Guarda el archivo CSV
-        const csvBlob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-        saveAs(csvBlob, 'historial_conformes.csv');
+            // Crea un enlace y simula un clic para iniciar la descarga
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'historial_conformes.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            console.log('Reporte de Excel generado correctamente.');
+        } catch (error) {
+            console.error('Error al generar el reporte de Excel:', error);
+        }
     };
 
     return (
@@ -448,9 +501,6 @@ const ConformeDetalles = ({ onRegresar }) => {
                     </Dropdown.Item>
                     <Dropdown.Item onClick={generarReporteExcel}>
                         <FontAwesomeIcon icon={faFileExcel} /> Excel
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={generarReporteCSV}>
-                        <FontAwesomeIcon icon={faFileCsv} /> CSV
                     </Dropdown.Item>
                 </DropdownButton>
             </div>
