@@ -5,7 +5,7 @@ import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
 import '../estilos/Tecnico.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faInfoCircle, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
 import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
 
 function Tecnico() {
@@ -486,6 +486,25 @@ function Tecnico() {
         </div>
       )}
       <div className="historial-mobile">
+        <div className="ordenar-dropdown">
+          <label htmlFor="ordenar">Ordenar por:</label>
+          <select id="ordenar" value={orderByDropdown} onChange={(e) => setOrderByDropdown(e.target.value)}>
+            <option value="NroFicha">Nro. de Ficha</option>
+            <option value="fechaFicha">Fecha de Ficha</option>
+            <option value="tecnico">Técnico</option>
+            <option value="horaComienzo">Hora de Comienzo</option>
+            <option value="horaFinalizacion">Hora de Finalización</option>
+            <option value="cantidadHoras">Cantidad de Horas</option>
+            <option value="tipoTarea">Tipo de Tarea</option>
+            <option value="detalleTareas">Detalle de Tareas</option>
+            <option value="fechaCreacion">Fecha de Creación</option>
+            <option value="horaCreacion">Hora de Creación</option>
+            <option value="firmado">Firmado</option>
+          </select>
+          <button onClick={invertirOrden}>
+            <FontAwesomeIcon icon={orderByAsc ? faArrowUp : faArrowDown} />
+          </button>
+        </div>
         <div className="accordion" id="historialAcordeon">
           {historialHoras.map((hora) => (
             <div className="accordion-item bg-dark text-light" key={hora.NroFicha}>
@@ -526,6 +545,17 @@ function Tecnico() {
   );
 
   useEffect(() => {
+    // Ordenar por la columna seleccionada cuando cambia el estado orderByDropdown
+    if (orderByDropdown) {
+      sortByField(orderByDropdown);
+    }
+  }, [orderByDropdown]);
+
+  const invertirOrden = () => {
+    setOrderByAsc((prev) => !prev);
+  };
+
+  useEffect(() => {
     // Ordenar por la columna seleccionada cuando cambia el estado orderByField
     if (orderByField) {
       sortByField(orderByField);
@@ -537,6 +567,7 @@ function Tecnico() {
   };
 
   const handleColumnHeaderClick = (field) => {
+    setOrderByDropdown('');
     if (orderByField === field) {
       // Si hacemos clic en la misma columna, invertir el orden
       setOrderByAsc((prev) => !prev);

@@ -5,7 +5,7 @@ import { css } from '@emotion/react';
 import { BarLoader } from 'react-spinners';
 import '../estilos/Auditor.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserPen, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faUserPen, faSpinner, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
 import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
 
 function Auditor() {
@@ -25,6 +25,8 @@ function Auditor() {
     const [historialActualizado, setHistorialActualizado] = useState(0);
     const [firmando, setFirmando] = useState(false);
     const [registroExitoso, setRegistroExitoso] = useState(false);
+    const [orderByDropdown, setOrderByDropdown] = useState('NroFicha');
+    const [orderByAsc, setOrderByAsc] = useState(true);
 
     useEffect(() => {
         const obtenerHorasTrabajo = async () => {
@@ -172,8 +174,6 @@ function Auditor() {
         setFirmando(false);
     };
 
-
-
     const updateFirmaInfo = (horaId, nombreAuditor, apellidoAuditor) => {
         setHorasTrabajo((prevHoras) => {
             const updatedHoras = [...prevHoras];
@@ -189,7 +189,6 @@ function Auditor() {
             return updatedHoras;
         });
     };
-
 
     const Spinner = () => {
         const override = css`
@@ -325,6 +324,25 @@ function Auditor() {
 
     const renderHistorialMobile = () => (
         <div className="historial-mobile">
+            <div className="ordenar-dropdown">
+                <label htmlFor="ordenar">Ordenar por:</label>
+                <select id="ordenar" value={orderByDropdown} onChange={(e) => setOrderByDropdown(e.target.value)}>
+                    <option value="NroFicha">Nro. de Ficha</option>
+                    <option value="fechaFicha">Fecha de Ficha</option>
+                    <option value="tecnico">Técnico</option>
+                    <option value="horaComienzo">Hora de Comienzo</option>
+                    <option value="horaFinalizacion">Hora de Finalización</option>
+                    <option value="cantidadHoras">Cantidad de Horas</option>
+                    <option value="tipoTarea">Tipo de Tarea</option>
+                    <option value="detalleTareas">Detalle de Tareas</option>
+                    <option value="fechaCreacion">Fecha de Creación</option>
+                    <option value="horaCreacion">Hora de Creación</option>
+                    <option value="firmado">Firmado</option>
+                </select>
+                <button onClick={invertirOrden}>
+                    <FontAwesomeIcon icon={orderByAsc ? faArrowUp : faArrowDown} />
+                </button>
+            </div>
             <div className="accordion" id="historialAcordeon">
                 {horasTrabajo.slice().reverse().map((hora) => (
                     <div className="accordion-item bg-dark text-light" key={hora.id}>
@@ -377,6 +395,34 @@ function Auditor() {
         </div>
     );
 
+    const invertirOrden = () => {
+        setOrderByAsc((prev) => !prev);
+    };
+
+    const handleOrdenDropdownChange = (e) => {
+        const newOrderByField = e.target.value;
+        setOrderByDropdown(newOrderByField);
+        setOrderByAsc(true); // Reiniciar la dirección de orden al cambiar la opción
+    };
+
+    const sortByField = (field, isAsc) => {
+        const sortedHoras = [...horasTrabajo].sort((a, b) => {
+            const valueA = a[field];
+            const valueB = b[field];
+
+            if (typeof valueA === 'string' && typeof valueB === 'string') {
+                return isAsc ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            } else {
+                return isAsc ? valueA - valueB : valueB - valueA;
+            }
+        });
+        setHorasTrabajo(sortedHoras);
+    };
+
+    useEffect(() => {
+        sortByField(orderByDropdown, orderByAsc);
+    }, [orderByDropdown, orderByAsc]);
+
     const renderMotivoDisconformidad = (hora) => {
         if (hora.firmado && hora.firmado.tipo === 'disconformidad') {
             return (
@@ -385,7 +431,6 @@ function Auditor() {
         }
         return null;
     };
-
 
     const toggleAcordeon = (horaId) => {
         setExpanded((prevExpanded) => (prevExpanded === horaId ? null : horaId));
@@ -413,23 +458,48 @@ function Auditor() {
                                 <Table striped bordered hover variant="dark" responsive>
                                     <thead>
                                         <tr>
-                                            <th>Nro. Ficha</th>
-                                            <th>Técnico</th>
-                                            <th>Hora Comienzo</th>
-                                            <th>Hora Finalización</th>
-                                            <th>Cantidad de Horas</th>
-                                            <th>Tipo de Tarea</th>
-                                            <th>Detalle de Tareas</th>
-                                            <th>Fecha de Creación</th>
-                                            <th>Hora de Creación</th>
-                                            <th>Conformidad</th>
-                                            <th>Disconformidad</th>
+                                            <th onClick={() => handleOrdenDropdownChange('NroFicha')}>
+                                                Nro. Ficha {orderByDropdown === 'NroFicha' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('fechaFicha')}>
+                                                Fecha ficha {orderByDropdown === 'fechaFicha' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('tecnico')}>
+                                                Técnico {orderByDropdown === 'tecnico' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('horaComienzo')}>
+                                                Hora Comienzo {orderByDropdown === 'horaComienzo' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('horaFinalizacion')}>
+                                                Hora Finalización {orderByDropdown === 'horaFinalizacion' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('cantidadHoras')}>
+                                                Cantidad de Horas {orderByDropdown === 'cantidadHoras' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('tipoTarea')}>
+                                                Tipo de Tarea {orderByDropdown === 'tipoTarea' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('detalleTareas')}>
+                                                Detalle de Tareas {orderByDropdown === 'detalleTareas' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('fechaCreacion')}>
+                                                Fecha de Creación {orderByDropdown === 'fechaCreacion' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('horaCreacion')}>
+                                                Hora de Creación {orderByDropdown === 'horaCreacion' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th onClick={() => handleOrdenDropdownChange('firmado')}>
+                                                Firmado {orderByDropdown === 'firmado' && (orderByAsc ? '▲' : '▼')}
+                                            </th>
+                                            <th>Eliminar</th>
                                         </tr>
                                     </thead>
+
                                     <tbody>
                                         {horasTrabajo.map((hora) => (
                                             <tr key={hora.id}>
                                                 <td>{hora.NroFicha}</td>
+                                                <td>{hora.fechaFicha}</td>
                                                 <td>{hora.tecnico}</td>
                                                 <td>{hora.horaComienzo}</td>
                                                 <td>{hora.horaFinalizacion}</td>

@@ -92,7 +92,7 @@ button {
 .historial-mobile {
     min-height: 100vh;
     flex-grow: 1;
-    margin-top: 5vh;
+    margin-top: 1vh;
     width: 100%;
 }
 
@@ -179,4 +179,16 @@ button {
     color: white;
     padding: 5px;
     resize: none;
+}
+
+.ordenar-dropdown{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2vh;
+    height: min-content;
+}
+
+#ordenar{
+    width: min-content;
 }
