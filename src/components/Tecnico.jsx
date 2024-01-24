@@ -48,6 +48,8 @@ function Tecnico() {
   const [horasObtenidas, setHorasObtenidas] = useState(false);
   const [horaComienzoError, setHoraComienzoError] = useState('');
   const [horaFinalizacionError, setHoraFinalizacionError] = useState('');
+  const [orderByField, setOrderByField] = useState('fechaFicha');
+  const [orderByAsc, setOrderByAsc] = useState(false);
 
   const mostrarError = (mensaje, duracion = 2000) => {
     setErrorMensaje(mensaje);
@@ -395,19 +397,42 @@ function Tecnico() {
         <p className="tabla-vacia">No hay fichas cargadas.</p>
       ) : (
         <div className="historial-desktop">
-          <Table striped bordered hover variant="dark" responsive>
+          <Table striped bordered variant="dark" responsive>
             <thead>
               <tr>
-                <th>Nro. ficha</th>
-                <th>Técnico</th>
-                <th>Hora Comienzo</th>
-                <th>Hora Finalización</th>
-                <th>Cantidad de Horas</th>
-                <th>Tipo de Tarea</th>
-                <th>Detalle de Tareas</th>
-                <th>Fecha de Creación</th>
-                <th>Hora de Creación</th>
-                <th>Firmado</th>
+                <th onClick={() => handleColumnHeaderClick('NroFicha')}>
+                  Nro. ficha {orderByField === 'NroFicha' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('fechaFicha')}>
+                  Fecha ficha {orderByField === 'fechaFicha' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('tecnico')}>
+                  Técnico {orderByField === 'tecnico' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('horaComienzo')}>
+                  Hora Comienzo {orderByField === 'horaComienzo' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('horaFinalizacion')}>
+                  Hora Finalización {orderByField === 'horaFinalizacion' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('cantidadHoras')}>
+                  Cantidad de Horas {orderByField === 'cantidadHoras' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('tipoTarea')}>
+                  Tipo de Tarea {orderByField === 'tipoTarea' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('detalleTareas')}>
+                  Detalle de Tareas {orderByField === 'detalleTareas' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('fechaCreacion')}>
+                  Fecha de Creación {orderByField === 'fechaCreacion' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('horaCreacion')}>
+                  Hora de Creación {orderByField === 'horaCreacion' && (orderByAsc ? '▲' : '▼')}
+                </th>
+                <th onClick={() => handleColumnHeaderClick('firmado')}>
+                  Firmado {orderByField === 'firmado' && (orderByAsc ? '▲' : '▼')}
+                </th>
                 <th>Eliminar</th>
               </tr>
             </thead>
@@ -415,6 +440,7 @@ function Tecnico() {
               {historialHoras.map((hora) => (
                 <tr key={hora.NroFicha}>
                   <td>{hora.NroFicha}</td>
+                  <td>{hora.fechaFicha}</td>
                   <td>{hora.tecnico}</td>
                   <td>{hora.horaComienzo}</td>
                   <td>{hora.horaFinalizacion}</td>
@@ -499,8 +525,41 @@ function Tecnico() {
     </div>
   );
 
+  useEffect(() => {
+    // Ordenar por la columna seleccionada cuando cambia el estado orderByField
+    if (orderByField) {
+      sortByField(orderByField);
+    }
+  }, [orderByField, orderByAsc]);
+
   const toggleAcordeon = (NroFicha) => {
     setExpanded((prevExpanded) => (prevExpanded === NroFicha ? null : NroFicha));
+  };
+
+  const handleColumnHeaderClick = (field) => {
+    if (orderByField === field) {
+      // Si hacemos clic en la misma columna, invertir el orden
+      setOrderByAsc((prev) => !prev);
+    } else {
+      // Si hacemos clic en una columna diferente, establecer la nueva columna y orden ascendente
+      setOrderByField(field);
+      setOrderByAsc(true);
+    }
+  };
+
+  const sortByField = (field) => {
+    const sortedHistorial = [...historialHoras].sort((a, b) => {
+      const valueA = a[field];
+      const valueB = b[field];
+
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return orderByAsc ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+      } else {
+        return orderByAsc ? valueA - valueB : valueB - valueA;
+      }
+    });
+
+    setHistorialHoras(sortedHistorial);
   };
 
   return (
