@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import '../estilos/DetalleConformes.css';
+import '../estilos/DetalleFichas.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faTrash, faInfoCircle, faHouse, faFilePdf, faFileExcel } from '@fortawesome/free-solid-svg-icons';
 import { Dropdown, DropdownButton, OverlayTrigger, Popover, Table } from 'react-bootstrap';
@@ -8,14 +8,14 @@ import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
 import ExcelJS from 'exceljs';
 
-const ConformeDetalles = ({ onRegresar }) => {
+const DetalleFichas = ({ onRegresar }) => {
     const [expanded, setExpanded] = useState(null);
     const [horasTrabajo, setHorasTrabajo] = useState([]);
     const [modoEdicion, setModoEdicion] = useState(false);
     const [horaEditando, setHoraEditando] = useState(null);
     const [tecnico, setTecnico] = useState('');
     const { currentUser } = useAuth();
-    const [fechaConforme, setFechaConforme] = useState('');
+    const [fechaFicha, setFechaFicha] = useState('');
     const [horaComienzo, setHoraComienzo] = useState('');
     const [horaFinalizacion, setHoraFinalizacion] = useState('');
     const [cantidadHoras, setCantidadHoras] = useState(null);
@@ -48,7 +48,7 @@ const ConformeDetalles = ({ onRegresar }) => {
                     setHorasTrabajo(updatedHoras);
                 });
                 if (horaEditando) {
-                    setFechaConforme(horaEditando.fechaConforme);
+                    setFechaFicha(horaEditando.fechaFicha);
                     setHoraComienzo(horaEditando.horaComienzo);
                     setHoraFinalizacion(horaEditando.horaFinalizacion);
                     setCantidadHoras(horaEditando.cantidadHoras);
@@ -66,7 +66,7 @@ const ConformeDetalles = ({ onRegresar }) => {
         <div className="vistaFormulario container m-5">
             <div className="horizontalDiv row">
                 <div className="tagname col">
-                    <label className="label">Nro. Conforme</label>
+                    <label className="label">Nro. Ficha</label>
                 </div>
                 <div className="contenido col">
                     {horaEditando && `${String(horaEditando.id).slice(0, 3)}.${String(horaEditando.id).slice(3)}`}
@@ -82,10 +82,10 @@ const ConformeDetalles = ({ onRegresar }) => {
             </div>
             <div className="horizontalDiv row  mt-3">
                 <div className="tagname col">
-                    <label className="label">Fecha Conforme</label>
+                    <label className="label">Fecha Ficha</label>
                 </div>
                 <div className="contenido col">
-                    <input type="date" value={fechaConforme} onChange={handleFechaConformeChange} required />
+                    <input type="date" value={fechaFicha} onChange={handleFechaFichaChange} required />
                 </div>
             </div>
             <div className="horizontalDiv row">
@@ -139,11 +139,11 @@ const ConformeDetalles = ({ onRegresar }) => {
     const guardarCambios = async () => {
         try {
             const db = getFirestore();
-            const conformesCollection = collection(db, 'horas');
-            const conformesDoc = doc(conformesCollection, horaEditando.id);
+            const fichassCollection = collection(db, 'horas');
+            const fichasDoc = doc(fichassCollection, horaEditando.id);
 
-            await updateDoc(conformesDoc, {
-                fechaConforme,
+            await updateDoc(fichasDoc, {
+                fechaFicha,
                 horaComienzo,
                 horaFinalizacion,
                 cantidadHoras,
@@ -153,9 +153,9 @@ const ConformeDetalles = ({ onRegresar }) => {
             setModoEdicion(false);
             setHoraEditando(null);
 
-            console.log('Conformé actualizado correctamente.');
+            console.log('Ficha editada correctamente.');
         } catch (error) {
-            console.error('Error al actualizar el conformé:', error);
+            console.error('Error al actualizar la ficha:', error);
         }
     };
 
@@ -164,17 +164,17 @@ const ConformeDetalles = ({ onRegresar }) => {
         setHoraEditando(hora);
     };
 
-    const eliminarConforme = async (hora) => {
+    const eliminarficha = async (hora) => {
         try {
             if (hora) {
                 const db = getFirestore();
-                const conformesCollection = collection(db, 'horas');
+                const fichasCollection = collection(db, 'horas');
 
-                await deleteDoc(doc(conformesCollection, hora.id));
+                await deleteDoc(doc(fichasCollection, hora.id));
                 setModoEdicion(false);
                 setHoraEditando(null);
             } else {
-                console.error('No se proporcionó información del conforma para eliminar.');
+                console.error('No se proporcionó información de la ficha para eliminar.');
             }
         } catch (error) {
             console.error('Error al eliminar el documento:', error);
@@ -182,8 +182,8 @@ const ConformeDetalles = ({ onRegresar }) => {
     };
 
 
-    const handleFechaConformeChange = (e) => {
-        setFechaConforme(e.target.value);
+    const handleFechaFichaChange = (e) => {
+        setFechaFicha(e.target.value);
     };
 
     const handleHoraComienzoChange = (e) => {
@@ -227,18 +227,18 @@ const ConformeDetalles = ({ onRegresar }) => {
         const horaLaboralFin = new Date(0, 0, 0, 18, 0);
 
         if (inicio >= horaLaboralInicio && fin <= horaLaboralFin) {
-            return 'Ordinaria';
+            return 'Normal';
         } else if ((inicio < horaLaboralInicio && fin <= horaLaboralInicio) || (inicio >= horaLaboralFin && fin > horaLaboralFin)) {
-            return 'Extraordinaria';
+            return 'Extra';
         } else {
-            console.error('Las horas ordinarias y extraordinarias deben estar en conformes diferentes.');
+            console.error('Las horas Normal y Extra deben estar en fichas diferentes.');
             return '';
         }
     };
 
     const renderHistorialMobile = () => {
         if (horasTrabajo.length === 0) {
-            return <p>No hay conformes cargados</p>;
+            return <p>No hay fichas cargados</p>;
         }
         return (
             < div className="historial-mobile" >
@@ -247,7 +247,7 @@ const ConformeDetalles = ({ onRegresar }) => {
                         <div className="accordion-item bg-dark text-light" key={hora.id}>
                             <h2 className="accordion-header" id={`heading${hora.id}`}>
                                 <button className="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${hora.id}`} aria-expanded="false" aria-controls={`collapse${hora.id}`} onClick={() => toggleAcordeon(hora.id)}>
-                                    {hora.nroConforme}
+                                    {hora.NroFicha}
                                 </button>
                             </h2>
                             <div id={`collapse${hora.id}`} className={`accordion-collapse collapse ${expanded === hora.id ? 'show' : ''}`} aria-labelledby={`heading${hora.id}`} data-bs-parent="#historialAcordeon">
@@ -257,7 +257,7 @@ const ConformeDetalles = ({ onRegresar }) => {
                                         <p><strong>Hora Comienzo:</strong> {hora.horaComienzo} hs.</p>
                                         <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion} hs.</p>
                                         <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras} hs.</p>
-                                        <p><strong>Tipo de Tarea:</strong> {hora.tipoTareaCalculado}</p>
+                                        <p><strong>Tipo de Tarea:</strong> {hora.tipoTarea}</p>
                                         <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
                                         <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
                                         <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
@@ -269,7 +269,7 @@ const ConformeDetalles = ({ onRegresar }) => {
                                             <FontAwesomeIcon icon={faPen} />
                                             Editar
                                         </button>
-                                        <button type="button" onClick={() => eliminarConforme(hora)}>
+                                        <button type="button" onClick={() => eliminarficha(hora)}>
                                             <FontAwesomeIcon icon={faTrash} />
                                             Eliminar
                                         </button>
@@ -285,13 +285,13 @@ const ConformeDetalles = ({ onRegresar }) => {
 
     const renderHistorialDesktop = () => {
         if (horasTrabajo.length === 0) {
-            return <p>No hay conformes cargados</p>;
+            return <p>No hay fichas cargados</p>;
         }
         return (
             <Table striped bordered hover variant="dark" responsive>
                 <thead>
                     <tr>
-                        <th>Nro. Conforme</th>
+                        <th>Nro. ficha</th>
                         <th>Técnico</th>
                         <th>Hora Comienzo</th>
                         <th>Hora Finalización</th>
@@ -308,7 +308,7 @@ const ConformeDetalles = ({ onRegresar }) => {
                 <tbody>
                     {horasTrabajo.map((hora) => (
                         <tr key={hora.id}>
-                            <td>{hora.nroConforme}</td>
+                            <td>{hora.NroFicha}</td>
                             <td>{hora.tecnico}</td>
                             <td>{hora.horaComienzo}</td>
                             <td>{hora.horaFinalizacion}</td>
@@ -319,13 +319,13 @@ const ConformeDetalles = ({ onRegresar }) => {
                             <td>{hora.horaCreacion}</td>
                             <td className='tipoFirma'>
                                 {hora.firmado && hora.firmado.motivo ? (
-                                    <span className="disconforme-indicator">
+                                    <span className="disficha-indicator">
                                         {renderFirmado(hora)}{' '}
                                         <OverlayTrigger
                                             trigger={['hover', 'focus']}
                                             placement="top"
                                             overlay={
-                                                <Popover id={`popover-${hora.nroConforme}`} className='p-2 bg-secondary text-light' title="Motivo de Disconformidad">
+                                                <Popover id={`popover-${hora.NroFicha}`} className='p-2 bg-secondary text-light' title="Motivo de Disconformidad">
                                                     <div className='text-center'>
                                                         <div>{hora.firmado.motivo}</div>
                                                     </div>
@@ -347,7 +347,7 @@ const ConformeDetalles = ({ onRegresar }) => {
                                 </button>
                             </td>
                             <td>
-                                <button type="button" onClick={() => eliminarConforme(hora)}>
+                                <button type="button" onClick={() => eliminarficha(hora)}>
                                     <FontAwesomeIcon icon={faTrash} />
                                 </button>
                             </td>
@@ -360,7 +360,7 @@ const ConformeDetalles = ({ onRegresar }) => {
 
     const renderFirmado = (hora) => {
         if (hora.firmado) {
-            return hora.firmado.tipo === 'conformidad' ? '👍 Conforme' : '👎 Disconforme';
+            return hora.firmado.tipo === 'conformidad' ? '👍 ficha' : '👎 disconformidad';
         } else {
             return '❌ No';
         }
@@ -393,8 +393,8 @@ const ConformeDetalles = ({ onRegresar }) => {
 
             const yPos = 25 + ((conformidadEnPagina - 1) * espacioEntreConformidades);
 
-            const numeroConforme = (index + 1).toString().padStart(6, '0');
-            pdfDoc.text(`Conforme nro: ${numeroConforme}`, pdfDoc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
+            const numeroficha = (index + 1).toString().padStart(6, '0');
+            pdfDoc.text(`ficha nro: ${numeroficha}`, pdfDoc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
 
             pdfDoc.text(`Fecha:`, 20, yPos + 10);
             pdfDoc.text(`Técnico:`, 20, yPos + 20);
@@ -407,13 +407,13 @@ const ConformeDetalles = ({ onRegresar }) => {
             pdfDoc.text(`Hora de Creación:`, 20, yPos + 90);
             pdfDoc.text(`Firmado:`, 20, yPos + 100);
 
-            pdfDoc.text(`${hora.fechaConforme}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 10, { align: 'right' });
+            pdfDoc.text(`${hora.fechaFicha}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 10, { align: 'right' });
             pdfDoc.text(`${hora.tecnico}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 20, { align: 'right' });
             pdfDoc.text(`${hora.horaComienzo} hs.`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 30, { align: 'right' });
             pdfDoc.text(`${hora.horaFinalizacion} hs.`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 40, { align: 'right' });
             pdfDoc.text(`${hora.cantidadHoras} hs.`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 50, { align: 'right' });
 
-            const tipoTarea = hora.tipoTarea ? hora.tipoTarea : 'ordinaria';
+            const tipoTarea = hora.tipoTarea ? hora.tipoTarea : 'Normal';
             pdfDoc.text(`${tipoTarea}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 60, { align: 'right' });
 
             pdfDoc.text(`${hora.detalleTareas}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 70, { align: 'right' });
@@ -421,11 +421,11 @@ const ConformeDetalles = ({ onRegresar }) => {
             pdfDoc.text(`${hora.horaCreacion}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 90, { align: 'right' });
 
             let textoFirma = '';
-            if (renderFirmado(hora) === '👍 Conforme') {
-                textoFirma = 'Conforme';
+            if (renderFirmado(hora) === '👍 ficha') {
+                textoFirma = 'ficha';
                 pdfDoc.text(`${textoFirma}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 100, { align: 'right' });
-            } else if (renderFirmado(hora) === '👎 Disconforme') {
-                textoFirma = 'Disconforme';
+            } else if (renderFirmado(hora) === '👎 Disficha') {
+                textoFirma = 'Disficha';
                 pdfDoc.text(`${textoFirma}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 100, { align: 'right' });
                 pdfDoc.text(`Motivo:`, 20, yPos + 110);
                 pdfDoc.text(`${hora.firmado.motivo}`, pdfDoc.internal.pageSize.getWidth() - 20, yPos + 110, { align: 'right' });
@@ -435,18 +435,18 @@ const ConformeDetalles = ({ onRegresar }) => {
             }
         });
 
-        pdfDoc.save('historial_conformes.pdf');
+        pdfDoc.save('historial_fichas.pdf');
     };
 
     const generarReporteExcel = async () => {
         try {
             const workbook = new ExcelJS.Workbook();
-            const sheet = workbook.addWorksheet('Historial Conformes');
+            const sheet = workbook.addWorksheet('Historial fichas');
 
             sheet.columns = [
-                { header: 'Nro. Conforme', key: 'nroConforme' },
+                { header: 'Nro. ficha', key: 'NroFicha' },
                 { header: 'Técnico', key: 'tecnico' },
-                { header: 'Fecha Conforme', key: 'fechaConforme' },
+                { header: 'Fecha ficha', key: 'fechaFicha' },
                 { header: 'Hora Comienzo', key: 'horaComienzo' },
                 { header: 'Hora Finalización', key: 'horaFinalizacion' },
                 { header: 'Cantidad de Horas', key: 'cantidadHoras' },
@@ -458,9 +458,9 @@ const ConformeDetalles = ({ onRegresar }) => {
 
             horasTrabajo.forEach((hora) => {
                 sheet.addRow({
-                    nroConforme: hora.nroConforme,
+                    NroFicha: hora.NroFicha,
                     tecnico: hora.tecnico,
-                    fechaConforme: hora.fechaConforme,
+                    fechaFicha: hora.fechaFicha,
                     horaComienzo: hora.horaComienzo,
                     horaFinalizacion: hora.horaFinalizacion,
                     cantidadHoras: hora.cantidadHoras,
@@ -477,7 +477,7 @@ const ConformeDetalles = ({ onRegresar }) => {
 
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'historial_conformes.xlsx';
+            link.download = 'historial_fichas.xlsx';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -501,7 +501,7 @@ const ConformeDetalles = ({ onRegresar }) => {
                     </div>
                 ) : (
                     <>
-                        {window.innerWidth > 768 ? <h3>Historial de conformes</h3> : <h5>Detalle historico de conformes</h5>}
+                        {window.innerWidth > 768 ? <h3>Historial de fichas</h3> : <h5>Detalle historico de fichas</h5>}
                         {window.innerWidth < 768 ? renderHistorialMobile() : renderHistorialDesktop()}
                     </>
                 )}
@@ -523,4 +523,4 @@ const ConformeDetalles = ({ onRegresar }) => {
     );
 };
 
-export default ConformeDetalles;
+export default DetalleFichas;

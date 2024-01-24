@@ -10,7 +10,7 @@ import { OverlayTrigger, Popover, Table } from 'react-bootstrap';
 
 function Tecnico() {
   const [loading, setLoading] = useState(true);
-  const [nroConforme, setNroConforme] = useState(null);
+  const [NroFicha, setNroFicha] = useState(null);
   const [tecnico, setTecnico] = useState('');
   const [horaComienzo, setHoraComienzo] = useState('');
   const [horaFinalizacion, setHoraFinalizacion] = useState('');
@@ -19,7 +19,7 @@ function Tecnico() {
   const [cantidadHoras, setCantidadHoras] = useState('');
   const [historialHoras, setHistorialHoras] = useState([
     {
-      nroConforme: '',
+      NroFicha: '',
       tecnico: '',
       horaComienzo: '',
       horaFinalizacion: '',
@@ -28,7 +28,7 @@ function Tecnico() {
       detalleTareas: '',
       fechaCreacion: '',
       horaCreacion: '',
-      fechaConforme: '',
+      fechaFicha: '',
       firmado: {
         tipo: '',
         auditor: '',
@@ -39,7 +39,7 @@ function Tecnico() {
   const [expanded, setExpanded] = useState('collapseOne');
   const [view, setView] = useState('welcome');
   const { currentUser } = useAuth();
-  const [fechaConforme, setFechaConforme] = useState('');
+  const [fechaFicha, setFechaFicha] = useState('');
   const [confirmacionVisible, setConfirmacionVisible] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState('');
   const [contentLoaded, setContentLoaded] = useState(false);
@@ -56,18 +56,18 @@ function Tecnico() {
     }, duracion);
   };
 
-  const handleFechaConformeChange = (event) => {
-    setFechaConforme(event.target.value);
+  const handleFechaFichaChange = (event) => {
+    setFechaFicha(event.target.value);
   };
 
-  const handleEliminarConforme = async (nroConforme) => {
+  const handleEliminarficha = async (NroFicha) => {
     try {
       const db = getFirestore();
-      const conformesDocRef = doc(collection(db, 'horas'), nroConforme);
-      await deleteDoc(conformesDocRef);
-      setHistorialHoras((prevHistorialHoras) => prevHistorialHoras.filter((hora) => hora.nroConforme !== nroConforme));
+      const fichasDocRef = doc(collection(db, 'horas'), NroFicha);
+      await deleteDoc(fichasDocRef);
+      setHistorialHoras((prevHistorialHoras) => prevHistorialHoras.filter((hora) => hora.NroFicha !== NroFicha));
     } catch (error) {
-      mostrarError('Error eliminando conformes', error);
+      mostrarError('Error eliminando fichas', error);
     }
   };
 
@@ -91,14 +91,14 @@ function Tecnico() {
         }
 
         const horasCollectionRef = collection(db, 'horas');
-        const horasQuery = await getDocs(query(horasCollectionRef, orderBy('nroConforme', 'desc'), limit(1)));
+        const horasQuery = await getDocs(query(horasCollectionRef, orderBy('NroFicha', 'desc'), limit(1)));
 
         if (horasQuery.docs.length > 0) {
-          const ultimoNroConforme = parseInt(horasQuery.docs[0].data().nroConforme, 10);
-          const nuevoNroConforme = String(ultimoNroConforme + 1).padStart(6, '0');
-          setNroConforme(nuevoNroConforme);
+          const ultimoNroFicha = parseInt(horasQuery.docs[0].data().NroFicha, 10);
+          const nuevoNroFicha = String(ultimoNroFicha + 1).padStart(6, '0');
+          setNroFicha(nuevoNroFicha);
         } else {
-          setNroConforme('000001');
+          setNroFicha('000001');
         }
 
         const historialQuery = await getDocs(query(horasCollectionRef, orderBy('fechaCreacion', 'desc')));
@@ -172,7 +172,7 @@ function Tecnico() {
     const factorMultiplicador = esHorarioLaboral ? 1 : 2;
 
     const horasTotales = horasTrabajadas * factorMultiplicador;
-    const tipoTareaAutomatico = esHorarioLaboral ? 'Ordinaria' : 'Extraordinaria';
+    const tipoTareaAutomatico = esHorarioLaboral ? 'Normal' : 'Extra';
 
     const formato24Horas = (hours) => {
       const roundedHours = Math.floor(hours);
@@ -182,7 +182,7 @@ function Tecnico() {
 
     if (inicio >= fin) {
       const popover = (
-        <Popover id={`popover-error-hora-${nroConforme}`} className='p-2 bg-danger text-light' title="Error">
+        <Popover id={`popover-error-hora-${NroFicha}`} className='p-2 bg-danger text-light' title="Error">
           <div className='text-center'>
             <div>La hora de comienzo debe ser anterior a la hora de finalización.</div>
           </div>
@@ -217,14 +217,14 @@ function Tecnico() {
     const horaLaboralFin = new Date(0, 0, 0, 18, 0); // Hora de fin del horario laboral
 
     if (inicio >= horaLaboralInicio && fin <= horaLaboralFin) {
-      return 'Ordinaria';
+      return 'Normal';
     } else if ((inicio < horaLaboralInicio && fin <= horaLaboralInicio) || (inicio >= horaLaboralFin && fin > horaLaboralFin)) {
-      return 'Extraordinaria';
+      return 'Extra';
     } else {
       const popover = (
-        <Popover id={`popover-error-hora-fin-${nroConforme}`} className='p-2 bg-danger text-light' title="Error">
+        <Popover id={`popover-error-hora-fin-${NroFicha}`} className='p-2 bg-danger text-light' title="Error">
           <div className='text-center'>
-            <div>Las horas ordinarias y extraordinarias deben estar en conformes diferentes.</div>
+            <div>Las horas Normal y Extra deben estar en fichas diferentes.</div>
           </div>
         </Popover>
       );
@@ -240,7 +240,7 @@ function Tecnico() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!horaComienzo || !horaFinalizacion || !detalleTareas || !fechaConforme) {
+    if (!horaComienzo || !horaFinalizacion || !detalleTareas || !fechaFicha) {
       mostrarError('Por favor, completa todos los campos obligatorios.');
       setTimeout(() => {
         setErrorMensaje('');
@@ -251,10 +251,10 @@ function Tecnico() {
     const db = getFirestore();
     const fechaCreacion = new Date().toLocaleDateString();
     const horaCreacion = new Date().toLocaleTimeString();
-    const horaDocRef = doc(db, 'horas', nroConforme);
+    const horaDocRef = doc(db, 'horas', NroFicha);
     try {
       await setDoc(horaDocRef, {
-        nroConforme,
+        NroFicha,
         tecnico,
         horaComienzo,
         horaFinalizacion,
@@ -263,11 +263,11 @@ function Tecnico() {
         detalleTareas,
         fechaCreacion,
         horaCreacion,
-        fechaConforme,
+        fechaFicha,
       });
       setConfirmacionVisible(true);
       limpiarFormulario();
-      setNroConforme((prevNroConforme) => String(parseInt(prevNroConforme, 10) + 1).padStart(6, '0'));
+      setNroFicha((prevNroFicha) => String(parseInt(prevNroFicha, 10) + 1).padStart(6, '0'));
       setTimeout(() => {
         setConfirmacionVisible(false);
       }, 5000);
@@ -323,10 +323,10 @@ function Tecnico() {
     <div className="vistaFormulario container m-5">
       <div className="horizontalDiv row">
         <div className="tagname col">
-          <label className="label">Nro. Conforme</label>
+          <label className="label">Nro. ficha</label>
         </div>
         <div className="contenido col">
-          {`${String(nroConforme).slice(0, 3)}.${String(nroConforme).slice(3)}`}
+          {`${String(NroFicha).slice(0, 3)}.${String(NroFicha).slice(3)}`}
         </div>
       </div>
       <div className="horizontalDiv row  mt-3">
@@ -339,10 +339,10 @@ function Tecnico() {
       </div>
       <div className="horizontalDiv row  mt-3">
         <div className="tagname col">
-          <label className="label">Fecha Conforme</label>
+          <label className="label">Fecha ficha</label>
         </div>
         <div className="contenido col">
-          <input type="date" value={fechaConforme} onChange={handleFechaConformeChange} required />
+          <input type="date" value={fechaFicha} onChange={handleFechaFichaChange} required />
         </div>
       </div>
       <div className="horizontalDiv row">
@@ -392,13 +392,13 @@ function Tecnico() {
     <div className="historial-container">
       <h3>Historial de Horas</h3>
       {historialHoras.length === 0 ? (
-        <p className="tabla-vacia">No hay conformes cargados.</p>
+        <p className="tabla-vacia">No hay fichas cargadas.</p>
       ) : (
         <div className="historial-desktop">
           <Table striped bordered hover variant="dark" responsive>
             <thead>
               <tr>
-                <th>Nro. Conforme</th>
+                <th>Nro. ficha</th>
                 <th>Técnico</th>
                 <th>Hora Comienzo</th>
                 <th>Hora Finalización</th>
@@ -413,8 +413,8 @@ function Tecnico() {
             </thead>
             <tbody>
               {historialHoras.map((hora) => (
-                <tr key={hora.nroConforme}>
-                  <td>{hora.nroConforme}</td>
+                <tr key={hora.NroFicha}>
+                  <td>{hora.NroFicha}</td>
                   <td>{hora.tecnico}</td>
                   <td>{hora.horaComienzo}</td>
                   <td>{hora.horaFinalizacion}</td>
@@ -431,7 +431,7 @@ function Tecnico() {
                           trigger={['hover', 'focus']}
                           placement="top"
                           overlay={
-                            <Popover id={`popover-${hora.nroConforme}`} className='p-2 bg-secondary text-light' title="Motivo de Disconformidad">
+                            <Popover id={`popover-${hora.NroFicha}`} className='p-2 bg-secondary text-light' title="Motivo de Disconformidad">
                               <div className='text-center'>
                                 <div>Motivo</div>
                                 <div>{hora.firmado.motivo}</div>
@@ -449,7 +449,7 @@ function Tecnico() {
                     )}
                   </td>
                   <td>
-                    <button className='eliminar' onClick={() => handleEliminarConforme(hora.nroConforme)}>
+                    <button className='eliminar' onClick={() => handleEliminarficha(hora.NroFicha)}>
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
                   </td>
@@ -462,13 +462,13 @@ function Tecnico() {
       <div className="historial-mobile">
         <div className="accordion" id="historialAcordeon">
           {historialHoras.map((hora) => (
-            <div className="accordion-item bg-dark text-light" key={hora.nroConforme}>
-              <h2 className="accordion-header" id={`heading${hora.nroConforme}`}>
-                <button className="accordion-button bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${hora.nroConforme}`} aria-expanded="false" aria-controls={`collapse${hora.nroConforme}`}>
-                  {hora.nroConforme}
+            <div className="accordion-item bg-dark text-light" key={hora.NroFicha}>
+              <h2 className="accordion-header" id={`heading${hora.NroFicha}`}>
+                <button className="accordion-button bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${hora.NroFicha}`} aria-expanded="false" aria-controls={`collapse${hora.NroFicha}`}>
+                  {hora.NroFicha}
                 </button>
               </h2>
-              <div id={`collapse${hora.nroConforme}`} className="accordion-collapse collapse" aria-labelledby={`heading${hora.nroConforme}`} data-bs-parent="#historialAcordeon" >
+              <div id={`collapse${hora.NroFicha}`} className="accordion-collapse collapse" aria-labelledby={`heading${hora.NroFicha}`} data-bs-parent="#historialAcordeon" >
                 <div className="accordion-body">
                   <div className="accordion-body-content">
                     <p><strong>Técnico:</strong> {hora.tecnico}</p>
@@ -486,7 +486,7 @@ function Tecnico() {
                       </p>
                     )}
                   </div>
-                  <button className='eliminar' onClick={() => handleEliminarConforme(hora.nroConforme)}>
+                  <button className='eliminar' onClick={() => handleEliminarficha(hora.NroFicha)}>
                     <FontAwesomeIcon icon={faTrash} />
                     <span>Eliminar</span>
                   </button>
@@ -499,8 +499,8 @@ function Tecnico() {
     </div>
   );
 
-  const toggleAcordeon = (nroConforme) => {
-    setExpanded((prevExpanded) => (prevExpanded === nroConforme ? null : nroConforme));
+  const toggleAcordeon = (NroFicha) => {
+    setExpanded((prevExpanded) => (prevExpanded === NroFicha ? null : NroFicha));
   };
 
   return (
@@ -527,7 +527,7 @@ function Tecnico() {
               )}
               {confirmacionVisible && (
                 <div className="mensaje-confirmacion rounded p-1 m-3">
-                  {`Conforme nro ${String(nroConforme - 1).padStart(6, '0').slice(0, 3)}.${String(nroConforme - 1).padStart(6, '0').slice(3)} cargado`}
+                  {`ficha nro ${String(NroFicha - 1).padStart(6, '0').slice(0, 3)}.${String(NroFicha - 1).padStart(6, '0').slice(3)} cargada`}
                 </div>
               )}
               <form id="form-tecnico" className='mb-5' onSubmit={handleSubmit} disabled={guardando}>

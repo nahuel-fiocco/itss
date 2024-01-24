@@ -104,7 +104,7 @@ function Auditor() {
             const batch = writeBatch(db);
             let nombreAuditor = '';
             let apellidoAuditor = '';
-            let alMenosUnConformeFirmado = false;
+            let alMenosUnaFichaFirmada = false;
 
             await Promise.all(Object.entries(seleccionFirma).map(async ([horaId, tipoFirma]) => {
                 if (tipoFirma) {
@@ -140,7 +140,7 @@ function Auditor() {
                                 if (tipoFirma === 'conformidad') {
                                     setSeleccionConformidad((prev) => ({ ...prev, [horaId]: 'conformidad' }));
                                     setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: '' }));
-                                    alMenosUnConformeFirmado = true;
+                                    alMenosUnaFichaFirmada = true;
                                 } else if (tipoFirma === 'disconformidad') {
                                     setSeleccionDisconformidad((prev) => ({ ...prev, [horaId]: 'disconformidad' }));
                                     setSeleccionConformidad((prev) => ({ ...prev, [horaId]: '' }));
@@ -160,7 +160,7 @@ function Auditor() {
 
             await batch.commit();
 
-            setRegistroExitoso(alMenosUnConformeFirmado);
+            setRegistroExitoso(alMenosUnaFichaFirmada);
             setTimeout(() => {
                 setRegistroExitoso(false);
             }, 5000);
@@ -330,7 +330,7 @@ function Auditor() {
                     <div className="accordion-item bg-dark text-light" key={hora.id}>
                         <h2 className="accordion-header" id={`heading${hora.id}`}>
                             <button className="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${hora.id}`} aria-expanded="false" aria-controls={`collapse${hora.id}`} onClick={() => toggleAcordeon(hora.id)}>
-                                {hora.nroConforme}
+                                {hora.NroFicha}
                             </button>
                         </h2>
                         <div id={`collapse${hora.id}`} className={`accordion-collapse collapse ${expanded === hora.id ? 'show' : ''}`} aria-labelledby={`heading${hora.id}`} data-bs-parent="#historialAcordeon">
@@ -407,13 +407,13 @@ function Auditor() {
             ) : (
                 <div className="historial-container">
                     <h3>Historial de Horas</h3>
-                    {horasTrabajo.length === 0 ? (<p className='tabla-vacia'>No hay ningun conforme cargado.</p>) : (
+                    {horasTrabajo.length === 0 ? (<p className='tabla-vacia'>No hay ninguna ficha cargada.</p>) : (
                         <>
                             {window.innerWidth <= 768 ? renderHistorialMobile() : (
                                 <Table striped bordered hover variant="dark" responsive>
                                     <thead>
                                         <tr>
-                                            <th>Nro. Conforme</th>
+                                            <th>Nro. Ficha</th>
                                             <th>Técnico</th>
                                             <th>Hora Comienzo</th>
                                             <th>Hora Finalización</th>
@@ -429,7 +429,7 @@ function Auditor() {
                                     <tbody>
                                         {horasTrabajo.map((hora) => (
                                             <tr key={hora.id}>
-                                                <td>{hora.nroConforme}</td>
+                                                <td>{hora.NroFicha}</td>
                                                 <td>{hora.tecnico}</td>
                                                 <td>{hora.horaComienzo}</td>
                                                 <td>{hora.horaFinalizacion}</td>

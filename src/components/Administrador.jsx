@@ -9,7 +9,7 @@ import { getFirestore, collection, getDocs, query } from 'firebase/firestore';
 import moment from 'moment';
 import { IoMdPaper } from "react-icons/io";
 import { FaUsers } from "react-icons/fa";
-import DetalleConformes from './DetalleConformes.jsx';
+import DetalleFichas from './DetalleFichas.jsx';
 import ManageUsers from './ManageUsers.jsx';
 
 const Administrador = () => {
@@ -27,7 +27,7 @@ const Administrador = () => {
             return 'N/A';
         }
         const horas = Math.floor(totalMinutos / 60);
-        const minutos = Math.ceil(totalMinutos % 60); // Utilizar Math.ceil para redondear hacia arriba
+        const minutos = Math.ceil(totalMinutos % 60);
         return `${horas}:${minutos.toString().padStart(2, '0')}hs`;
     };
 
@@ -62,35 +62,35 @@ const Administrador = () => {
                 getDocs(query(collection(db, 'horas'))),
                 getDocs(collection(db, 'users')),
             ]);
-            const conformesSnapshot = querySnapshot;
+            const fichasSnapshot = querySnapshot;
             const usersData = usersSnapshot.docs.map((doc) => doc.data());
             const tecnicosUsers = usersData.filter((user) => user.role === 'tecnico');
-            let conformesFirmadosConformidad = 0;
-            let conformesFirmadosDisconformidad = 0;
-            let conformesNoFirmados = 0;
+            let fichasFirmadosConformidad = 0;
+            let fichasFirmadosDisconformidad = 0;
+            let fichasNoFirmados = 0;
             let totalMinutos = 0;
-            const horasPorTecnico = getHorasPorTecnico(conformesSnapshot.docs);
+            const horasPorTecnico = getHorasPorTecnico(fichasSnapshot.docs);
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                const fechaConforme = moment(data.fechaConforme, 'YYYY-MM-DD');
-                if (fechaConforme.isSameOrBefore(currentDate, 'month')) {
+                const fechaFicha = moment(data.fechaFicha, 'YYYY-MM-DD');
+                if (fechaFicha.isSameOrBefore(currentDate, 'month')) {
                     if (data.firmado) {
                         if (data.firmado.tipo === 'conformidad') {
-                            conformesFirmadosConformidad += moment.duration(data.cantidadHoras).asMinutes();
+                            fichasFirmadosConformidad += moment.duration(data.cantidadHoras).asMinutes();
                         } else if (data.firmado.tipo === 'disconformidad') {
-                            conformesFirmadosDisconformidad += moment.duration(data.cantidadHoras).asMinutes();
+                            fichasFirmadosDisconformidad += moment.duration(data.cantidadHoras).asMinutes();
                         }
                     } else {
-                        conformesNoFirmados += moment.duration(data.cantidadHoras).asMinutes();
+                        fichasNoFirmados += moment.duration(data.cantidadHoras).asMinutes();
                     }
                 }
             });
-            totalMinutos = conformesFirmadosConformidad + conformesFirmadosDisconformidad + conformesNoFirmados;
+            totalMinutos = fichasFirmadosConformidad + fichasFirmadosDisconformidad + fichasNoFirmados;
             setTotalHoras(totalMinutos);
             const chartData = [
-                { id: 0, value: conformesFirmadosConformidad, label: 'Conformes', color: '#31ca71' },
-                { id: 1, value: conformesFirmadosDisconformidad, label: 'Disconformes', color: '#E95646' },
-                { id: 2, value: conformesNoFirmados, label: 'No firmados', color: '#ffb' },
+                { id: 0, value: fichasFirmadosConformidad, label: 'Conformes', color: '#31ca71' },
+                { id: 1, value: fichasFirmadosDisconformidad, label: 'Disconformes', color: '#E95646' },
+                { id: 2, value: fichasNoFirmados, label: 'No firmados', color: '#ffb' },
             ];
             setChartData(chartData);
             const chartDataPromedio = Object.entries(horasPorTecnico).map(([tecnico, minutos], index) => ({
@@ -135,10 +135,10 @@ const Administrador = () => {
     };
 
 
-    const getHorasPorTecnico = (conformes) => {
+    const getHorasPorTecnico = (fichas) => {
         const horasPorTecnico = {};
-        conformes.forEach((conforme) => {
-            const data = conforme.data();
+        fichas.forEach((ficha) => {
+            const data = ficha.data();
             const tecnico = data.tecnico;
             if (tecnico) {
                 const cantidadHoras = moment.duration(data.cantidadHoras).asMinutes();
@@ -189,7 +189,7 @@ const Administrador = () => {
                 </div>
             ) : (
                 mostrarDetalles ? (
-                    <DetalleConformes onRegresar={() => handleMostrarDetallesClick(false)} />
+                    <DetalleFichas onRegresar={() => handleMostrarDetallesClick(false)} />
                 ) : (
                     mostrarUsuarios ? (
                         <ManageUsers onRegresar={() => handleMostrarUsuariosClick(false)} />
@@ -207,7 +207,7 @@ const Administrador = () => {
                                                         series={[
                                                             {
                                                                 arcLabel: (item) => formatDuration(item.value),
-                                                                arcLabelMinAngle: 45,
+                                                                arcLabelMinAngle: 20,
                                                                 data: formattedChartData,
                                                                 innerRadius: 20,
                                                                 outerRadius: 80,
@@ -226,7 +226,7 @@ const Administrador = () => {
                                                         series={[
                                                             {
                                                                 arcLabel: (item) => formatDuration(item.value),
-                                                                arcLabelMinAngle: 45,
+                                                                arcLabelMinAngle: 20,
                                                                 data: formattedChartData,
                                                                 innerRadius: 30,
                                                                 outerRadius: 100,
@@ -261,7 +261,7 @@ const Administrador = () => {
                                                         series={[
                                                             {
                                                                 arcLabel: (item) => formatDuration(item.value),
-                                                                arcLabelMinAngle: 45,
+                                                                arcLabelMinAngle: 10,
                                                                 data: chartDataPromedio,
                                                                 innerRadius: 20,
                                                                 outerRadius: 80,
@@ -280,7 +280,7 @@ const Administrador = () => {
                                                         series={[
                                                             {
                                                                 arcLabel: (item) => formatDuration(item.value),
-                                                                arcLabelMinAngle: 45,
+                                                                arcLabelMinAngle: 10,
                                                                 data: chartDataPromedio,
                                                                 innerRadius: 30,
                                                                 outerRadius: 100,
@@ -312,7 +312,7 @@ const Administrador = () => {
                                             <IoMdPaper className='paperIcon' />
                                             <span>Ver historico</span>
                                         </Card.Body>
-                                        <Card.Footer className='text-center'>Generar reportes, editar, eliminar conformes, etc.</Card.Footer>
+                                        <Card.Footer className='text-center'>Generar reportes, editar, eliminar fichas, etc.</Card.Footer>
                                     </Card>
                                 </Col>
                                 <Col md={6}>
