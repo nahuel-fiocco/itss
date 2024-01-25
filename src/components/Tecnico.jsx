@@ -50,6 +50,7 @@ function Tecnico() {
   const [horaFinalizacionError, setHoraFinalizacionError] = useState('');
   const [orderByField, setOrderByField] = useState('fechaFicha');
   const [orderByAsc, setOrderByAsc] = useState(false);
+  const [orderByDropdown, setOrderByDropdown] = useState('');
 
   const mostrarError = (mensaje, duracion = 2000) => {
     setErrorMensaje(mensaje);
@@ -517,6 +518,7 @@ function Tecnico() {
                 <div className="accordion-body">
                   <div className="accordion-body-content">
                     <p><strong>Técnico:</strong> {hora.tecnico}</p>
+                    <p><strong>Fecha de Ficha:</strong> {hora.fechaFicha}</p>
                     <p><strong>Hora Comienzo:</strong> {hora.horaComienzo}</p>
                     <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion}</p>
                     <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras}</p>
