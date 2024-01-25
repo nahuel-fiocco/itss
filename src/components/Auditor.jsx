@@ -27,6 +27,7 @@ function Auditor() {
     const [registroExitoso, setRegistroExitoso] = useState(false);
     const [orderByDropdown, setOrderByDropdown] = useState('NroFicha');
     const [orderByAsc, setOrderByAsc] = useState(true);
+    const [orderBy, setOrderBy] = useState({ field: 'NroFicha', asc: true });
 
     useEffect(() => {
         const obtenerHorasTrabajo = async () => {
@@ -326,7 +327,7 @@ function Auditor() {
         <div className="historial-mobile">
             <div className="ordenar-dropdown">
                 <label htmlFor="ordenar">Ordenar por:</label>
-                <select id="ordenar" value={orderByDropdown} onChange={(e) => setOrderByDropdown(e.target.value)}>
+                <select id="ordenar" value={orderByDropdown} onChange={handleOrdenDropdownChange}>
                     <option value="NroFicha">Nro. de Ficha</option>
                     <option value="fechaFicha">Fecha de Ficha</option>
                     <option value="tecnico">Técnico</option>
@@ -396,13 +397,17 @@ function Auditor() {
     );
 
     const invertirOrden = () => {
-        setOrderByAsc((prev) => !prev);
+        setOrderBy((prevOrderBy) => ({ ...prevOrderBy, asc: !prevOrderBy.asc }));
     };
 
     const handleOrdenDropdownChange = (e) => {
-        const newOrderByField = e.target.value;
-        setOrderByDropdown(newOrderByField);
-        setOrderByAsc(true); // Reiniciar la dirección de orden al cambiar la opción
+        if (e && e.target && e.target.value) {
+            const newOrderByField = e.target.value;
+            setOrderBy((prevOrderBy) => ({
+                field: newOrderByField,
+                asc: prevOrderBy.field === newOrderByField ? !prevOrderBy.asc : true,
+            }));
+        }
     };
 
     const sortByField = (field, isAsc) => {
@@ -419,9 +424,16 @@ function Auditor() {
         setHorasTrabajo(sortedHoras);
     };
 
+    const handleOrdenClick = (field) => {
+        setOrderBy((prevOrderBy) => ({
+            field,
+            asc: prevOrderBy.field === field ? !prevOrderBy.asc : true,
+        }));
+    };
+
     useEffect(() => {
-        sortByField(orderByDropdown, orderByAsc);
-    }, [orderByDropdown, orderByAsc]);
+        sortByField(orderBy.field, orderBy.asc);
+    }, [orderBy]);
 
     const renderMotivoDisconformidad = (hora) => {
         if (hora.firmado && hora.firmado.tipo === 'disconformidad') {
@@ -458,43 +470,42 @@ function Auditor() {
                                 <Table striped bordered hover variant="dark" responsive>
                                     <thead>
                                         <tr>
-                                            <th onClick={() => handleOrdenDropdownChange('NroFicha')}>
-                                                Nro. Ficha {orderByDropdown === 'NroFicha' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('NroFicha')}>
+                                                Nro. Ficha {orderBy.field === 'NroFicha' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('fechaFicha')}>
-                                                Fecha ficha {orderByDropdown === 'fechaFicha' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('fechaFicha')}>
+                                                Fecha ficha {orderBy.field === 'fechaFicha' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('tecnico')}>
-                                                Técnico {orderByDropdown === 'tecnico' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('tecnico')}>
+                                                Técnico {orderBy.field === 'tecnico' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('horaComienzo')}>
-                                                Hora Comienzo {orderByDropdown === 'horaComienzo' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('horaComienzo')}>
+                                                Hora Comienzo {orderBy.field === 'horaComienzo' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('horaFinalizacion')}>
-                                                Hora Finalización {orderByDropdown === 'horaFinalizacion' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('horaFinalizacion')}>
+                                                Hora Finalización {orderBy.field === 'horaFinalizacion' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('cantidadHoras')}>
-                                                Cantidad de Horas {orderByDropdown === 'cantidadHoras' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('cantidadHoras')}>
+                                                Cantidad de Horas {orderBy.field === 'cantidadHoras' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('tipoTarea')}>
-                                                Tipo de Tarea {orderByDropdown === 'tipoTarea' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('tipoTarea')}>
+                                                Tipo de Tarea {orderBy.field === 'tipoTarea' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('detalleTareas')}>
-                                                Detalle de Tareas {orderByDropdown === 'detalleTareas' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('detalleTareas')}>
+                                                Detalle de Tareas {orderBy.field === 'detalleTareas' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('fechaCreacion')}>
-                                                Fecha de Creación {orderByDropdown === 'fechaCreacion' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('fechaCreacion')}>
+                                                Fecha de Creación {orderBy.field === 'fechaCreacion' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('horaCreacion')}>
-                                                Hora de Creación {orderByDropdown === 'horaCreacion' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('horaCreacion')}>
+                                                Hora de Creación {orderBy.field === 'horaCreacion' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenDropdownChange('firmado')}>
-                                                Firmado {orderByDropdown === 'firmado' && (orderByAsc ? '▲' : '▼')}
+                                            <th onClick={() => handleOrdenClick('firmado')}>
+                                                Firmado {orderBy.field === 'firmado' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
                                             <th>Eliminar</th>
                                         </tr>
                                     </thead>
-
                                     <tbody>
                                         {horasTrabajo.map((hora) => (
                                             <tr key={hora.id}>
