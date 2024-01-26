@@ -56,8 +56,6 @@ const Administrador = () => {
     const getFirestoreData = async () => {
         try {
             const db = getFirestore();
-            const currentDate = moment();
-            const firstDayOfMonth = currentDate.clone().startOf('month').format('YYYY-MM-DD');
             const [querySnapshot, usersSnapshot] = await Promise.all([
                 getDocs(query(collection(db, 'horas'))),
                 getDocs(collection(db, 'users')),
@@ -72,17 +70,14 @@ const Administrador = () => {
             const horasPorTecnico = getHorasPorTecnico(fichasSnapshot.docs);
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                const fechaFicha = moment(data.fechaFicha, 'YYYY-MM-DD');
-                if (fechaFicha.isSameOrBefore(currentDate, 'month')) {
-                    if (data.firmado) {
-                        if (data.firmado.tipo === 'conformidad') {
-                            fichasFirmadosConformidad += moment.duration(data.cantidadHoras).asMinutes();
-                        } else if (data.firmado.tipo === 'disconformidad') {
-                            fichasFirmadosDisconformidad += moment.duration(data.cantidadHoras).asMinutes();
-                        }
-                    } else {
-                        fichasNoFirmados += moment.duration(data.cantidadHoras).asMinutes();
+                if (data.firmado) {
+                    if (data.firmado.tipo === 'conformidad') {
+                        fichasFirmadosConformidad += moment.duration(data.cantidadHoras).asMinutes();
+                    } else if (data.firmado.tipo === 'disconformidad') {
+                        fichasFirmadosDisconformidad += moment.duration(data.cantidadHoras).asMinutes();
                     }
+                } else {
+                    fichasNoFirmados += moment.duration(data.cantidadHoras).asMinutes();
                 }
             });
             totalMinutos = fichasFirmadosConformidad + fichasFirmadosDisconformidad + fichasNoFirmados;
@@ -108,6 +103,7 @@ const Administrador = () => {
             setLoading(false);
         }
     };
+
 
     const isColorDark = (color) => {
         const r = parseInt(color.slice(1, 3), 16);
@@ -237,7 +233,7 @@ const Administrador = () => {
                                                             },
                                                         ]}
                                                         height={250}
-                                                        width={700}
+                                                        width={600}
                                                         tooltip={<TooltipContent />}
                                                     />)}
                                                 </>
@@ -291,7 +287,7 @@ const Administrador = () => {
                                                             },
                                                         ]}
                                                         height={250}
-                                                        width={700}
+                                                        width={600}
                                                         tooltip={<TooltipContent />}
                                                     />)}
                                                 </>

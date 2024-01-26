@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPowerOff } from '@fortawesome/free-solid-svg-icons';
+import { faPowerOff, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import '../estilos/NavBar.css';
 
 import logo from '../assets/itss-logo.png';
@@ -56,6 +56,7 @@ function Navbar() {
     return (
         <div className="navbar-container text-light">
             <img src={logo} alt="ITSS Logo" className='rounded' width={270} />
+            <p className='text-dark'>Aplicacion en desarrollo</p>
             {loading ||
                 currentUser && (isRedirected || navigate !== undefined) && (
                     <div className="navbar-username">
