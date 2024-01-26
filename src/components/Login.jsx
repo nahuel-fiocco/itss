@@ -80,12 +80,12 @@ function Login() {
             <form className='form-login' onSubmit={handleSubmit}>
                 <div className="email-container">
                     <label htmlFor='email'>Email</label>
-                    <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="on" />
+                    <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
                 </div>
                 <div className="password-container">
                     <label htmlFor='password'>Contraseña</label>
                     <div className="password-input-container">
-                        <input type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                        <input type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
                         <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <FontAwesomeIcon className='ojito' icon={faEye} /> : <FontAwesomeIcon className='ojito' icon={faEyeSlash} />}
                         </button>
