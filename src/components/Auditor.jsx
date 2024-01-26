@@ -500,10 +500,12 @@ function Auditor() {
                                             <th onClick={() => handleOrdenClick('horaCreacion')}>
                                                 Hora de Creación {orderBy.field === 'horaCreacion' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenClick('firmado')}>
-                                                Firmado {orderBy.field === 'firmado' && (orderBy.asc ? '▲' : '▼')}
+                                            <th onClick={() => handleCheckboxChange('conformidad')}>
+                                                Conformidad
                                             </th>
-                                            <th>Eliminar</th>
+                                            <th onClick={() => handleCheckboxChange('disconformidad')}>
+                                                Disconformidad
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
