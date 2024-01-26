@@ -336,8 +336,6 @@ function Auditor() {
                     <option value="cantidadHoras">Cantidad de Horas</option>
                     <option value="tipoTarea">Tipo de Tarea</option>
                     <option value="detalleTareas">Detalle de Tareas</option>
-                    <option value="fechaCreacion">Fecha de Creación</option>
-                    <option value="horaCreacion">Hora de Creación</option>
                     <option value="firmado">Firmado</option>
                 </select>
                 <button onClick={invertirOrden}>
@@ -361,8 +359,6 @@ function Auditor() {
                                     <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras} hs.</p>
                                     <p><strong>Tipo de Tarea:</strong> {hora.tipoTarea}</p>
                                     <p><strong>Detalle de Tareas:</strong> {hora.detalleTareas}</p>
-                                    <p><strong>Fecha de Creación:</strong> {hora.fechaCreacion}</p>
-                                    <p><strong>Hora de Creación:</strong> {hora.horaCreacion}</p>
                                     <p><strong>Firmado:</strong> {renderFirmado(hora)}</p>
                                     {renderMotivoDisconformidad(hora)}
                                 </div>
@@ -494,12 +490,6 @@ function Auditor() {
                                             <th onClick={() => handleOrdenClick('detalleTareas')}>
                                                 Detalle de Tareas {orderBy.field === 'detalleTareas' && (orderBy.asc ? '▲' : '▼')}
                                             </th>
-                                            <th onClick={() => handleOrdenClick('fechaCreacion')}>
-                                                Fecha de Creación {orderBy.field === 'fechaCreacion' && (orderBy.asc ? '▲' : '▼')}
-                                            </th>
-                                            <th onClick={() => handleOrdenClick('horaCreacion')}>
-                                                Hora de Creación {orderBy.field === 'horaCreacion' && (orderBy.asc ? '▲' : '▼')}
-                                            </th>
                                             <th onClick={() => handleCheckboxChange('conformidad')}>
                                                 Conformidad
                                             </th>
@@ -519,8 +509,6 @@ function Auditor() {
                                                 <td>{hora.cantidadHoras}</td>
                                                 <td>{hora.tipoTarea}</td>
                                                 <td>{hora.detalleTareas}</td>
-                                                <td>{hora.fechaCreacion}</td>
-                                                <td>{hora.horaCreacion}</td>
                                                 <td className="conformidad">
                                                     {hora.firmado && hora.firmado.tipo === 'conformidad' ? '✅' : (
                                                         <input type="checkbox" checked={seleccionFirma[hora.id] === 'conformidad'} onChange={() => handleCheckboxChange(hora.id, 'conformidad')}
