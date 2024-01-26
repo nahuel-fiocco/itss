@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import '../estilos/DetalleFichas.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faTrash, faInfoCircle, faHouse, faFilePdf, faFileExcel } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faTrash, faInfoCircle, faHouse, faFilePdf, faFileExcel, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
 import { Dropdown, DropdownButton, OverlayTrigger, Popover, Table } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
@@ -21,6 +21,10 @@ const DetalleFichas = ({ onRegresar }) => {
     const [cantidadHoras, setCantidadHoras] = useState(null);
     const [detalleTareas, setDetalleTareas] = useState('');
     const [obteniendoDatos, setObteniendoDatos] = useState(true);
+    const [orderBy, setOrderBy] = useState('fechaFicha');
+    const [order, setOrder] = useState('asc');
+    const [orderByDropdown, setOrderByDropdown] = useState('NroFicha');
+    const [orderByAsc, setOrderByAsc] = useState(true);
 
     useEffect(() => {
         const obtenerHorasTrabajo = async () => {
@@ -41,7 +45,19 @@ const DetalleFichas = ({ onRegresar }) => {
                 const horasCollectionRef = collection(db, 'horas');
                 const horasQuery = await getDocs(horasCollectionRef);
                 const horasData = horasQuery.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-                setHorasTrabajo(horasData);
+                const sortedHorasData = horasData.slice().sort((a, b) => {
+                    const aValue = a[orderByDropdown];
+                    const bValue = b[orderByDropdown];
+
+                    if (aValue < bValue) {
+                        return orderByAsc ? -1 : 1;
+                    } else if (aValue > bValue) {
+                        return orderByAsc ? 1 : -1;
+                    } else {
+                        return 0;
+                    }
+                });
+                setHorasTrabajo(sortedHorasData);
                 setObteniendoDatos(false);
                 const unsubscribe = onSnapshot(horasCollectionRef, (snapshot) => {
                     const updatedHoras = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -61,6 +77,27 @@ const DetalleFichas = ({ onRegresar }) => {
         };
         obtenerHorasTrabajo();
     }, [currentUser, horaEditando]);
+
+    const handleSort = (field) => {
+        const isAsc = orderBy === field && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(field);
+
+        const sortedHorasData = horasTrabajo.slice().sort((a, b) => {
+            const aValue = a[field];
+            const bValue = b[field];
+
+            if (aValue < bValue) {
+                return order === 'asc' ? -1 : 1;
+            } else if (aValue > bValue) {
+                return order === 'asc' ? 1 : -1;
+            } else {
+                return 0;
+            }
+        });
+
+        setHorasTrabajo(sortedHorasData);
+    };
 
     const renderFormularioEdicion = () => (
         <div className="vistaFormulario container m-5">
@@ -236,12 +273,39 @@ const DetalleFichas = ({ onRegresar }) => {
         }
     };
 
+    const handleOrdenDropdownChange = (e) => {
+        setOrderByDropdown(e.target.value);
+        handleSort(e.target.value);
+    };
+
+    const invertirOrden = () => {
+        setOrderByAsc((prev) => !prev);
+        handleSort(orderByDropdown);
+    };
+
     const renderHistorialMobile = () => {
         if (horasTrabajo.length === 0) {
             return <p>No hay fichas cargados</p>;
         }
         return (
             < div className="historial-mobile" >
+                <div className="ordenar-dropdown">
+                    <label htmlFor="ordenar">Ordenar por:</label>
+                    <select id="ordenar" value={orderByDropdown} onChange={(e) => handleOrdenDropdownChange(e)}>
+                        <option value="NroFicha">Nro. de Ficha</option>
+                        <option value="fechaFicha">Fecha de Ficha</option>
+                        <option value="tecnico">Técnico</option>
+                        <option value="horaComienzo">Hora de Comienzo</option>
+                        <option value="horaFinalizacion">Hora de Finalización</option>
+                        <option value="cantidadHoras">Cantidad de Horas</option>
+                        <option value="tipoTarea">Tipo de Tarea</option>
+                        <option value="detalleTareas">Detalle de Tareas</option>
+                        <option value="firmado">Firmado</option>
+                    </select>
+                    <button onClick={invertirOrden}>
+                        <FontAwesomeIcon icon={orderByAsc ? faArrowUp : faArrowDown} />
+                    </button>
+                </div>
                 <div className="accordion" id="historialAcordeon">
                     {horasTrabajo.slice().reverse().map((hora) => (
                         <div className="accordion-item bg-dark text-light" key={hora.id}>
@@ -254,6 +318,7 @@ const DetalleFichas = ({ onRegresar }) => {
                                 <div className="accordion-body">
                                     <div className="accordion-body-content">
                                         <p><strong>Técnico:</strong> {hora.tecnico}</p>
+                                        <p><strong>Fecha Ficha:</strong> {hora.fechaFicha}</p>
                                         <p><strong>Hora Comienzo:</strong> {hora.horaComienzo} hs.</p>
                                         <p><strong>Hora Finalización:</strong> {hora.horaFinalizacion} hs.</p>
                                         <p><strong>Cantidad de Horas:</strong> {hora.cantidadHoras} hs.</p>
@@ -287,20 +352,57 @@ const DetalleFichas = ({ onRegresar }) => {
         if (horasTrabajo.length === 0) {
             return <p>No hay fichas cargados</p>;
         }
+
+        const sortedHorasTrabajo = horasTrabajo.slice().sort((a, b) => {
+            const aValue = a[orderBy];
+            const bValue = b[orderBy];
+
+            if (aValue < bValue) {
+                return order === 'asc' ? -1 : 1;
+            } else if (aValue > bValue) {
+                return order === 'asc' ? 1 : -1;
+            } else {
+                return 0;
+            }
+        });
+
         return (
             <Table striped bordered hover variant="dark" responsive>
                 <thead>
                     <tr>
-                        <th>Nro. ficha</th>
-                        <th>Técnico</th>
-                        <th>Hora Comienzo</th>
-                        <th>Hora Finalización</th>
-                        <th>Cantidad de Horas</th>
-                        <th>Tipo de Tarea</th>
-                        <th>Detalle de Tareas</th>
-                        <th>Fecha de Creación</th>
-                        <th>Hora de Creación</th>
-                        <th>Firmado</th>
+                        <th onClick={() => handleSort('NroFicha')}>
+                            Nro. ficha {orderBy === 'NroFicha' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('fechaFicha')}>
+                            Fecha Ficha {orderBy === 'fechaFicha' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('tecnico')}>
+                            Técnico {orderBy === 'tecnico' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('horaComienzo')}>
+                            Hora Comienzo {orderBy === 'horaComienzo' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('horaFinalizacion')}>
+                            Hora Finalización {orderBy === 'horaFinalizacion' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('cantidadHoras')}>
+                            Cantidad de Horas {orderBy === 'cantidadHoras' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('tipoTarea')}>
+                            Tipo de Tarea {orderBy === 'tipoTarea' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('detalleTareas')}>
+                            Detalle de Tareas {orderBy === 'detalleTareas' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('fechaCreacion')}>
+                            Fecha de Creación {orderBy === 'fechaCreacion' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('horaCreacion')}>
+                            Hora de Creación {orderBy === 'horaCreacion' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
+                        <th onClick={() => handleSort('firmado')}>
+                            Firmado {orderBy === 'firmado' && (order === 'asc' ? '▼' : '▲')}
+                        </th>
                         <th>Editar</th>
                         <th>Eliminar</th>
                     </tr>
@@ -309,6 +411,7 @@ const DetalleFichas = ({ onRegresar }) => {
                     {horasTrabajo.map((hora) => (
                         <tr key={hora.id}>
                             <td>{hora.NroFicha}</td>
+                            <td>{hora.fechaFicha}</td>
                             <td>{hora.tecnico}</td>
                             <td>{hora.horaComienzo}</td>
                             <td>{hora.horaFinalizacion}</td>
