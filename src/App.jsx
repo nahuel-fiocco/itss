@@ -9,6 +9,7 @@ import Tecnico from './components/Tecnico.jsx';
 import Auditor from './components/Auditor.jsx';
 import { initializeApp } from "firebase/app";
 import Navbar from './components/NavBar.jsx';
+// import CorregirHoras from './components/CorregirHoras.jsx';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCqM_HBfuxkvh43xgi65cuuRpeq-BaGGao",
@@ -44,6 +45,7 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
+        {/* <Route path="/corregirfechas" element={<CorregirHoras />} /> */}
         <Route path="/" element={<Navigate to={getRedirectPath()} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
