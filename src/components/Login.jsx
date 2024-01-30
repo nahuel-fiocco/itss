@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, collection, doc, getDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faEye, faEyeSlash, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import '../estilos/Login.css';
 
 function Login() {
@@ -70,7 +70,7 @@ function Login() {
     };
 
     const handleForgotPassword = () => {
-        navigate('/forgot-password');
+        navigate('/forgotPassword');
     };
 
     return (
@@ -80,12 +80,12 @@ function Login() {
             <form className='form-login' onSubmit={handleSubmit}>
                 <div className="email-container">
                     <label htmlFor='email'>Email</label>
-                    <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+                    <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder='Email' />
                 </div>
                 <div className="password-container">
                     <label htmlFor='password'>Contraseña</label>
                     <div className="password-input-container">
-                        <input type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+                        <input type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" placeholder='Password' />
                         <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <FontAwesomeIcon className='ojito' icon={faEye} /> : <FontAwesomeIcon className='ojito' icon={faEyeSlash} />}
                         </button>
@@ -93,7 +93,7 @@ function Login() {
                 </div>
                 <div className="buttons-container">
                     <button type="submit" disabled={loading}>
-                        {loading ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} /> : null}
+                        {loading ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} /> : <FontAwesomeIcon icon={faRightToBracket} style={{ marginRight: '5px' }} />}
                         Login
                     </button>
                     <button type="button" onClick={handleForgotPassword}>

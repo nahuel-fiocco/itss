@@ -48,7 +48,7 @@ function App() {
         {/* <Route path="/corregirfechas" element={<CorregirHoras />} /> */}
         <Route path="/" element={<Navigate to={getRedirectPath()} />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/admin" element={<Administrador />} />
         <Route path="/tecnico" element={<Tecnico />} />
         <Route path="/auditor" element={<Auditor />} />
