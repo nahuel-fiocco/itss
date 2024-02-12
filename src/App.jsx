@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 import Login from './components/Login.jsx';
-import ForgotPassword from './components/ForgotPassword.jsxLogin.jsx';
+import ForgotPassword from './components/ForgotPassword.jsx';
 import NotFound from './components/NotFound.jsx';
 import Administrador from './components/Administrador.jsx';
 import Tecnico from './components/Tecnico.jsx';
