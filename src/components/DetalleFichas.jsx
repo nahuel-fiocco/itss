@@ -593,6 +593,20 @@ const DetalleFichas = ({ onRegresar }) => {
 
     return (
         <div className="historial-container">
+            <div className="d-flex gap-4 align-items-center">
+                <button onClick={onRegresar}>
+                    <FontAwesomeIcon icon={faHouse} />
+                    Inicio
+                </button>
+                <DropdownButton title={'Generar reporte'} variant="secondary">
+                    <Dropdown.Item onClick={generarReportePDF}>
+                        <FontAwesomeIcon icon={faFilePdf} /> PDF
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={generarReporteExcel}>
+                        <FontAwesomeIcon icon={faFileExcel} /> Excel
+                    </Dropdown.Item>
+                </DropdownButton>
+            </div>
             {obteniendoDatos ? <p>Obteniendo datos...</p> :
                 modoEdicion ? (
                     <div className='formularioEdicion'>
@@ -608,20 +622,6 @@ const DetalleFichas = ({ onRegresar }) => {
                         {window.innerWidth < 768 ? renderHistorialMobile() : renderHistorialDesktop()}
                     </>
                 )}
-            <div className="d-flex gap-4 align-items-center">
-                <button onClick={onRegresar}>
-                    <FontAwesomeIcon icon={faHouse} />
-                    Inicio
-                </button>
-                <DropdownButton title={'Generar reporte'} variant="secondary">
-                    <Dropdown.Item onClick={generarReportePDF}>
-                        <FontAwesomeIcon icon={faFilePdf} /> PDF
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={generarReporteExcel}>
-                        <FontAwesomeIcon icon={faFileExcel} /> Excel
-                    </Dropdown.Item>
-                </DropdownButton>
-            </div>
         </div>
     );
 };
