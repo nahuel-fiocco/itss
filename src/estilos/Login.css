@@ -1,0 +1,48 @@
+.login-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-grow: 1;
+    gap: 5vh;
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 1vh;
+}
+
+.buttons-container>button {
+    border-radius: 5px;
+}
+
+.password-input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 116%;
+}
+
+.password-input-container>button {
+    background-color: transparent;
+    transform: translate(-100%, 0);
+}
+
+.form-login {
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+    padding: 1vh;
+}
+
+#email,
+#password {
+    background-color: aliceblue;
+    border-radius: 5px;
+    border: 1px solid white;
+    color: black;
+}

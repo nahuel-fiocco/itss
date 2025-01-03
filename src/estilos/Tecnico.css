@@ -1,0 +1,194 @@
+.tecnico-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    flex-grow: 1;
+}
+
+h2 {
+    margin-bottom: 2em;
+}
+
+.botones {
+    display: flex;
+    gap: 1em;
+}
+
+td {
+    height: 10vh;
+}
+
+.vistaFormulario {
+    width: 60vh;
+}
+
+.horizontalDiv {
+    display: flex;
+    align-items: flex-start;
+}
+
+input[type="date"],
+input[type="time"],
+select {
+    margin-bottom: 1.5em;
+    padding: 0.5em;
+    width: 25vh;
+    background-color: transparent;
+    color: white;
+    border-radius: 5px;
+    border: 1px solid white;
+}
+
+.horasObtenidas,
+.tipoTarea {
+    border-radius: 5px;
+    border: 1px solid white;
+    padding: 0.5em;
+    width: 25vh;
+    height: 6vh;
+}
+
+option {
+    background-color: #1a1a1a;
+    color: white;
+}
+
+button {
+    padding: 1px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+}
+
+.mensaje-confirmacion {
+    background-color: #4caf50;
+    color: white;
+    padding: 1.5em;
+    text-align: center;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+    font-size: 1.5em;
+}
+
+#form-tecnico {
+    display: flex;
+    gap: 5vh;
+}
+
+.historial-mobile {
+    min-height: 100vh;
+    flex-grow: 1;
+    margin-top: 1vh;
+    width: 100%;
+}
+
+.spinner-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+@media only screen and (min-width: 769px) {
+    .historial-desktop {
+        display: block;
+    }
+
+    .historial-mobile {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    .historial-desktop {
+        display: none;
+    }
+
+    .historial-mobile {
+        display: block;
+        width: 100%;
+    }
+
+    .accordion-button:not(.collapsed) {
+        color: #ffffff;
+    }
+
+    .acordeon-titulo {
+        border-radius: 10px;
+        padding: 1vh;
+    }
+
+    .vistaFormulario {
+        width: 100%;
+    }
+}
+
+.eliminar {
+    height: min-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1vh;
+}
+
+.historial-container {
+    width: 80%;
+    padding-bottom: 5vh;
+}
+
+.accordion-body-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.accordion-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.tipoFirma {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+
+.textarea-tecnico {
+    width: 25vh;
+    border-radius: 5px;
+    border: 1px solid white;
+    background-color: transparent;
+    color: white;
+    padding: 5px;
+    resize: none;
+}
+
+.ordenar-dropdown{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2vh;
+    height: min-content;
+}
+
+#ordenar{
+    width: min-content;
+}

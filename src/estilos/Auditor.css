@@ -1,0 +1,144 @@
+.auditor-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    flex-grow: 1;
+}
+
+.historial-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2vh;
+    gap: 5vh;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th,
+td {
+    padding: 1vh;
+    text-align: left;
+}
+
+th:hover,
+td:hover {
+    cursor: default;
+}
+
+button {
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+}
+
+p {
+    margin-top: 10px;
+}
+
+td.conformidad,
+td.disconformidad {
+    text-align: center;
+}
+
+td.conformidad input,
+td.disconformidad input {
+    margin: 0;
+}
+
+input[type="checkbox"] {
+    width: 15px;
+}
+
+/* Estilos para la versión móvil */
+.historial-mobile {
+    width: 100%;
+    min-height: min-content;
+}
+
+.accordion-button {
+    text-align: left;
+}
+
+.accordion-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.accordion-body-content {
+    width: 100%;
+}
+
+.tabla-vacia {
+    text-align: center;
+    font-style: italic;
+    margin-top: 5vh;
+}
+
+.motivo-disconformidad {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.boton-firmar-mobile,
+.boton-firmar-desktop {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1vh;
+}
+
+@media screen and (max-width: 768px) {
+    .boton-firmar-desktop {
+        display: none;
+    }
+}
+
+.contenedor-firmar-mobile {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.motivo-disconformidad-mobile {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1vh;
+}
+
+.contenedor-botones-firmar-mobile {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.textarea-mobile {
+    width: 100%;
+    margin-top: 1vh;
+    padding: 1vh;
+    background-color: transparent;
+    border: 1px solid white;
+    border-radius: 1vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    resize: none;
+    color: white;
+}
