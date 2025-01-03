@@ -8,7 +8,9 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         const auth = getAuth();
+        console.log("useAuth devuelte:", auth)
         const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log("Usuario autenticado detectado:", user);
             setCurrentUser(user || null);
         });
 
@@ -34,7 +36,7 @@ export function AuthProvider({ children }) {
 
     return (
         <AuthContext.Provider value={value}>
-            {currentUser !== undefined && children}
+            {currentUser === undefined ? null : children}
         </AuthContext.Provider>
     );
 }
