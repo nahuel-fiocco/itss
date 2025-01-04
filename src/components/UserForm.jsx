@@ -3,10 +3,10 @@ import { Form, Button } from "react-bootstrap";
 
 const UserForm = ({ user, onSave, onCancel }) => {
     const [userData, setUserData] = useState({
-        email: user.email || "",
-        name: user.name || "",
-        surname: user.surname || "",
-        role: user.role || "",
+        email: user?.email || "",
+        name: user?.name || "",
+        surname: user?.surname || "",
+        role: user?.role || "",
     });
 
     const handleChange = (e) => {
@@ -18,7 +18,16 @@ const UserForm = ({ user, onSave, onCancel }) => {
     };
 
     const handleSave = () => {
+        if (!userData.email || !userData.name || !userData.role) {
+            alert('Por favor completa todos los campos obligatorios.');
+            return;
+        }
         onSave(userData);
+    };
+
+    const handleCancel = () => {
+        setUserData(user);
+        onCancel();
     };
 
     return (
@@ -70,7 +79,7 @@ const UserForm = ({ user, onSave, onCancel }) => {
             <Button variant="primary" onClick={handleSave}>
                 Guardar Cambios
             </Button>{" "}
-            <Button variant="secondary" onClick={onCancel}>
+            <Button variant="secondary" onClick={handleCancel}>
                 Cancelar
             </Button>
         </Form>

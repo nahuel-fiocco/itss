@@ -11,13 +11,25 @@ admin.initializeApp();
 sgMail.setApiKey('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');
 
 exports.sendEmail = functions.https.onCall(async (data, context) => {
-  const {to, subject, text} = data;
-  const msg = {to, from: 'info@it-smart.com.ar', subject, text};
+  const { to, subject, text } = data;
+  const msg = { to, from: 'info@it-smart.com.ar', subject, text };
   try {
     await sgMail.send(msg);
-    return {success: true};
+    return { success: true };
   } catch (error) {
     console.error(error.toString());
     throw new functions.https.HttpsError('internal', 'Correo no enviado');
+  }
+});
+
+exports.getUserCreationDate = functions.https.onCall(async (data, context) => {
+  const { uid } = data; // UID del usuario
+  try {
+    const userRecord = await admin.auth().getUser(uid);
+    const creationTime = userRecord.metadata.creationTime; // Fecha de creación
+    return { creationTime };
+  } catch (error) {
+    console.error(error.toString());
+    throw new functions.https.HttpsError('internal', 'No se pudo obtener la fecha de creación');
   }
 });

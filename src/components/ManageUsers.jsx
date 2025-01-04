@@ -7,6 +7,7 @@ import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import "../estilos/ManageUsers.css";
 import UserForm from "./UserForm.jsx";
 import PasswordResetForm from "./PasswordResetForm.jsx";
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 const ManageUsers = ({ onRegresar }) => {
     const [users, setUsers] = useState([]);
@@ -16,6 +17,7 @@ const ManageUsers = ({ onRegresar }) => {
 
     const toggleAcordeon = (userId) => {
         setExpanded((prevExpanded) => (prevExpanded === userId ? null : userId));
+        fetchCreationDate("UID_DEL_USUARIO");
     };
 
     const auth = getAuth();
@@ -31,16 +33,28 @@ const ManageUsers = ({ onRegresar }) => {
         setUsers(usersData);
     };
 
+    const functions = getFunctions();
+    const getUserCreationDate = httpsCallable(functions, 'getUserCreationDate');
+
+    const fetchCreationDate = async (userId) => {
+        try {
+            const result = await getUserCreationDate({ uid: userId });
+            console.log('Fecha de creación:', result.data.creationTime);
+        } catch (error) {
+            console.error('Error al obtener la fecha de creación:', error.message);
+        }
+    };
+
     useEffect(() => {
         getUsersFromFirestore();
     }, []);
 
-    const resetPassword = async (userId) => {
+    const resetPassword = async (userEmail) => {
         try {
-            await auth.sendPasswordResetEmail(userId);
-            console.log(`Email de reestablecimiento de contraseña enviado al usuario con ID: ${userId}`);
+            await auth.sendPasswordResetEmail(userEmail);
+            console.log(`Email de reestablecimiento de contraseña enviado a: ${userEmail}`);
         } catch (error) {
-            console.error('Error al enviar el email de reestablecimiento de contraseña:', error.message);
+            console.error('Error al enviar el email:', error.message);
         }
     };
 
@@ -66,12 +80,18 @@ const ManageUsers = ({ onRegresar }) => {
         setEditUserId(userId);
     };
 
-    const saveUserChanges = (updatedUserData) => {
-        // Aquí debes implementar la lógica para guardar los cambios en el usuario
-        console.log("Guardar cambios para el usuario con ID:", editUserId, updatedUserData);
+    const saveUserChanges = async (updatedUserData) => {
+        const db = getFirestore();
+        const userRef = collection(db, 'users').doc(editUserId);
 
-        // Después de guardar los cambios, reseteamos el estado de edición
-        setEditUserId(null);
+        try {
+            await userRef.update(updatedUserData);
+            console.log('Usuario actualizado');
+            setEditUserId(null);
+            getUsersFromFirestore(); // Refresca la lista
+        } catch (error) {
+            console.error('Error al actualizar el usuario:', error.message);
+        }
     };
 
     const cancelEditUser = () => {
@@ -108,7 +128,7 @@ const ManageUsers = ({ onRegresar }) => {
                         <div className="accordion-item bg-dark text-light" key={user.id}>
                             <h2 className="accordion-header" id={`userHeading${user.id}`}>
                                 <button className="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target={`#userCollapse${user.id}`} aria-expanded="false" aria-controls={`userCollapse${user.id}`} onClick={() => toggleAcordeon(user.id)}>
-                                    {user.email}
+                                    {`${user.name}, ${user.surname}`}
                                 </button>
                             </h2>
                             <div id={`userCollapse${user.id}`} className={`accordion-collapse collapse ${expanded === user.id ? 'show' : ''}`} aria-labelledby={`userHeading${user.id}`} data-bs-parent="#usersAcordeon">
