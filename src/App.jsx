@@ -8,7 +8,6 @@ import Administrador from './components/Administrador.jsx';
 import Tecnico from './components/Tecnico.jsx';
 import Auditor from './components/Auditor.jsx';
 import Navbar from './components/NavBar.jsx';
-import firebaseApp from './firebase'; // Importas aquí la inicialización de Firebase
 
 function App() {
   const { currentUser } = useAuth();
@@ -16,11 +15,11 @@ function App() {
   const getRedirectPath = () => {
     if (currentUser) {
       switch (currentUser.role) {
-        case 'administrador':
+        case 'administrador' || 'Administrador':
           return '/admin';
-        case 'tecnico':
+        case 'Tecnico' || 'tecnico':
           return '/tecnico';
-        case 'auditor':
+        case 'auditor' || 'Auditor':
           return '/auditor';
         default:
           return '/';

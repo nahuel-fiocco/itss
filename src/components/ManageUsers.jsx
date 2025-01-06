@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHouse, faUserPlus } from '@fortawesome/free-solid-svg-icons';
-import { Table, Dropdown, DropdownButton, Modal, Button } from 'react-bootstrap';
-import { getDocs, collection, doc, updateDoc, addDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { collection, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updatePassword } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import '../estilos/ManageUsers.css';
 import PasswordResetForm from './PasswordResetForm.jsx';
 import UserForm from './UserForm.jsx';
+import { DropdownButton, Dropdown, Modal } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHouse, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 
 const ManageUsers = ({ onRegresar }) => {
     const [users, setUsers] = useState([]);
@@ -47,8 +47,9 @@ const ManageUsers = ({ onRegresar }) => {
 
     const resetPassword = async (userId, newPassword) => {
         try {
-            const userRef = doc(db, 'users', userId);
-            await updateDoc(userRef, { password: newPassword });
+            const user = await auth.getUser(userId);
+            await updatePassword(user, newPassword);
+            console.log(`Contraseña restablecida para el usuario con ID: ${userId}`);
         } catch (error) {
             console.error('Error al restablecer la contraseña:', error.message);
         }
@@ -83,7 +84,7 @@ const ManageUsers = ({ onRegresar }) => {
             const { email, name, surname, role, password } = newUserData;
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            await addDoc(collection(db, 'users'), {
+            await setDoc(doc(db, 'users', user.uid), {
                 email,
                 name,
                 surname,
@@ -107,16 +108,6 @@ const ManageUsers = ({ onRegresar }) => {
     const activeUsers = users.filter(user => !user.disabled);
     const inactiveUsers = users.filter(user => user.disabled);
 
-    const handleDisableAccount = async (userId) => {
-        await disableAccount(userId);
-        fetchUsers();
-    };
-
-    const handleEnableAccount = async (userId) => {
-        await enableAccount(userId);
-        fetchUsers();
-    };
-
     return (
         <div className='manage-users-container'>
             {isMobile ? (
@@ -131,7 +122,7 @@ const ManageUsers = ({ onRegresar }) => {
                                     </button>
                                 </h2>
                                 <div id={`userCollapse${user.id}`} className={`accordion-collapse collapse ${expanded === user.id ? 'show' : ''}`} aria-labelledby={`userHeading${user.id}`} data-bs-parent='#activeUsersAcordeon'>
-                                    <div className='accordion-body'>
+                                    <div className='accordion-body d-flex align-items-start'>
                                         <p><strong>ID:</strong> {user.id}</p>
                                         <p><strong>Email:</strong> {user.email}</p>
                                         <p><strong>Nombre:</strong> {user.name}</p>

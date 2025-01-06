@@ -64,13 +64,17 @@ const PasswordResetForm = ({ userId, onReset, onClose }) => {
                     />
                 </div>
             </Form.Group>
+
             {error && <p style={{ color: "red" }}>{error}</p>}
+
             <Button variant="primary" onClick={handleReset}>
                 Resetear Contraseña
             </Button>{" "}
+
             <Button variant="secondary" onClick={onClose}>
                 Cancelar
             </Button>
+
         </Form>
     );
 };

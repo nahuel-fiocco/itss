@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, collection, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faEye, faEyeSlash, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import '../estilos/Login.css';
@@ -33,11 +33,10 @@ function Login() {
     const checkUserRole = async (uid) => {
         try {
             const db = getFirestore();
-            const userRef = doc(collection(db, 'users'), uid);
+            const userRef = doc(db, 'users', uid);
             const userSnapshot = await getDoc(userRef);
             if (userSnapshot.exists()) {
-                const userData = userSnapshot.data();
-                return userData ? userData.role : null;
+                return userSnapshot.data().role;
             }
             return null;
         } catch (error) {
@@ -55,13 +54,11 @@ function Login() {
             const uid = userCredential.user.uid;
             const role = await checkUserRole(uid);
             handleAuthentication(role);
-            setEmail('');
-            setPassword('');
         } catch (error) {
-            console.error('Error al iniciar sesión:', error.message);
-            setError('Credenciales incorrectas');
             setEmail('');
             setPassword('');
+            setError('Por favor verifique sus credenciales.');
+            console.error('Error al iniciar sesión:', error);
         } finally {
             setLoading(false);
         }

@@ -1,19 +1,19 @@
-import React, {useState, useEffect} from 'react';
-import {useAuth} from '../context/AuthContext';
-import {css} from '@emotion/react';
-import {BarLoader} from 'react-spinners';
-import {Container, Row, Col, Card} from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { css } from '@emotion/react';
+import { BarLoader } from 'react-spinners';
+import { Container, Row, Col, Card } from 'react-bootstrap';
 import '../estilos/Administrador.css';
-import {PieChart} from '@mui/x-charts/PieChart';
-import {getFirestore, collection, getDocs, query} from 'firebase/firestore';
+import { PieChart } from '@mui/x-charts/PieChart';
+import { getFirestore, collection, getDocs, query } from 'firebase/firestore';
 import moment from 'moment';
-import {IoMdPaper} from 'react-icons/io';
-import {FaUsers} from 'react-icons/fa';
+import { IoMdPaper } from 'react-icons/io';
+import { FaUsers } from 'react-icons/fa';
 import DetalleFichas from './DetalleFichas.jsx';
 import ManageUsers from './ManageUsers.jsx';
 
 const Administrador = () => {
-    const {currentUser} = useAuth();
+    const { currentUser } = useAuth();
     const [loading, setLoading] = useState(true);
     const [chartData, setChartData] = useState(null);
     const [totalHoras, setTotalHoras] = useState(0);
@@ -25,33 +25,33 @@ const Administrador = () => {
     const formatTotalHoras = (totalMinutos) => {
         if (isNaN(totalMinutos) || totalMinutos === 0) {
             return 'N/A';
-       }
+        }
         const horas = Math.floor(totalMinutos / 60);
         const minutos = Math.ceil(totalMinutos % 60);
         return `${horas}:${minutos.toString().padStart(2, '0')}hs`;
-   };
+    };
 
     const formattedChartData = chartData
         ? chartData.map((item) => ({
             ...item,
             value: Number(item.value) || 0,
-       }))
+        }))
         : [];
 
-    const TooltipContent = ({datum, color}) => {
+    const TooltipContent = ({ datum, color }) => {
         const formattedValue = formatDuration(datum.value);
         return (
-            <div style={{color}}>
+            <div style={{ color }}>
                 <strong>{datum.label}</strong>: {formattedValue}
             </div>
         );
-   };
+    };
 
     const formatDuration = (durationInMinutes) => {
         const hours = Math.floor(durationInMinutes / 60);
         const minutes = durationInMinutes % 60;
         return `${hours}:${minutes.toString().padStart(2, '0')}hs`;
-   };
+    };
 
     const getFirestoreData = async () => {
         try {
@@ -73,19 +73,19 @@ const Administrador = () => {
                 if (data.firmado) {
                     if (data.firmado.tipo === 'conformidad') {
                         fichasFirmadosConformidad += moment.duration(data.cantidadHoras).asMinutes();
-                   } else if (data.firmado.tipo === 'disconformidad') {
+                    } else if (data.firmado.tipo === 'disconformidad') {
                         fichasFirmadosDisconformidad += moment.duration(data.cantidadHoras).asMinutes();
-                   }
-               } else {
+                    }
+                } else {
                     fichasNoFirmados += moment.duration(data.cantidadHoras).asMinutes();
-               }
-           });
+                }
+            });
             totalMinutos = fichasFirmadosConformidad + fichasFirmadosDisconformidad + fichasNoFirmados;
             setTotalHoras(totalMinutos);
             const chartData = [
-                {id: 0, value: fichasFirmadosConformidad, label: 'Conformes', color: '#31ca71'},
-                {id: 1, value: fichasFirmadosDisconformidad, label: 'Disconformes', color: '#E95646'},
-                {id: 2, value: fichasNoFirmados, label: 'No firmados', color: '#ffb'},
+                { id: 0, value: fichasFirmadosConformidad, label: 'Conformes', color: '#31ca71' },
+                { id: 1, value: fichasFirmadosDisconformidad, label: 'Disconformes', color: '#E95646' },
+                { id: 2, value: fichasNoFirmados, label: 'No firmados', color: '#ffb' },
             ];
             setChartData(chartData);
             const chartDataPromedio = Object.entries(horasPorTecnico).map(([tecnico, minutos], index) => ({
@@ -93,16 +93,16 @@ const Administrador = () => {
                 value: minutos,
                 label: tecnico,
                 color: getRandomContrastColor(),
-           }));
+            }));
             setChartDataPromedio(chartDataPromedio);
             setLoading(false);
             const promedioHorasPorTecnico = getPromedioHorasPorTecnico(horasPorTecnico);
             setPromedioHoras(promedioHorasPorTecnico);
-       } catch (error) {
+        } catch (error) {
             console.error('Error fetching data:', error);
             setLoading(false);
-       }
-   };
+        }
+    };
 
 
     const isColorDark = (color) => {
@@ -111,24 +111,24 @@ const Administrador = () => {
         const b = parseInt(color.slice(5, 7), 16);
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
         return brightness < 128;
-   };
+    };
 
     const getRandomColor = () => {
         const letters = '0123456789ABCDEF';
         let color = '#';
         for (let i = 0; i < 6; i++) {
             color += letters[Math.floor(Math.random() * 16)];
-       }
+        }
         return color;
-   };
+    };
 
     const getRandomContrastColor = () => {
         let color;
         do {
             color = getRandomColor();
-       } while (isColorDark(color));
+        } while (isColorDark(color));
         return color;
-   };
+    };
 
 
     const getHorasPorTecnico = (fichas) => {
@@ -140,24 +140,24 @@ const Administrador = () => {
                 const cantidadHoras = moment.duration(data.cantidadHoras).asMinutes();
                 if (horasPorTecnico[tecnico]) {
                     horasPorTecnico[tecnico] += cantidadHoras;
-               } else {
+                } else {
                     horasPorTecnico[tecnico] = cantidadHoras;
-               }
-           }
-       });
+                }
+            }
+        });
         return horasPorTecnico;
-   };
+    };
 
     const getPromedioHorasPorTecnico = (horasPorTecnico) => {
         const cantidadTecnicos = Object.keys(horasPorTecnico).length;
         const totalHoras = Object.values(horasPorTecnico).reduce((total, horas) => total + horas, 0);
         const promedioHoras = totalHoras / cantidadTecnicos;
         return promedioHoras;
-   };
+    };
 
     useEffect(() => {
         currentUser ? getFirestoreData() : setLoading(false);
-   }, [currentUser]);
+    }, [currentUser]);
 
     const Spinner = () => {
         const override = css`
@@ -166,15 +166,15 @@ const Administrador = () => {
         `;
 
         return <BarLoader className='rounded' color='white' loading css={override} />;
-   };
+    };
 
     const handleMostrarDetallesClick = (verDetalle) => {
         setMostrarDetalles(verDetalle);
-   };
+    };
 
     const handleMostrarUsuariosClick = (verUsuarios) => {
         setMostrarUsuarios(verUsuarios);
-   };
+    };
 
     return (
         <div className='administrador-container bg-dark text-light'>
@@ -211,7 +211,7 @@ const Administrador = () => {
                                                                 cornerRadius: 8,
                                                                 cx: 90,
                                                                 cy: 100,
-                                                           },
+                                                            },
                                                         ]}
                                                         height={200}
                                                         width={360}
@@ -230,7 +230,7 @@ const Administrador = () => {
                                                                 cornerRadius: 8,
                                                                 cx: 150,
                                                                 cy: 120,
-                                                           },
+                                                            },
                                                         ]}
                                                         height={250}
                                                         width={600}
@@ -242,7 +242,7 @@ const Administrador = () => {
                                                     <p>No hay datos para mostrar</p>
                                                 </Card.Body>
                                             )
-                                       }
+                                        }
                                         <Card.Footer className='text-center'>Total: {formatTotalHoras(totalHoras)}</Card.Footer>
                                     </Card>
                                 </Col>
@@ -265,7 +265,7 @@ const Administrador = () => {
                                                                 cornerRadius: 8,
                                                                 cx: 90,
                                                                 cy: 100,
-                                                           },
+                                                            },
                                                         ]}
                                                         height={200}
                                                         width={360}
@@ -284,7 +284,7 @@ const Administrador = () => {
                                                                 cornerRadius: 8,
                                                                 cx: 150,
                                                                 cy: 120,
-                                                           },
+                                                            },
                                                         ]}
                                                         height={250}
                                                         width={600}
@@ -308,7 +308,7 @@ const Administrador = () => {
                                             <IoMdPaper className='paperIcon' />
                                             <span>Ver historico</span>
                                         </Card.Body>
-                                        <Card.Footer className='text-center'>Generar reportes, editar, eliminar fichas, etc.</Card.Footer>
+                                        <Card.Footer className='text-center'>Reportes, edicion de fichas, etc.</Card.Footer>
                                     </Card>
                                 </Col>
                                 <Col md={6}>
@@ -316,9 +316,9 @@ const Administrador = () => {
                                         <Card.Header className='text-center'>Administracion de usuarios</Card.Header>
                                         <Card.Body className='text-center usuariosBody'>
                                             <FaUsers className='usuariosIcon' />
-                                            <span>Administrar usuarios</span>
+                                            <span>Gestionar usuarios</span>
                                         </Card.Body>
-                                        <Card.Footer className='text-center'>Crear, editar, eliminar usuarios, etc.</Card.Footer>
+                                        <Card.Footer className='text-center'>Centro de control de usuarios</Card.Footer>
                                     </Card>
                                 </Col>
                             </Row>
@@ -326,7 +326,7 @@ const Administrador = () => {
                     )
                 )
             )
-           }
+            }
         </div>
     );
 };
