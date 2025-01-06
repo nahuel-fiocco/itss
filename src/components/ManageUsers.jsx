@@ -56,6 +56,7 @@ const ManageUsers = ({ onRegresar }) => {
 
     const handleResetPassword = (userId, newPassword) => {
         resetPassword(userId, newPassword);
+        setShowPasswordResetForm(false);
     };
 
     const disableAccount = async (userId) => {
@@ -275,13 +276,18 @@ const ManageUsers = ({ onRegresar }) => {
                     Crear Usuario
                 </button>
             </div>
-            {showPasswordResetForm && (
-                <PasswordResetForm
-                    userId={resetPasswordUserId}
-                    onReset={handleResetPassword}
-                    onClose={() => setShowPasswordResetForm(false)}
-                />
-            )}
+            <Modal show={showPasswordResetForm} onHide={() => setShowPasswordResetForm(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Reestablecer Contraseña</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <PasswordResetForm
+                        userId={resetPasswordUserId}
+                        onReset={handleResetPassword}
+                        onClose={() => setShowPasswordResetForm(false)}
+                    />
+                </Modal.Body>
+            </Modal>
             <Modal show={showUserForm} onHide={() => setShowUserForm(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Crear Usuario</Modal.Title>

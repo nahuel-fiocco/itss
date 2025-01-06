@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase';
 
-const UserForm = ({ onSave, onCancel, isEdit, userId }) => {
-    const [userData, setUserData] = useState({
+const UserForm = ({ onCreate, onClose, isEdit, initialData }) => {
+    const [userData, setUserData] = useState(initialData || {
         email: '',
         name: '',
         surname: '',
@@ -12,32 +10,48 @@ const UserForm = ({ onSave, onCancel, isEdit, userId }) => {
         password: '',
     });
 
-    useEffect(() => {
-        if (isEdit) {
-            const fetchUserData = async () => {
-                const userDocRef = doc(db, 'users', userId);
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    setUserData(userDoc.data());
-                }
-            };
-            fetchUserData();
-        }
-    }, [isEdit, userId]);
+    const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setUserData((prev) => ({ ...prev, [name]: value }));
+        setUserData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
     };
 
-    const handleSave = () => {
-        const { email, name, surname, role, password } = userData;
-        if (!email || !name || !role || !password) {
-            alert('Por favor completa todos los campos obligatorios.');
-            return;
-        }
+    const validate = () => {
+        const newErrors = {};
+        if (!userData.email) newErrors.email = 'El email es requerido';
+        if (!userData.name) newErrors.name = 'El nombre es requerido';
+        if (!userData.surname) newErrors.surname = 'El apellido es requerido';
+        if (!userData.role) newErrors.role = 'El rol es requerido';
+        if (!userData.password) newErrors.password = 'La contraseña es requerida';
+        return newErrors;
+    };
 
-        onSave(userData);
+    const handleSave = async () => {
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+        } else {
+            setIsLoading(true);
+            await onCreate(userData);
+            setIsLoading(false);
+            setUserData({
+                email: '',
+                name: '',
+                surname: '',
+                role: '',
+                password: '',
+            });
+            onClose();
+        }
+    };
+
+    const handleCancel = () => {
+        onClose();
     };
 
     return (
@@ -50,7 +64,11 @@ const UserForm = ({ onSave, onCancel, isEdit, userId }) => {
                     value={userData.email}
                     onChange={handleChange}
                     placeholder="Email"
+                    isInvalid={!!errors.email}
                 />
+                <Form.Control.Feedback type="invalid">
+                    {errors.email}
+                </Form.Control.Feedback>
             </Form.Group>
             <Form.Group>
                 <Form.Label>Nombre</Form.Label>
@@ -60,7 +78,11 @@ const UserForm = ({ onSave, onCancel, isEdit, userId }) => {
                     value={userData.name}
                     onChange={handleChange}
                     placeholder="Nombre"
+                    isInvalid={!!errors.name}
                 />
+                <Form.Control.Feedback type="invalid">
+                    {errors.name}
+                </Form.Control.Feedback>
             </Form.Group>
             <Form.Group>
                 <Form.Label>Apellido</Form.Label>
@@ -70,7 +92,11 @@ const UserForm = ({ onSave, onCancel, isEdit, userId }) => {
                     value={userData.surname}
                     onChange={handleChange}
                     placeholder="Apellido"
+                    isInvalid={!!errors.surname}
                 />
+                <Form.Control.Feedback type="invalid">
+                    {errors.surname}
+                </Form.Control.Feedback>
             </Form.Group>
             <Form.Group>
                 <Form.Label>Rol</Form.Label>
@@ -79,12 +105,16 @@ const UserForm = ({ onSave, onCancel, isEdit, userId }) => {
                     name="role"
                     value={userData.role}
                     onChange={handleChange}
+                    isInvalid={!!errors.role}
                 >
-                    <option value="">Seleccionar Rol</option>
+                    <option value="">Seleccione un rol</option>
                     <option value="Tecnico">Tecnico</option>
                     <option value="Administrador">Administrador</option>
                     <option value="Auditor">Auditor</option>
                 </Form.Control>
+                <Form.Control.Feedback type="invalid">
+                    {errors.role}
+                </Form.Control.Feedback>
             </Form.Group>
             <Form.Group>
                 <Form.Label>Contraseña</Form.Label>
@@ -94,13 +124,17 @@ const UserForm = ({ onSave, onCancel, isEdit, userId }) => {
                     value={userData.password}
                     onChange={handleChange}
                     placeholder="Contraseña"
+                    isInvalid={!!errors.password}
                 />
+                <Form.Control.Feedback type="invalid">
+                    {errors.password}
+                </Form.Control.Feedback>
             </Form.Group>
 
-            <Button variant="primary" onClick={handleSave}>
-                {isEdit ? 'Actualizar Usuario' : 'Crear Usuario'}
+            <Button variant="primary" onClick={handleSave} disabled={isLoading}>
+                {isLoading ? 'Creando usuario...' : isEdit ? 'Actualizar Usuario' : 'Crear Usuario'}
             </Button>
-            <Button variant="secondary" onClick={onCancel}>
+            <Button variant="secondary" onClick={handleCancel} disabled={isLoading}>
                 Cancelar
             </Button>
         </Form>
