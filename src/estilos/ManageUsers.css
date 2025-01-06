@@ -27,9 +27,11 @@
 .user-form-container {
     display: flex;
     justify-content: center;
-    margin-top: 20px; /* Espacio entre los botones y el formulario */
+    margin-top: 20px;
+    /* Espacio entre los botones y el formulario */
 }
 
-.user-item.disabled, tr.disabled {
+.user-item.disabled,
+tr.disabled {
     color: lightgray;
 }
