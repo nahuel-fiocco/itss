@@ -1,218 +1,295 @@
-import React, { useState, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faUserPlus } from "@fortawesome/free-solid-svg-icons";
-import { Table, Dropdown, DropdownButton } from "react-bootstrap";
-import { getAuth } from "firebase/auth";
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import "../estilos/ManageUsers.css";
-import UserForm from "./UserForm.jsx";
-import PasswordResetForm from "./PasswordResetForm.jsx";
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHouse, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { Table, Dropdown, DropdownButton, Modal, Button } from 'react-bootstrap';
+import { getDocs, collection, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../firebase';
+import '../estilos/ManageUsers.css';
+import PasswordResetForm from './PasswordResetForm.jsx';
+import UserForm from './UserForm.jsx';
 
 const ManageUsers = ({ onRegresar }) => {
     const [users, setUsers] = useState([]);
     const [expanded, setExpanded] = useState(null);
-    const [editUserId, setEditUserId] = useState(null);
     const [resetPasswordUserId, setResetPasswordUserId] = useState(null);
+    const [showPasswordResetForm, setShowPasswordResetForm] = useState(false);
+    const [showUserForm, setShowUserForm] = useState(false);
+    const [creatingUser, setCreatingUser] = useState(false);
 
-    const toggleAcordeon = (userId) => {
-        setExpanded((prevExpanded) => (prevExpanded === userId ? null : userId));
-        fetchCreationDate("UID_DEL_USUARIO");
-    };
-
-    const auth = getAuth();
-
-    const getUsersFromFirestore = async () => {
-        const db = getFirestore();
-        const usersCollection = collection(db, 'users');
-        const usersSnapshot = await getDocs(usersCollection);
-        const usersData = usersSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
-        setUsers(usersData);
-    };
-
-    const functions = getFunctions();
-    const getUserCreationDate = httpsCallable(functions, 'getUserCreationDate');
-
-    const fetchCreationDate = async (userId) => {
+    const fetchUsers = async () => {
         try {
-            const result = await getUserCreationDate({ uid: userId });
-            console.log('Fecha de creación:', result.data.creationTime);
+            const usersCollection = collection(db, 'users');
+            const usersSnapshot = await getDocs(usersCollection);
+            let usersData = usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            usersData = sortUsersBySurname(usersData); // Ordenar antes de establecer el estado
+            setUsers(usersData);
         } catch (error) {
-            console.error('Error al obtener la fecha de creación:', error.message);
+            console.error('Error al obtener los usuarios:', error.message);
         }
     };
 
     useEffect(() => {
-        getUsersFromFirestore();
+        fetchUsers();
     }, []);
 
-    const resetPassword = async (userEmail) => {
+    useEffect(() => {
+        setUsers((prevUsers) => sortUsersBySurname(prevUsers));
+    }, [users]);
+
+    const sortUsersBySurname = (users) => {
+        return users.sort((a, b) => {
+            if (a.disabled && !b.disabled) return 1;
+            if (!a.disabled && b.disabled) return -1;
+            return a.surname.localeCompare(b.surname);
+        });
+    };
+
+    const resetPassword = async (userId, newPassword) => {
         try {
-            await auth.sendPasswordResetEmail(userEmail);
-            console.log(`Email de reestablecimiento de contraseña enviado a: ${userEmail}`);
+            const userRef = doc(db, 'users', userId);
+            await updateDoc(userRef, { password: newPassword });
         } catch (error) {
-            console.error('Error al enviar el email:', error.message);
+            console.error('Error al restablecer la contraseña:', error.message);
         }
+    };
+
+    const handleResetPassword = (userId, newPassword) => {
+        resetPassword(userId, newPassword);
     };
 
     const disableAccount = async (userId) => {
         try {
-            await auth.updateUser(userId, { disabled: true });
-            console.log(`Cuenta deshabilitada para el usuario con ID: ${userId}`);
+            const userRef = doc(db, 'users', userId);
+            await updateDoc(userRef, { disabled: true });
         } catch (error) {
             console.error('Error al deshabilitar la cuenta:', error.message);
         }
     };
 
-    const deleteAccount = async (userId) => {
+    const enableAccount = async (userId) => {
         try {
-            await auth.deleteUser(userId);
-            console.log(`Cuenta eliminada para el usuario con ID: ${userId}`);
+            const userRef = doc(db, 'users', userId);
+            await updateDoc(userRef, { disabled: false });
         } catch (error) {
-            console.error('Error al eliminar la cuenta:', error.message);
+            console.error('Error al reactivar la cuenta:', error.message);
         }
     };
 
-    const editUser = (userId) => {
-        setEditUserId(userId);
-    };
-
-    const saveUserChanges = async (updatedUserData) => {
-        const db = getFirestore();
-        const userRef = collection(db, 'users').doc(editUserId);
-
+    const handleCreateUser = async (newUserData) => {
         try {
-            await userRef.update(updatedUserData);
-            console.log('Usuario actualizado');
-            setEditUserId(null);
-            getUsersFromFirestore(); // Refresca la lista
+            setCreatingUser(true);
+            const { email, name, surname, role, password } = newUserData;
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await addDoc(collection(db, 'users'), {
+                email,
+                name,
+                surname,
+                role,
+                disabled: false,
+            });
+            fetchUsers();
         } catch (error) {
-            console.error('Error al actualizar el usuario:', error.message);
+            console.error('Error al crear el usuario:', error.message);
+        } finally {
+            setCreatingUser(false);
         }
     };
 
-    const cancelEditUser = () => {
-        // Cancelar la edición, reseteando el estado de edición
-        setEditUserId(null);
-    };
-
-    const handleDropdownAction = (action, userId) => {
-        switch (action) {
-            case "resetPassword":
-                resetPassword(userId);
-                break;
-            case "disableAccount":
-                disableAccount(userId);
-                break;
-            case "deleteAccount":
-                deleteAccount(userId);
-                break;
-            case "editUser":
-                editUser(userId);
-                break;
-            default:
-                break;
-        }
+    const toggleAcordeon = (userId) => {
+        setExpanded((prevExpanded) => (prevExpanded === userId ? null : userId));
     };
 
     const isMobile = window.innerWidth <= 768;
 
+    const activeUsers = users.filter(user => !user.disabled);
+    const inactiveUsers = users.filter(user => user.disabled);
+
+    const handleDisableAccount = async (userId) => {
+        await disableAccount(userId);
+        fetchUsers();
+    };
+
+    const handleEnableAccount = async (userId) => {
+        await enableAccount(userId);
+        fetchUsers();
+    };
+
     return (
-        <div className="manage-users-container">
+        <div className='manage-users-container'>
             {isMobile ? (
-                <div className="accordion" id="usersAcordeon">
-                    {users.map((user) => (
-                        <div className="accordion-item bg-dark text-light" key={user.id}>
-                            <h2 className="accordion-header" id={`userHeading${user.id}`}>
-                                <button className="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target={`#userCollapse${user.id}`} aria-expanded="false" aria-controls={`userCollapse${user.id}`} onClick={() => toggleAcordeon(user.id)}>
-                                    {`${user.name}, ${user.surname}`}
-                                </button>
-                            </h2>
-                            <div id={`userCollapse${user.id}`} className={`accordion-collapse collapse ${expanded === user.id ? 'show' : ''}`} aria-labelledby={`userHeading${user.id}`} data-bs-parent="#usersAcordeon">
-                                <div className="accordion-body">
-                                    <div className="accordion-body-content">
+                <>
+                    <h2>Usuarios activos: {activeUsers.length}</h2>
+                    <div className='accordion' id='activeUsersAcordeon'>
+                        {activeUsers.map((user) => (
+                            <div className='accordion-item bg-dark text-light' key={user.id}>
+                                <h2 className='accordion-header' id={`userHeading${user.id}`}>
+                                    <button className='accordion-button bg-dark text-light' type='button' data-bs-toggle='collapse' data-bs-target={`#userCollapse${user.id}`} aria-expanded='false' aria-controls={`userCollapse${user.id}`} onClick={() => toggleAcordeon(user.id)}>
+                                        {`${user.surname}, ${user.name}`}
+                                    </button>
+                                </h2>
+                                <div id={`userCollapse${user.id}`} className={`accordion-collapse collapse ${expanded === user.id ? 'show' : ''}`} aria-labelledby={`userHeading${user.id}`} data-bs-parent='#activeUsersAcordeon'>
+                                    <div className='accordion-body'>
                                         <p><strong>ID:</strong> {user.id}</p>
                                         <p><strong>Email:</strong> {user.email}</p>
                                         <p><strong>Nombre:</strong> {user.name}</p>
                                         <p><strong>Apellido:</strong> {user.surname}</p>
                                         <p><strong>Rol:</strong> {user.role}</p>
-                                        <div className="contenedorDropdownMobile">
+                                        <div className='contenedorDropdownMobile'>
                                             <DropdownButton variant={'secondary'} title={'Acciones'}>
-                                                <Dropdown.Item onClick={() => setResetPasswordUserId(user.id)}>
+                                                <Dropdown.Item onClick={() => { setResetPasswordUserId(user.id); setShowPasswordResetForm(true); }}>
                                                     Reestablecer Contraseña
                                                 </Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDropdownAction("disableAccount", user.id)}>
-                                                    Deshabilitar Cuenta
-                                                </Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDropdownAction("deleteAccount", user.id)}>
-                                                    Eliminar Cuenta
-                                                </Dropdown.Item>
-                                                <Dropdown.Item onClick={() => editUser(user.id)}>
-                                                    Editar Usuario
+                                                <Dropdown.Item onClick={() => handleDisableAccount(user.id)}>
+                                                    Deshabilitar cuenta
                                                 </Dropdown.Item>
                                             </DropdownButton>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <Table striped bordered hover variant="dark" responsive>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Email</th>
-                            <th>Nombre</th>
-                            <th>Apellido</th>
-                            <th>Rol</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map((user) => (
-                            <tr key={user.id}>
-                                <td>{user.id}</td>
-                                <td>{user.email}</td>
-                                <td>{user.name}</td>
-                                <td>{user.surname}</td>
-                                <td>{user.role}</td>
-                                <td className="text-center">
-                                    <DropdownButton title={''} variant="secondary" id={`dropdown-button-${user.id}`}>
-                                        <Dropdown.Item onClick={() => setResetPasswordUserId(user.id)}>
-                                            Reestablecer Contraseña
-                                        </Dropdown.Item>
-                                        <Dropdown.Item onClick={() => handleDropdownAction("disableAccount", user.id)}>
-                                            Deshabilitar Cuenta
-                                        </Dropdown.Item>
-                                        <Dropdown.Item onClick={() => handleDropdownAction("deleteAccount", user.id)}>
-                                            Eliminar Cuenta
-                                        </Dropdown.Item>
-                                        <Dropdown.Item onClick={() => editUser(user.id)}>
-                                            Editar Usuario
-                                        </Dropdown.Item>
-                                    </DropdownButton>
-                                </td>
-                            </tr>
                         ))}
-                    </tbody>
-                </Table>
+                    </div>
+
+                    {inactiveUsers.length > 0 && (
+                        <>
+                            <h2>Usuarios inactivos: {inactiveUsers.length}</h2>
+                            <div className='accordion' id='inactiveUsersAcordeon'>
+                                {inactiveUsers.map((user) => (
+                                    <div className='accordion-item bg-dark text-light disabled' key={user.id}>
+                                        <h2 className='accordion-header' id={`userHeading${user.id}`}>
+                                            <button className='accordion-button bg-dark text-light' type='button' data-bs-toggle='collapse' data-bs-target={`#userCollapse${user.id}`} aria-expanded='false' aria-controls={`userCollapse${user.id}`} onClick={() => toggleAcordeon(user.id)}>
+                                                {`${user.surname}, ${user.name}`}
+                                            </button>
+                                        </h2>
+                                        <div id={`userCollapse${user.id}`} className={`accordion-collapse collapse ${expanded === user.id ? 'show' : ''}`} aria-labelledby={`userHeading${user.id}`} data-bs-parent='#inactiveUsersAcordeon'>
+                                            <div className='accordion-body'>
+                                                <p><strong>ID:</strong> {user.id}</p>
+                                                <p><strong>Email:</strong> {user.email}</p>
+                                                <p><strong>Nombre:</strong> {user.name}</p>
+                                                <p><strong>Apellido:</strong> {user.surname}</p>
+                                                <p><strong>Rol:</strong> {user.role}</p>
+                                                <div className='contenedorDropdownMobile'>
+                                                    <DropdownButton variant={'secondary'} title={'Acciones'}>
+                                                        <Dropdown.Item onClick={() => { setResetPasswordUserId(user.id); setShowPasswordResetForm(true); }}>
+                                                            Reestablecer Contraseña
+                                                        </Dropdown.Item>
+                                                        <Dropdown.Item onClick={() => handleEnableAccount(user.id)}>
+                                                            Reactivar cuenta
+                                                        </Dropdown.Item>
+                                                    </DropdownButton>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </>
+            ) : (
+                <>
+                    <h2>Usuarios activos: {activeUsers.length}</h2>
+                    <Table striped bordered hover variant='dark' responsive>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {activeUsers.map((user) => (
+                                <tr key={user.id}>
+                                    <td>{user.id}</td>
+                                    <td>{user.email}</td>
+                                    <td>{user.name}</td>
+                                    <td>{user.surname}</td>
+                                    <td>{user.role}</td>
+                                    <td className='text-center'>
+                                        <DropdownButton title={''} variant='secondary'>
+                                            <Dropdown.Item onClick={() => { setResetPasswordUserId(user.id); setShowPasswordResetForm(true); }}>
+                                                Reestablecer Contraseña
+                                            </Dropdown.Item>
+                                            <Dropdown.Item onClick={() => handleDisableAccount(user.id)}>
+                                                Deshabilitar Cuenta
+                                            </Dropdown.Item>
+                                        </DropdownButton>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+
+                    {inactiveUsers.length > 0 && (
+                        <>
+                            <h2>Usuarios inactivos: {inactiveUsers.length}</h2>
+                            <Table striped bordered hover variant='dark' responsive>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Email</th>
+                                        <th>Nombre</th>
+                                        <th>Apellido</th>
+                                        <th>Rol</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {inactiveUsers.map((user) => (
+                                        <tr key={user.id} className='disabled'>
+                                            <td>{user.id}</td>
+                                            <td>{user.email}</td>
+                                            <td>{user.name}</td>
+                                            <td>{user.surname}</td>
+                                            <td>{user.role}</td>
+                                            <td className='text-center'>
+                                                <DropdownButton title={''} variant='secondary'>
+                                                    <Dropdown.Item onClick={() => { setResetPasswordUserId(user.id); setShowPasswordResetForm(true); }}>
+                                                        Reestablecer Contraseña
+                                                    </Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleEnableAccount(user.id)}>
+                                                        Reactivar Cuenta
+                                                    </Dropdown.Item>
+                                                </DropdownButton>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </>
+                    )}
+                </>
             )}
-            <div className="contenedor-botones-usuarios">
+            <div className='contenedor-botones-usuarios'>
                 <button onClick={onRegresar}>
                     <FontAwesomeIcon icon={faHouse} />
                     Inicio
                 </button>
-                <button>
+                <button onClick={() => setShowUserForm(true)}>
                     <FontAwesomeIcon icon={faUserPlus} />
-                    Nuevo usuario
+                    Crear Usuario
                 </button>
-                <UserForm onSave={saveUserChanges} onCancel={() => { }} />
             </div>
+            {showPasswordResetForm && (
+                <PasswordResetForm
+                    userId={resetPasswordUserId}
+                    onReset={handleResetPassword}
+                    onClose={() => setShowPasswordResetForm(false)}
+                />
+            )}
+            <Modal show={showUserForm} onHide={() => setShowUserForm(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Crear Usuario</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <UserForm onCreate={handleCreateUser} onClose={() => setShowUserForm(false)} />
+                </Modal.Body>
+            </Modal>
         </div>
     );
 };

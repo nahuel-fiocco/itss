@@ -1,35 +1,36 @@
-// En tu archivo functions/index.js
+// Archivo: functions/index.js
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const sgMail = require('@sendgrid/mail');
+const cors = require('cors');
 
 admin.initializeApp();
+const corsHandler = cors({origin: true});
 
-// Desactivar temporalmente la regla max-len para la API key
-// eslint-disable-next-line max-len
-sgMail.setApiKey('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');
+exports.getUserCreationDate = functions.https.onRequest((req, res) => {
+  // Manejar CORS usando el middleware
+  corsHandler(req, res, async () => {
+    // Verificar método HTTP
+    if (req.method !== 'POST') {
+      return res.status(405).json({error: 'Método no permitido'});
+    }
 
-exports.sendEmail = functions.https.onCall(async (data, context) => {
-  const { to, subject, text } = data;
-  const msg = { to, from: 'info@it-smart.com.ar', subject, text };
-  try {
-    await sgMail.send(msg);
-    return { success: true };
-  } catch (error) {
-    console.error(error.toString());
-    throw new functions.https.HttpsError('internal', 'Correo no enviado');
-  }
-});
+    const {uid} = req.body;
 
-exports.getUserCreationDate = functions.https.onCall(async (data, context) => {
-  const { uid } = data; // UID del usuario
-  try {
-    const userRecord = await admin.auth().getUser(uid);
-    const creationTime = userRecord.metadata.creationTime; // Fecha de creación
-    return { creationTime };
-  } catch (error) {
-    console.error(error.toString());
-    throw new functions.https.HttpsError('internal', 'No se pudo obtener la fecha de creación');
-  }
+    // Validar datos del cuerpo de la solicitud
+    if (!uid) {
+      return res.status(400).json({error: 'UID no proporcionado'});
+    }
+
+    try {
+      // Obtener la fecha de creación del usuario
+      const userRecord = await admin.auth().getUser(uid);
+      return res.status(200).json({
+        creationTime: userRecord.metadata.creationTime,
+      });
+    } catch (error) {
+      console.error('Error al obtener la fecha de creación:', error);
+      return res.status(500).json({error: 'Error interno del servidor'});
+    }
+  });
 });

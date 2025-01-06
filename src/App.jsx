@@ -7,20 +7,8 @@ import NotFound from './components/NotFound.jsx';
 import Administrador from './components/Administrador.jsx';
 import Tecnico from './components/Tecnico.jsx';
 import Auditor from './components/Auditor.jsx';
-import { initializeApp } from "firebase/app";
 import Navbar from './components/NavBar.jsx';
-// import CorregirHoras from './components/CorregirHoras.jsx';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCqM_HBfuxkvh43xgi65cuuRpeq-BaGGao",
-  authDomain: "itss-ab511.firebaseapp.com",
-  projectId: "itss-ab511",
-  storageBucket: "itss-ab511.appspot.com",
-  messagingSenderId: "349843522587",
-  appId: "1:349843522587:web:a3064a9f3839bc3396e4be"
-};
-
-const app = initializeApp(firebaseConfig);
+import firebaseApp from './firebase'; // Importas aquí la inicialización de Firebase
 
 function App() {
   const { currentUser } = useAuth();
@@ -45,7 +33,6 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-        {/* <Route path="/corregirfechas" element={<CorregirHoras />} /> */}
         <Route path="/" element={<Navigate to={getRedirectPath()} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />

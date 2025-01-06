@@ -35,12 +35,10 @@ function Login() {
             const db = getFirestore();
             const userRef = doc(collection(db, 'users'), uid);
             const userSnapshot = await getDoc(userRef);
-
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.data();
                 return userData ? userData.role : null;
             }
-
             return null;
         } catch (error) {
             console.error('Error fetching user role:', error);
@@ -74,29 +72,29 @@ function Login() {
     };
 
     return (
-        <div className="login-container bg-dark text-light">
+        <div className='login-container bg-dark text-light'>
             <h1>Login</h1>
-            {error && <p className="error-message text-center">{error}</p>}
+            {error && <p className='error-message text-center'>{error}</p>}
             <form className='form-login' onSubmit={handleSubmit}>
-                <div className="email-container">
+                <div className='email-container'>
                     <label htmlFor='email'>Email</label>
-                    <input type="email" name="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder='Email' />
+                    <input type='email' name='email' id='email' value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete='email' placeholder='Email' />
                 </div>
-                <div className="password-container">
+                <div className='password-container'>
                     <label htmlFor='password'>Contraseña</label>
-                    <div className="password-input-container">
-                        <input type={showPassword ? 'text' : 'password'} name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" placeholder='Password' />
-                        <button type="button" className="toggle-password-button" onClick={() => setShowPassword(!showPassword)}>
+                    <div className='password-input-container'>
+                        <input type={showPassword ? 'text' : 'password'} name='password' id='password' value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete='current-password' placeholder='Password' />
+                        <button type='button' className='toggle-password-button' onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <FontAwesomeIcon className='ojito' icon={faEye} /> : <FontAwesomeIcon className='ojito' icon={faEyeSlash} />}
                         </button>
                     </div>
                 </div>
-                <div className="buttons-container">
-                    <button type="submit" disabled={loading}>
+                <div className='buttons-container'>
+                    <button type='submit' disabled={loading}>
                         {loading ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: '5px' }} /> : <FontAwesomeIcon icon={faRightToBracket} style={{ marginRight: '5px' }} />}
                         Login
                     </button>
-                    <button type="button" onClick={handleForgotPassword}>
+                    <button type='button' onClick={handleForgotPassword}>
                         Olvidé mi contraseña
                     </button>
                 </div>
