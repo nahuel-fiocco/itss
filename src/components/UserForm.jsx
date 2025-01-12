@@ -37,7 +37,11 @@ const UserForm = ({ onCreate, onClose, isEdit, initialData }) => {
             setErrors(validationErrors);
         } else {
             setIsLoading(true);
-            await onCreate(userData);
+            const userDataToSave = {
+                ...userData,
+                role: userData.role.toLowerCase(), // Transformar el rol a minúsculas
+            };
+            await onCreate(userDataToSave);
             setIsLoading(false);
             setUserData({
                 email: '',

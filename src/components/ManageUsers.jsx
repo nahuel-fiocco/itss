@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, updatePassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import '../estilos/ManageUsers.css';
 import PasswordResetForm from './PasswordResetForm.jsx';
@@ -45,6 +45,27 @@ const ManageUsers = ({ onRegresar }) => {
         });
     };
 
+    const handleCreateUser = async (newUserData) => {
+        try {
+            setCreatingUser(true);
+            const { email, name, surname, role, password } = newUserData;
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await setDoc(doc(db, 'users', user.uid), {
+                email,
+                name,
+                surname,
+                role: role.toLowerCase(), // Guardar el rol en minúsculas
+                disabled: false,
+            });
+            fetchUsers();
+        } catch (error) {
+            console.error('Error al crear el usuario:', error.message);
+        } finally {
+            setCreatingUser(false);
+        }
+    };
+
     const resetPassword = async (userId, newPassword) => {
         try {
             const user = await auth.getUser(userId);
@@ -75,27 +96,6 @@ const ManageUsers = ({ onRegresar }) => {
             await updateDoc(userRef, { disabled: false });
         } catch (error) {
             console.error('Error al reactivar la cuenta:', error.message);
-        }
-    };
-
-    const handleCreateUser = async (newUserData) => {
-        try {
-            setCreatingUser(true);
-            const { email, name, surname, role, password } = newUserData;
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            await setDoc(doc(db, 'users', user.uid), {
-                email,
-                name,
-                surname,
-                role,
-                disabled: false,
-            });
-            fetchUsers();
-        } catch (error) {
-            console.error('Error al crear el usuario:', error.message);
-        } finally {
-            setCreatingUser(false);
         }
     };
 
@@ -156,7 +156,7 @@ const ManageUsers = ({ onRegresar }) => {
                                             </button>
                                         </h2>
                                         <div id={`userCollapse${user.id}`} className={`accordion-collapse collapse ${expanded === user.id ? 'show' : ''}`} aria-labelledby={`userHeading${user.id}`} data-bs-parent='#inactiveUsersAcordeon'>
-                                            <div className='accordion-body'>
+                                            <div className='accordion-body d-flex align-items-start'>
                                                 <p><strong>ID:</strong> {user.id}</p>
                                                 <p><strong>Email:</strong> {user.email}</p>
                                                 <p><strong>Nombre:</strong> {user.name}</p>
